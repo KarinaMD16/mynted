@@ -18,8 +18,7 @@ Un sistema de registro para coleccionistas donde cada usuario puede seguir o uni
 ## Modelo de negocio
 
 - Comisión por venta realizada dentro del marketplace.
-- Pago por registro/verificación de perfil (por ejemplo, verificación de vendedor).
-- Publicidad dentro de la app.
+- Publicidad de vendedores para posicionamiento dentro de la app.
 
 ## Módulos principales
 
@@ -37,8 +36,8 @@ Reglas de negocio clave: un usuario puede tener varios perfiles (uno por comunid
 > Completa esta sección con las tecnologías definitivas del proyecto.
 
 - **Frontend:** React
-- **Backend:** _por definir_
-- **Base de datos:** _por definir_
+- **Backend:** NestJS
+- **Base de datos:** PostgreSQL
 
 ## Estructura del repositorio
 
