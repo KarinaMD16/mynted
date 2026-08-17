@@ -67,4 +67,4 @@ El desarrollo está organizado en sprints semanales (Semana 6 a Semana 16) sigui
 
 ## Autoría
 
-Proyecto desarrollado por Karina — 2026.
+Proyecto desarrollado por Karina Moreno, Elein Rodriguez, Orlando Baltodano, Axel Badilla — 2026.
