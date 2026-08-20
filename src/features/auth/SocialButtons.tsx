@@ -2,7 +2,6 @@ import { Button } from '../../components/ui/Button'
 import { FacebookIcon, GoogleIcon } from '../../components/ui/SocialIcons'
 import { useSocialLoginMutation } from './useAuthMutations'
 
-/** Divider "Or sign in with" + botones de Facebook/Google del mockup. */
 export function SocialButtons() {
   const socialLogin = useSocialLoginMutation()
 

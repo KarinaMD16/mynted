@@ -3,20 +3,10 @@ import type { Application } from '@splinetool/runtime'
 import { ErrorBoundary } from '../../components/ui/ErrorBoundary'
 import { Loader } from '../../components/ui/Loader'
 
-// Carga diferida: el runtime de Spline es pesado, así que no se incluye
-// en el bundle inicial de la app, solo cuando se entra a /login.
 const Spline = lazy(() => import('@splinetool/react-spline'))
 
-// Escena servida localmente desde /public/scene.splinecode (self-hosted,
-// no depende de que el archivo de Spline siga publicado en la comunidad).
 const SPLINE_SCENE_URL = '/scene.splinecode'
 
-/**
- * Log de diagnóstico: objetos de la escena + tamaño real del canvas.
- * Se imprime como un solo string con JSON.stringify para poder
- * seleccionar y copiar el log completo de una, sin tener que
- * desplegar cada objeto a mano en la consola.
- */
 function logSceneObjects(app: Application) {
   const objects = app.getAllObjects().map((object) => ({
     name: object.name,
@@ -30,7 +20,6 @@ function logSceneObjects(app: Application) {
   )
 }
 
-/** Panel derecho del AuthCard ("Mascot Panel" en el mockup de Figma): escena 3D de Spline. */
 export function MascotPanel() {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -70,11 +59,6 @@ function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement 
     return () => window.clearTimeout(timeoutId)
   }, [status])
 
-  // El "seguimiento del mouse" que trae la escena de Spline solo escucha
-  // eventos dentro de su propio <canvas>. Para que la mascota reaccione al
-  // cursor en toda la pantalla (no solo cuando el mouse pasa sobre el panel
-  // celeste), reenviamos cada movimiento global del mouse como un evento
-  // sobre ese canvas.
   useEffect(() => {
     if (status !== 'loaded') return
 
@@ -84,8 +68,6 @@ function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement 
     let isForwarding = false
 
     function handlePointerMove(event: PointerEvent) {
-      // Evita el loop infinito: si el evento ya lo generamos nosotros (o
-      // viene del propio canvas), no lo reenviamos de nuevo.
       if (isForwarding || event.target === canvas) return
 
       // Spline calcula la posición del mouse en base al clientX/clientY
@@ -113,9 +95,6 @@ function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement 
           isPrimary: true,
           pointerId: event.pointerId,
           pointerType: event.pointerType || 'mouse',
-          // bubbles: false a propósito. Spline escucha directamente sobre
-          // el canvas; si el evento burbujeara volvería a llegar al
-          // listener de window de abajo y se generaría un loop infinito.
           bubbles: false,
           cancelable: true,
         }),
@@ -139,9 +118,6 @@ function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement 
         className="h-full w-full"
         style={{ visibility: status === 'loaded' ? 'visible' : 'hidden', position: status === 'loaded' ? 'static' : 'absolute' }}
         onLoad={(app) => {
-          // Ayuda para depurar en consola si algún objeto de la escena
-          // (ej. el ganso) no aparece: lista lo que Spline realmente cargó,
-          // con visibilidad/posición/escala de cada objeto.
           logSceneObjects(app)
           setStatus('loaded')
         }}

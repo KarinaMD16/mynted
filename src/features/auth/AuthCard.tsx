@@ -7,11 +7,9 @@ import { RegisterForm } from './RegisterForm'
 type AuthMode = 'login' | 'register'
 
 interface AuthCardProps {
-  /** Modo inicial de la tarjeta. Por defecto arranca en "register", igual que el mockup. */
   initialMode?: AuthMode
 }
 
-/** Tarjeta de autenticación (login / crear cuenta) del mockup "Login — Neutral Redesign". */
 export function AuthCard({ initialMode = 'register' }: AuthCardProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode)
 

@@ -46,15 +46,11 @@ export const SearchBar = () => {
     return (
         <label
             className={cn(
-                "relative inline-flex origin-center rounded-full text-neutral-500 dark:text-neutral-400",
+                "relative inline-flex origin-center rounded-full",
                 "group transform-gpu transition-all ease-in-out",
-                " relative",
-                // searchSubmitted
-                //   ? "scale-95 shadow-red-500/30 duration-100"
-                //   : "scale-100 shadow-red-500/0",
                 "before:absolute before:top-0 before:left-0 before:h-full before:w-full before:transform-gpu before:rounded-full before:transition-all before:duration-700 before:ease-in-out before:content-['']",
                 searchSubmittedShadow
-                    ? "before:shadow-[0px_0px_0px_5px_blue] before:blur-2xl"
+                    ? "before:shadow-[0px_0px_0px_5px_var(--color-mynted-blue-mid)] before:blur-2xl"
                     : "before:shadow-[0px_0px_1px_0px_#FFFFFF00] before:blur-0",
                 searchSubmittedOutline
                     ? "scale-90 duration-75"
@@ -64,16 +60,16 @@ export const SearchBar = () => {
         >
             <input
                 className={cn(
-                    "peer max-w-10 transform-gpu rounded-full p-2 pl-10 transition-all ease-in-out focus:max-w-40",
+                    "peer max-w-10 transform-gpu rounded-full border border-mynted-border p-2 pl-10 text-mynted-white transition-all ease-in-out focus:max-w-40",
                     // BACKGROUND
-                    "bg-white/70 hover:bg-white/80 dark:bg-neutral-800/70 dark:hover:bg-neutral-900/80",
+                    "bg-mynted-yellow hover:opacity-90",
                     // OUTLINE
                     "-outline-offset-1 outline outline-1",
                     searchSubmittedOutline
-                        ? "outline-blue-500 duration-150"
-                        : "outline-neutral-200/0 duration-300 hover:outline-neutral-200/100 dark:outline-neutral-800/0 dark:focus:placeholder-neutral-300/100 dark:hover:outline-neutral-800/100",
+                        ? "outline-mynted-white/70 duration-150"
+                        : "outline-mynted-white/0 duration-300 hover:outline-mynted-white/30",
                     // PLACEHOLDER
-                    "text-sm placeholder-neutral-300/0 focus:placeholder-neutral-300/100 dark:placeholder-neutral-700/0 dark:focus:placeholder-neutral-700/100",
+                    "placeholder-black focus:placeholder-black",
                 )}
                 id="search"
                 onBlur={() => {
@@ -92,7 +88,7 @@ export const SearchBar = () => {
                 type="search"
                 value={searchValue}
             />
-            <SearchIcon className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 size-5 text-neutral-300 transition-colors peer-focus:text-neutral-500 dark:text-neutral-700" />
+            <SearchIcon className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 size-5 text-black transition-colors" />
         </label>
     );
 };
