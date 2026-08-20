@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState, type RefObject } from 'react'
 import type { Application } from '@splinetool/runtime'
-import { ErrorBoundary } from '../../components/ui/ErrorBoundary'
-import { Loader } from '../../components/ui/Loader'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import { Loader } from '@/components/ui/Loader'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
 

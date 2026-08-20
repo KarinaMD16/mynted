@@ -11,6 +11,7 @@ import {
 } from 'react-aria-components'
 import { GooseIcon } from '../ui/GooseIcon'
 import { SearchBar } from '../ui/SearchBar'
+import { Logo } from '../ui/Logo'
 
 const NAV_ITEMS: { label: string; href: '/' | '/explore' | '/communities' | '/favorites' | '/messages' }[] = [
   { label: 'Home', href: '/' },
@@ -42,8 +43,7 @@ export function SiteHeader({ userName = 'Karina' }: SiteHeaderProps) {
   return (
     <header className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-4 rounded-2xl border border-mynted-border bg-mynted-white px-4 py-3.5 sm:px-6 lg:px-12 lg:py-[18px]">
       <Link to="/" className="flex shrink-0 items-center gap-2.5 rounded-xs outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-        <GooseIcon className="size-9 shrink-0 text-mynted-orange" />
-        <span className="font-heading text-[22px] font-semibold text-mynted-blue-mid">mynted</span>
+      <Logo ver='small'/> 
       </Link>
 
       {/* Nav de escritorio */}

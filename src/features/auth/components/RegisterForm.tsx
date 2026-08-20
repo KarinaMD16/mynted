@@ -1,8 +1,8 @@
+import { TextField } from '@/components/ui/TextField'
 import { useForm } from '@tanstack/react-form'
-import { Button } from '../../components/ui/Button'
-import { TextField } from '../../components/ui/TextField'
 import { SocialButtons } from './SocialButtons'
-import { useRegisterMutation } from './useAuthMutations'
+import { Button } from '@/components/ui/Button'
+import { useRegisterMutation } from '../hooks/useAuthMutations'
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void

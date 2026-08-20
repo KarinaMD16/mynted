@@ -1,8 +1,9 @@
+import { Logo } from '@/components/ui/Logo'
 import { useState } from 'react'
-import { Logo } from '../../components/ui/Logo'
+import { RegisterForm } from './RegisterForm'
 import { LoginForm } from './LoginForm'
 import { MascotPanel } from './MascotPanel'
-import { RegisterForm } from './RegisterForm'
+
 
 type AuthMode = 'login' | 'register'
 

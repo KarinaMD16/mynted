@@ -1,5 +1,5 @@
+import { AuthCard } from '@/features/auth/components/AuthCard'
 import { DecorativeBackground } from '../components/ui/DecorativeBackground'
-import { AuthCard } from '../features/auth/AuthCard'
 
 export default function LoginPage() {
   return (

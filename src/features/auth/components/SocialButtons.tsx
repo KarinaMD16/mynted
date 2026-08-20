@@ -1,6 +1,7 @@
-import { Button } from '../../components/ui/Button'
-import { FacebookIcon, GoogleIcon } from '../../components/ui/SocialIcons'
-import { useSocialLoginMutation } from './useAuthMutations'
+import { Button } from "@/components/ui/Button"
+import { FacebookIcon, GoogleIcon } from "@/components/ui/SocialIcons"
+import { useSocialLoginMutation } from "../hooks/useAuthMutations"
+
 
 export function SocialButtons() {
   const socialLogin = useSocialLoginMutation()
