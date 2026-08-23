@@ -4,8 +4,8 @@ import { PlaceholderPage } from '../components/layout/PlaceholderPage'
 export default function ExplorePage() {
   return (
     <PlaceholderPage
-      title="Explorar"
-      description="Acá vas a poder descubrir comunidades y publicaciones nuevas. Esta sección todavía está en construcción."
+      title="Explore"
+      description="Here you'll be able to discover new communities and posts. This section is still under construction."
     />
   )
 }

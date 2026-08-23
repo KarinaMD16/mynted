@@ -50,7 +50,7 @@ export function Rating({ value, max = 5, size = 16, className = '' }: RatingProp
     <div
       className={`flex items-center gap-0.5 ${className}`}
       role="img"
-      aria-label={`${clampedValue} de ${max} estrellas`}
+      aria-label={`${clampedValue} out of ${max} stars`}
     >
       {Array.from({ length: max }, (_, index) => (
         <StarIcon key={index} size={size} fillRatio={Math.min(Math.max(clampedValue - index, 0), 1)} />

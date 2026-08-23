@@ -1,8 +1,12 @@
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/TextField'
 import { useForm } from '@tanstack/react-form'
+import { useNavigate } from '@tanstack/react-router'
+import { getApiErrorMessage } from '@/api/apiError'
+import { getFieldErrorMessage } from '@/utils/form'
 import { SocialButtons } from './SocialButtons'
 import { useLoginMutation } from '../hooks/useAuthMutations'
+import { loginSchema } from '../schema/authSchemas'
 
 interface LoginFormProps {
   onSwitchToRegister: () => void
@@ -10,14 +14,16 @@ interface LoginFormProps {
 
 export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const loginMutation = useLoginMutation()
+  const navigate = useNavigate()
 
   const form = useForm({
     defaultValues: {
-      identifier: '',
+      email: '',
       password: '',
     },
     onSubmit: async ({ value }) => {
       await loginMutation.mutateAsync(value)
+      await navigate({ to: '/' })
     },
   })
 
@@ -36,32 +42,22 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         <p className="mt-1.5 text-sm text-mynted-gray">Sign in to keep collecting with your communities.</p>
       </div>
 
-      <form.Field
-        name="identifier"
-        validators={{
-          onChange: ({ value }) => (!value ? 'Ingresá tu correo o username' : undefined),
-        }}
-      >
+      <form.Field name="email" validators={{ onChange: loginSchema.shape.email }}>
         {(field) => (
           <TextField
-            label="Email or username"
-            type="text"
-            autoComplete="username"
-            placeholder="Enter your email or username"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            placeholder="Enter your email"
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
-            error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+            error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
           />
         )}
       </form.Field>
 
-      <form.Field
-        name="password"
-        validators={{
-          onChange: ({ value }) => (!value ? 'La contraseña es obligatoria' : undefined),
-        }}
-      >
+      <form.Field name="password" validators={{ onChange: loginSchema.shape.password }}>
         {(field) => (
           <TextField
             label="Password"
@@ -71,7 +67,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
-            error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+            error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
           />
         )}
       </form.Field>
@@ -86,7 +82,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       {loginMutation.isError && (
         <p className="text-center text-xs text-red-500" role="alert">
-          {(loginMutation.error as Error).message}
+          {getApiErrorMessage(loginMutation.error)}
         </p>
       )}
 

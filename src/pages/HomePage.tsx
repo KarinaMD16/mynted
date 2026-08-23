@@ -10,7 +10,7 @@ import type { Product } from '@/features/app/types/appTypes'
 const DEMO_PRODUCT: Product = {
   id: 'demo-1',
   name: 'Funko Rainbow Dash',
-  description: 'Funko Pop de Fluttershy, edición My Little Pony.',
+  description: 'Fluttershy Funko Pop, My Little Pony edition.',
   price: 18,
   image: 'https://i.etsystatic.com/19343947/r/il/f741f9/7160011667/il_fullxfull.7160011667_tdi5.jpg',
   tags: ['mylittlepony', 'fluttershy', 'funko'],
@@ -32,7 +32,7 @@ export default function HomePage() {
           to="/login"
           className="mt-2 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
         >
-          Ir a Login
+          Go to Login
         </Link>
       </main>
     </div>

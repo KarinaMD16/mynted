@@ -1,4 +1,3 @@
-
 import { cn } from '@/cuicui/utils/cn'
 import type { Product } from '@/features/app/types/appTypes'
 import { Rating } from '../../../components/ui/Rating'

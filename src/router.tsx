@@ -7,6 +7,7 @@ import FavoritesPage from './pages/FavoritesPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import MessagesPage from './pages/MessagesPage'
+import ProfilePage from './pages/ProfilePage'
 
 /**
  * Configuración de rutas del frontend.
@@ -63,7 +64,21 @@ const messagesRoute = createRoute({
   component: MessagesPage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, exploreRoute, communitiesRoute, favoritesRoute, messagesRoute])
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile',
+  component: ProfilePage,
+})
+
+const routeTree = rootRoute.addChildren([
+  homeRoute,
+  loginRoute,
+  exploreRoute,
+  communitiesRoute,
+  favoritesRoute,
+  messagesRoute,
+  profileRoute,
+])
 
 export const router = createRouter({
   routeTree,
@@ -71,7 +86,7 @@ export const router = createRouter({
   // navegación entre rutas o la carga de datos de una ruta.
   defaultPendingComponent: () => (
     <div className="flex min-h-svh items-center justify-center bg-mynted-bg">
-      <Loader label="Cargando…" size={120} />
+      <Loader label="Loading…" size={120} />
     </div>
   ),
 })

@@ -1,5 +1,4 @@
 import { Suspense, lazy, useEffect, useRef, useState, type RefObject } from 'react'
-import type { Application } from '@splinetool/runtime'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { Loader } from '@/components/ui/Loader'
 
@@ -7,18 +6,6 @@ const Spline = lazy(() => import('@splinetool/react-spline'))
 
 const SPLINE_SCENE_URL = '/scene.splinecode'
 
-function logSceneObjects(app: Application) {
-  const objects = app.getAllObjects().map((object) => ({
-    name: object.name,
-    visible: object.visible,
-    position: object.position,
-    scale: object.scale,
-  }))
-  console.log(
-    `[Spline] escena cargada — ${objects.length} objeto(s), canvas ${app.canvas.width}x${app.canvas.height}\n` +
-      JSON.stringify(objects, null, 2),
-  )
-}
 
 export function MascotPanel() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -35,8 +22,8 @@ export function MascotPanel() {
         login: el ErrorBoundary atrapa errores síncronos y `onError` de
         <Spline> atrapa los fallos de carga asíncronos.
       */}
-      <ErrorBoundary fallback={<MascotFallback label="No se pudo cargar la escena 3D" />}>
-        <Suspense fallback={<MascotFallback label="Cargando mascota…" />}>
+      <ErrorBoundary fallback={<MascotFallback label="Couldn't load the 3D scene" />}>
+        <Suspense fallback={<MascotFallback label="Loading mascot…" />}>
           <SplineScene containerRef={containerRef} />
         </Suspense>
       </ErrorBoundary>
@@ -107,18 +94,17 @@ function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement 
   }, [status, containerRef])
 
   if (status === 'error') {
-    return <MascotFallback label="No se pudo cargar la escena 3D" />
+    return <MascotFallback label="Couldn't load the 3D scene" />
   }
 
   return (
     <>
-      {status === 'loading' && <MascotFallback label="Cargando mascota…" />}
+      {status === 'loading' && <MascotFallback label="Loading mascot…" />}
       <Spline
         scene={SPLINE_SCENE_URL}
         className="h-full w-full"
         style={{ visibility: status === 'loaded' ? 'visible' : 'hidden', position: status === 'loaded' ? 'static' : 'absolute' }}
-        onLoad={(app) => {
-          logSceneObjects(app)
+        onLoad={() => {
           setStatus('loaded')
         }}
       />

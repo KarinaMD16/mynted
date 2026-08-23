@@ -1,16 +1,18 @@
 import { TextField } from '@/components/ui/TextField'
 import { useForm } from '@tanstack/react-form'
+import { getApiErrorMessage } from '@/api/apiError'
+import { getFieldErrorMessage } from '@/utils/form'
 import { SocialButtons } from './SocialButtons'
 import { Button } from '@/components/ui/Button'
 import { useRegisterMutation } from '../hooks/useAuthMutations'
+import { registerSchema } from '../schema/authSchemas'
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void
+  onRegistered: () => void
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
+export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProps) {
   const registerMutation = useRegisterMutation()
 
   const form = useForm({
@@ -21,6 +23,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     },
     onSubmit: async ({ value }) => {
       await registerMutation.mutateAsync(value)
+      onRegistered()
     },
   })
 
@@ -39,16 +42,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         <p className="mt-1.5 text-sm text-mynted-gray">Join collectors of every age, from every fandom.</p>
       </div>
 
-      <form.Field
-        name="email"
-        validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'El correo es obligatorio'
-            if (!EMAIL_PATTERN.test(value)) return 'Ingresá un correo válido'
-            return undefined
-          },
-        }}
-      >
+      <form.Field name="email" validators={{ onChange: registerSchema.shape.email }}>
         {(field) => (
           <TextField
             label="Email"
@@ -58,21 +52,12 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
-            error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+            error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
           />
         )}
       </form.Field>
 
-      <form.Field
-        name="username"
-        validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'El username es obligatorio'
-            if (value.length < 3) return 'Debe tener al menos 3 caracteres'
-            return undefined
-          },
-        }}
-      >
+      <form.Field name="username" validators={{ onChange: registerSchema.shape.username }}>
         {(field) => (
           <TextField
             label="Username"
@@ -82,21 +67,12 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
-            error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+            error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
           />
         )}
       </form.Field>
 
-      <form.Field
-        name="password"
-        validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'La contraseña es obligatoria'
-            if (value.length < 8) return 'Debe tener al menos 8 caracteres'
-            return undefined
-          },
-        }}
-      >
+      <form.Field name="password" validators={{ onChange: registerSchema.shape.password }}>
         {(field) => (
           <TextField
             label="Password"
@@ -106,7 +82,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
-            error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+            error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
           />
         )}
       </form.Field>
@@ -121,7 +97,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
       {registerMutation.isError && (
         <p className="text-center text-xs text-red-500" role="alert">
-          {(registerMutation.error as Error).message}
+          {getApiErrorMessage(registerMutation.error)}
         </p>
       )}
 

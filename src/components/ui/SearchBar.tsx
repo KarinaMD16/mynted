@@ -19,6 +19,7 @@ export const SearchBar = () => {
     const [searchSubmittedOutline, setSearchSubmittedOutline] = useState(false);
     const [searchSubmittedShadow, setSearchSubmittedShadow] = useState(false);
     const [searchValue, setSearchValue] = useState("");
+
     function handleSearch() {
         setSearchSubmittedOutline(true);
         setSearchSubmittedShadow(true);
@@ -26,21 +27,35 @@ export const SearchBar = () => {
     }
 
     useEffect(() => {
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
         if (searchSubmittedOutline) {
-            // Wait 3 sec
-            setTimeout(() => {
+            timeoutId = setTimeout(() => {
                 setSearchSubmittedOutline(false);
             }, 150);
         }
+
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
     }, [searchSubmittedOutline]);
 
     useEffect(() => {
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
         if (searchSubmittedShadow) {
-            // Wait 3 sec
-            setTimeout(() => {
+            timeoutId = setTimeout(() => {
                 setSearchSubmittedShadow(false);
             }, 1000);
         }
+
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
     }, [searchSubmittedShadow]);
 
     return (
@@ -69,7 +84,7 @@ export const SearchBar = () => {
                         ? "outline-mynted-white/70 duration-150"
                         : "outline-mynted-white/0 duration-300 hover:outline-mynted-white/30",
                     // PLACEHOLDER
-                    "placeholder-black focus:placeholder-black",
+                    "placeholder-black text-sm focus:placeholder-black",
                 )}
                 id="search"
                 onBlur={() => {

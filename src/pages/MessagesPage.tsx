@@ -4,8 +4,8 @@ import { PlaceholderPage } from '../components/layout/PlaceholderPage'
 export default function MessagesPage() {
   return (
     <PlaceholderPage
-      title="Mensajes"
-      description="Acá vas a poder chatear con otros coleccionistas sobre intercambios y ventas. Esta sección todavía está en construcción."
+      title="Messages"
+      description="Here you'll be able to chat with other collectors about trades and sales. This section is still under construction."
     />
   )
 }

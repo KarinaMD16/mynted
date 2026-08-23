@@ -4,8 +4,8 @@ import { PlaceholderPage } from '../components/layout/PlaceholderPage'
 export default function CommunitiesPage() {
   return (
     <PlaceholderPage
-      title="Comunidades"
-      description="Acá vas a ver las comunidades a las que seguís y poder unirte a otras nuevas. Esta sección todavía está en construcción."
+      title="Communities"
+      description="Here you'll see the communities you follow and be able to join new ones. This section is still under construction."
     />
   )
 }
