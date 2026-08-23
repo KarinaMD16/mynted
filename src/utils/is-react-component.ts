@@ -22,7 +22,7 @@ export const isClassComponent = (component: any): component is React.ComponentCl
  * Checks if a given value is a forward ref component.
  */
 export const isForwardRefComponent = (component: any): component is React.ForwardRefExoticComponent<any> => {
-    return typeof component === "object" && component !== null && component.$$typeof.toString() === "Symbol(react.forward_ref)";
+    return typeof component === "object" && component !== null && (component as any).$$typeof === Symbol.for("react.forward_ref");
 };
 
 /**
