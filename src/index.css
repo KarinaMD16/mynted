@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* Tailwind se importa desde src/styles/globals.css para evitar duplicados. */
 
 /*
  * Design tokens de mynted, extraídos del mockup de Figma
