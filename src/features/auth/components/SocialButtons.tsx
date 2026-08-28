@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/Button"
 import { FacebookIcon, GoogleIcon } from "@/components/ui/SocialIcons"
-import { useSocialLoginMutation } from "../hooks/useAuthMutations"
+import { startOAuth } from "../services/authServices"
 
-
+/**
+ * El login social no es una llamada al backend sino una navegación completa:
+ * al hacer click el navegador se va al proveedor y vuelve a /auth/callback.
+ * Por eso no hay estado de carga ni de error acá — esta página deja de existir.
+ */
 export function SocialButtons() {
-  const socialLogin = useSocialLoginMutation()
-
   return (
     <div className="flex w-full flex-col gap-3.5">
       <div className="flex w-full items-center gap-3">
@@ -18,8 +20,8 @@ export function SocialButtons() {
         <Button
           type="button"
           variant="facebook"
-          className="!w-auto flex-1"
-          onClick={() => socialLogin.mutate('facebook')}
+          className="!w-auto flex-1 hover:cursor-pointer"
+          onClick={() => startOAuth('facebook')}
         >
           <FacebookIcon />
           Facebook
@@ -27,19 +29,13 @@ export function SocialButtons() {
         <Button
           type="button"
           variant="google"
-          className="!w-auto flex-1"
-          onClick={() => socialLogin.mutate('google')}
+          className="!w-auto flex-1 hover:cursor-pointer"
+          onClick={() => startOAuth('google')}
         >
           <GoogleIcon />
           Google
         </Button>
       </div>
-
-      {socialLogin.isError && (
-        <p className="text-center text-xs text-red-500" role="alert">
-          {(socialLogin.error as Error).message}
-        </p>
-      )}
     </div>
   )
 }
