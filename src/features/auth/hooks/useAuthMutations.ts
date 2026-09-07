@@ -1,20 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AuthUser } from '../models/auth'
 import {
-  confirmLinkRequest,
-  getCurrentUserRequest,
-  getIdentitiesRequest,
   getUserByIdRequest,
   loginRequest,
+  loginWithFacebookRequest,
+  loginWithGoogleRequest,
   logoutRequest,
   registerRequest,
-  setPasswordRequest,
-  unlinkProviderRequest,
 } from '../services/authServices'
 
 export const authKeys = {
   me: ['auth', 'me'] as const,
-  identities: ['auth', 'identities'] as const,
 }
 
 export function useLoginMutation() {
@@ -39,57 +35,21 @@ export function useLogoutMutation() {
   })
 }
 
-/**
- * Sesión actual. `retry: false` porque un 401 significa "no hay sesión",
- * no un fallo transitorio que valga la pena reintentar.
- */
-export function useCurrentUserQuery(options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: authKeys.me,
-    queryFn: getCurrentUserRequest,
-    retry: false,
-    enabled: options?.enabled ?? true,
-  })
-}
-
-/** Cierra la vinculación pendiente con la contraseña de la cuenta local. */
-export function useConfirmLinkMutation() {
+/** POST /auth/google con el ID token de Google Identity Services. */
+export function useGoogleLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: confirmLinkRequest,
-    onSuccess: (user) => {
-      queryClient.setQueryData<AuthUser>(authKeys.me, user)
-      void queryClient.invalidateQueries({ queryKey: authKeys.identities })
-    },
+    mutationFn: loginWithGoogleRequest,
+    onSuccess: (user) => queryClient.setQueryData<AuthUser>(authKeys.me, user),
   })
 }
 
-/** Métodos de acceso de la cuenta: contraseña y proveedores vinculados. */
-export function useIdentitiesQuery(options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: authKeys.identities,
-    queryFn: getIdentitiesRequest,
-    retry: false,
-    enabled: options?.enabled ?? true,
-  })
-}
-
-export function useSetPasswordMutation() {
+/** POST /auth/facebook con el access token del SDK de Facebook. */
+export function useFacebookLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: setPasswordRequest,
-    onSuccess: (user) => {
-      queryClient.setQueryData<AuthUser>(authKeys.me, user)
-      void queryClient.invalidateQueries({ queryKey: authKeys.identities })
-    },
-  })
-}
-
-export function useUnlinkProviderMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: unlinkProviderRequest,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.identities }),
+    mutationFn: loginWithFacebookRequest,
+    onSuccess: (user) => queryClient.setQueryData<AuthUser>(authKeys.me, user),
   })
 }
 

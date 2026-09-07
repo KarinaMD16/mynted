@@ -1,13 +1,9 @@
-import myntedAPI, { API_BASE_URL } from '@/api/apiConfig'
+import myntedAPI from '@/api/apiConfig'
 import type {
-  AccountIdentities,
   AuthUser,
-  LinkConfirmPayload,
   LoginPayload,
   LogoutResponse,
-  OAuthProvider,
   RegisterPayload,
-  SetPasswordPayload,
 } from '../models/auth'
 
 export async function loginRequest(payload: LoginPayload): Promise<AuthUser> {
@@ -30,67 +26,24 @@ export async function logoutRequest(): Promise<LogoutResponse> {
   return data
 }
 
-/**
- * Usuario de la sesión actual. La cookie de sesión es httpOnly, así que el
- * navegador no puede leerla: hay que preguntarle al backend quiénes somos.
- * Responde 401 cuando no hay sesión.
- */
-export async function getCurrentUserRequest(): Promise<AuthUser> {
-  const { data } = await myntedAPI.get<{ user: AuthUser }>('/auth/me')
-  return data.user
-}
-
 // -----------------------------------------------------------------------------
-// OAuth
+// Login social
 // -----------------------------------------------------------------------------
 
 /**
- * Arranca el login/registro con un proveedor.
+ * El backend no redirige al proveedor: recibe el token que el SDK ya consiguió
+ * en el navegador, lo verifica contra Google/Facebook y responde con la sesión
+ * en una cookie httpOnly (`access_token`) más el usuario en el body.
  *
- * No es una llamada XHR: el navegador tiene que navegar de verdad hasta la
- * pantalla de consentimiento del proveedor. Por eso acá no hay axios ni
- * promesa — la ejecución de esta página termina en el redirect, y el usuario
- * vuelve a /auth/callback.
+ * Si el correo del proveedor ya tiene cuenta local, el backend la vincula solo
+ * (ver AuthService.linkOrCreateSocialUser): no hay paso extra de contraseña.
  */
-export function startOAuth(provider: OAuthProvider): void {
-  window.location.href = `${API_BASE_URL}/auth/${provider}`
-}
-
-/**
- * Igual que startOAuth pero para agregar un proveedor a la sesión ya abierta.
- * El backend distingue los dos casos por la cookie link_intent que setea acá.
- */
-export function startOAuthLink(provider: OAuthProvider): void {
-  window.location.href = `${API_BASE_URL}/auth/link/${provider}`
-}
-
-/**
- * Cierra una vinculación pendiente: el proveedor trajo un email que ya tenía
- * cuenta local sin verificar, y el backend exige la contraseña para confirmar
- * que es la misma persona. El ticket viaja solo en la cookie `link_ticket`.
- */
-export async function confirmLinkRequest(payload: LinkConfirmPayload): Promise<AuthUser> {
-  const { data } = await myntedAPI.post<{ user: AuthUser; linked: boolean }>(
-    '/auth/link/confirm',
-    payload,
-  )
+export async function loginWithGoogleRequest(idToken: string): Promise<AuthUser> {
+  const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/google', { idToken })
   return data.user
 }
 
-export async function getIdentitiesRequest(): Promise<AccountIdentities> {
-  const { data } = await myntedAPI.get<AccountIdentities>('/auth/identities')
-  return data
-}
-
-/** Define contraseña en una cuenta nacida por OAuth, o cambia la existente. */
-export async function setPasswordRequest(payload: SetPasswordPayload): Promise<AuthUser> {
-  const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/set-password', payload)
+export async function loginWithFacebookRequest(accessToken: string): Promise<AuthUser> {
+  const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/facebook', { accessToken })
   return data.user
-}
-
-export async function unlinkProviderRequest(
-  provider: OAuthProvider,
-): Promise<{ message: string }> {
-  const { data } = await myntedAPI.delete<{ message: string }>(`/auth/unlink/${provider}`)
-  return data
 }
