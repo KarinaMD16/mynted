@@ -36,7 +36,6 @@ export async function logoutRequest(): Promise<LogoutResponse> {
  * en una cookie httpOnly (`access_token`) más el usuario en el body.
  *
  * Si el correo del proveedor ya tiene cuenta local, el backend la vincula solo
- * (ver AuthService.linkOrCreateSocialUser): no hay paso extra de contraseña.
  */
 export async function loginWithGoogleRequest(idToken: string): Promise<AuthUser> {
   const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/google', { idToken })

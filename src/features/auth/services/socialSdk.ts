@@ -1,11 +1,5 @@
-/**
- * Carga perezosa de los SDK de Google y Facebook.
- *
- * El backend no implementa el flujo de redirect (no existe GET /auth/google):
- * espera que el navegador consiga el token del proveedor y lo mande por POST.
- * Google entrega un ID token (Google Identity Services) y Facebook un access
- * token (JS SDK); el backend los verifica contra el proveedor y abre la sesión.
- */
+import type { GoogleAccountsId, FacebookSdk } from "../types/socialTypes"
+
 
 const GOOGLE_SDK_SRC = 'https://accounts.google.com/gsi/client'
 const GOOGLE_SDK_ID = 'google-identity-services'
@@ -20,49 +14,6 @@ export const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID ?? ''
 export const isGoogleConfigured = GOOGLE_CLIENT_ID.length > 0
 export const isFacebookConfigured = FACEBOOK_APP_ID.length > 0
 
-// -----------------------------------------------------------------------------
-// Tipos mínimos de los SDK (solo lo que usamos)
-// -----------------------------------------------------------------------------
-
-export interface GoogleCredentialResponse {
-  /** JWT firmado por Google. Es el `idToken` que pide POST /auth/google. */
-  credential?: string
-}
-
-export interface GoogleButtonOptions {
-  type?: 'standard' | 'icon'
-  theme?: 'outline' | 'filled_blue' | 'filled_black'
-  size?: 'small' | 'medium' | 'large'
-  text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin'
-  shape?: 'rectangular' | 'pill' | 'circle' | 'square'
-  logo_alignment?: 'left' | 'center'
-  width?: number
-}
-
-interface GoogleAccountsId {
-  initialize(config: {
-    client_id: string
-    callback: (response: GoogleCredentialResponse) => void
-    ux_mode?: 'popup' | 'redirect'
-    auto_select?: boolean
-    cancel_on_tap_outside?: boolean
-  }): void
-  renderButton(parent: HTMLElement, options: GoogleButtonOptions): void
-  disableAutoSelect(): void
-}
-
-interface FacebookLoginResponse {
-  status: 'connected' | 'not_authorized' | 'unknown'
-  authResponse?: { accessToken?: string } | null
-}
-
-export interface FacebookSdk {
-  init(config: { appId: string; cookie?: boolean; xfbml?: boolean; version: string }): void
-  login(
-    callback: (response: FacebookLoginResponse) => void,
-    options?: { scope?: string },
-  ): void
-}
 
 declare global {
   interface Window {
@@ -169,12 +120,6 @@ export async function renderGoogleButton(
 
 let facebookSdkPromise: Promise<FacebookSdk> | null = null
 
-/**
- * Mientras `sdk.js` termina de arrancar, `window.FB` es un stub que solo encola
- * las llamadas en `__buffer` y nunca las ejecuta. El SDK recién reemplaza
- * `window.FB` por el objeto real justo antes de llamar a `fbAsyncInit`, así que
- * ese es el único momento seguro para quedarse con la referencia.
- */
 function isRealFacebookSdk(fb: FacebookSdk | undefined): fb is FacebookSdk {
   return !!fb && !('__buffer' in fb)
 }
@@ -182,7 +127,7 @@ function isRealFacebookSdk(fb: FacebookSdk | undefined): fb is FacebookSdk {
 /**
  * Carga e inicializa el SDK una sola vez. Conviene llamarlo al montar la
  * pantalla: cuando llega el click el SDK ya está listo y `FB.login` puede
- * correr sin `await`, que es lo que evita que el navegador bloquee el popup.
+ * correr sin `await` para evitar que el navegador bloquee el popup.
  */
 export function preloadFacebookSdk(): Promise<FacebookSdk> {
   if (facebookSdkPromise) return facebookSdkPromise
@@ -201,8 +146,6 @@ export function preloadFacebookSdk(): Promise<FacebookSdk> {
   }
 
   facebookSdkPromise = new Promise<FacebookSdk>((resolve, reject) => {
-    // El script pudo quedar cargado de un render anterior (HMR): ahí
-    // `fbAsyncInit` ya se disparó y no se vuelve a llamar.
     if (isRealFacebookSdk(window.FB)) {
       resolve(init(window.FB))
       return
@@ -220,8 +163,6 @@ export function preloadFacebookSdk(): Promise<FacebookSdk> {
     loadScript(FACEBOOK_SDK_ID, FACEBOOK_SDK_SRC).catch(reject)
   })
 
-  // Un fallo no puede dejar la promesa cacheada: el próximo intento debe cargar
-  // el SDK de nuevo.
   facebookSdkPromise.catch(() => {
     facebookSdkPromise = null
   })

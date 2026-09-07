@@ -35,7 +35,6 @@ export function useLogoutMutation() {
   })
 }
 
-/** POST /auth/google con el ID token de Google Identity Services. */
 export function useGoogleLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -44,7 +43,6 @@ export function useGoogleLoginMutation() {
   })
 }
 
-/** POST /auth/facebook con el access token del SDK de Facebook. */
 export function useFacebookLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({

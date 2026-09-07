@@ -10,27 +10,10 @@ import {
   loginWithFacebookPopup,
   preloadFacebookSdk,
   renderGoogleButton,
-  type FacebookSdk,
 } from '../services/socialSdk'
+import type { FacebookSdk, SocialButtonsProps } from '../types/socialTypes'
 
-interface SocialButtonsProps {
-  /**
-   * Qué hacer cuando el proveedor abre la sesión. Por defecto va al home;
-   * el registro lo usa para saltar al paso de intereses.
-   */
-  onAuthenticated?: () => void
-}
 
-/**
- * Login con Google y Facebook contra el backend propio.
- *
- * El backend espera el token que el proveedor entrega en el navegador
- * (POST /auth/google, POST /auth/facebook), así que el trabajo acá es
- * conseguir ese token y mandarlo; la sesión vuelve en cookie httpOnly.
- *
- * Google solo suelta el ID token desde su propio botón, por eso el botón
- * oficial se renderiza transparente encima del nuestro.
- */
 export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
   const navigate = useNavigate()
   const googleLogin = useGoogleLoginMutation()
@@ -48,8 +31,6 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
     void navigate({ to: '/' })
   }
 
-  // El callback de Google se registra una sola vez, así que la versión fresca
-  // de `finish` viaja por un ref en lugar de re-montar el botón.
   const finishRef = useRef(finish)
   useEffect(() => {
     finishRef.current = finish
@@ -78,8 +59,7 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
     return () => {
       cancelled = true
     }
-    // El botón se monta una sola vez: `googleLogin.mutate` es estable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [])
 
   // Facebook: precarga el SDK para que el click pueda abrir el popup sin await.
