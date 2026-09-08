@@ -36,9 +36,12 @@ function loadScript(id: string, src: string): Promise<void> {
   const promise = new Promise<void>((resolve, reject) => {
     const existing = document.getElementById(id) as HTMLScriptElement | null
     if (existing) {
-      existing.addEventListener('load', () => resolve())
-      existing.addEventListener('error', () => reject(new Error(`No se pudo cargar ${src}`)))
-      resolve()
+      if (existing.dataset.loaded === 'true') {
+        resolve()
+        return
+      }
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error(`No se pudo cargar ${src}`)), { once: true })
       return
     }
 
@@ -47,7 +50,10 @@ function loadScript(id: string, src: string): Promise<void> {
     script.src = src
     script.async = true
     script.defer = true
-    script.onload = () => resolve()
+    script.onload = () => {
+      script.dataset.loaded = 'true'
+      resolve()
+    }
     script.onerror = () => {
       scriptPromises.delete(id)
       reject(new Error(`No se pudo cargar ${src}`))
