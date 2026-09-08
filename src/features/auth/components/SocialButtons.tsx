@@ -126,7 +126,7 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
           {facebookLogin.isPending ? 'Signing in…' : 'Facebook'}
         </Button>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 rounded-md focus-within:ring-2 focus-within:ring-mynted-orange focus-within:ring-offset-2 focus-within:ring-offset-white">
           <Button
             type="button"
             variant="google"
