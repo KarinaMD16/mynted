@@ -1,9 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
+  forgotPasswordRequest,
   getUserByIdRequest,
   loginRequest,
   logoutRequest,
   registerRequest,
+  resetPasswordRequest,
   socialLoginRequest,
 } from '../services/authServices'
 
@@ -36,5 +38,17 @@ export function useUserByIdQuery(id: string | undefined) {
     queryKey: ['users', id],
     queryFn: () => getUserByIdRequest(id as string),
     enabled: Boolean(id),
+  })
+}
+
+export function useForgotPasswordMutation() {
+  return useMutation({
+    mutationFn: forgotPasswordRequest,
+  })
+}
+
+export function useResetPasswordMutation() {
+  return useMutation({
+    mutationFn: resetPasswordRequest,
   })
 }

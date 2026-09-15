@@ -14,6 +14,7 @@ import { Logo } from '../ui/Logo'
 import { Navigation } from '../ui/Navigation'
 import { NAV_ITEMS } from '../ui/navItems'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { AccountMenu } from './AccountMenu'
 import { MenuItem } from './menuPrimitives'
 import { useAccountActions } from './useAccountActions'
@@ -21,12 +22,13 @@ import { useAccountActions } from './useAccountActions'
 const navItemBaseClass =
   'rounded-[10px] px-4 py-[9px] text-[15px] font-medium whitespace-nowrap text-mynted-gray transition-colors hover:bg-mynted-orange hover:text-mynted-white'
 
-interface SiteHeaderProps {
-  userName?: string
-}
-
-export function SiteHeader({ userName = 'Karina' }: SiteHeaderProps) {
+export function SiteHeader() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const { data: currentUser } = useCurrentUser()
+  // Mientras carga o si no hay sesión (no debería pasar en las pantallas que
+  // usan este header, pero por las dudas), mostramos algo genérico en vez de
+  // un nombre hardcodeado.
+  const userName = currentUser?.username ?? 'Account'
 
   return (
     <header className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-4 rounded-2xl border border-mynted-border bg-mynted-white px-4 py-3.5 sm:px-6 lg:px-12 lg:py-[18px]">

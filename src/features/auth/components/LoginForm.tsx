@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { getApiErrorMessage } from '@/api/apiError'
 import { getFieldErrorMessage } from '@/utils/form'
 import { SocialButtons } from './SocialButtons'
+import { setCurrentUserId } from '../hooks/useCurrentUser'
 import { useLoginMutation } from '../hooks/useAuthMutations'
 import { loginSchema } from '../schema/authSchemas'
 
@@ -22,7 +23,8 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       password: '',
     },
     onSubmit: async ({ value }) => {
-      await loginMutation.mutateAsync(value)
+      const user = await loginMutation.mutateAsync(value)
+      setCurrentUserId(user.id)
       await navigate({ to: '/' })
     },
   })
@@ -71,6 +73,14 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           />
         )}
       </form.Field>
+
+      <button
+        type="button"
+        onClick={() => void navigate({ to: '/forgot-password' })}
+        className="-mt-2 self-end text-xs font-semibold text-mynted-gray hover:cursor-pointer hover:text-mynted-orange hover:underline"
+      >
+        Forgot password?
+      </button>
 
       <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (

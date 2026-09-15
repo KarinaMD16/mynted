@@ -4,7 +4,8 @@ import { getApiErrorMessage } from '@/api/apiError'
 import { getFieldErrorMessage } from '@/utils/form'
 import { SocialButtons } from './SocialButtons'
 import { Button } from '@/components/ui/Button'
-import { useRegisterMutation } from '../hooks/useAuthMutations'
+import { setCurrentUserId } from '../hooks/useCurrentUser'
+import { useLoginMutation, useRegisterMutation } from '../hooks/useAuthMutations'
 import { registerSchema } from '../schema/authSchemas'
 
 interface RegisterFormProps {
@@ -14,6 +15,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProps) {
   const registerMutation = useRegisterMutation()
+  const loginMutation = useLoginMutation()
 
   const form = useForm({
     defaultValues: {
@@ -23,6 +25,12 @@ export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProp
     },
     onSubmit: async ({ value }) => {
       await registerMutation.mutateAsync(value)
+      // POST /users crea la cuenta pero no abre sesión (todavía no hay cookie
+      // JWT); sin este login, el siguiente paso (elegir intereses) falla con
+      // 401 Unauthorized. Iniciamos sesión con las mismas credenciales para
+      // obtener la cookie de sesión antes de continuar.
+      const user = await loginMutation.mutateAsync({ email: value.email, password: value.password })
+      setCurrentUserId(user.id)
       onRegistered()
     },
   })
@@ -89,15 +97,19 @@ export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProp
 
       <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (
-          <Button type="submit" className="hover:cursor-pointer" disabled={!canSubmit || registerMutation.isPending}>
-            {isSubmitting || registerMutation.isPending ? 'Creating account…' : 'Register'}
+          <Button
+            type="submit"
+            className="hover:cursor-pointer"
+            disabled={!canSubmit || registerMutation.isPending || loginMutation.isPending}
+          >
+            {isSubmitting || registerMutation.isPending || loginMutation.isPending ? 'Creating account…' : 'Register'}
           </Button>
         )}
       </form.Subscribe>
 
-      {registerMutation.isError && (
+      {(registerMutation.isError || loginMutation.isError) && (
         <p className="text-center text-xs text-red-500" role="alert">
-          {getApiErrorMessage(registerMutation.error)}
+          {getApiErrorMessage(registerMutation.error ?? loginMutation.error)}
         </p>
       )}
 

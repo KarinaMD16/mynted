@@ -4,10 +4,12 @@ import { Loader } from './components/ui/Loader'
 import CommunitiesPage from './pages/CommunitiesPage'
 import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import MessagesPage from './pages/MessagesPage'
 import ProfilePage from './pages/ProfilePage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 /**
  * Configuración de rutas del frontend.
@@ -38,6 +40,24 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
   component: LoginPage,
+})
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/forgot-password',
+  component: ForgotPasswordPage,
+})
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reset-password',
+  // El link de recuperación llega como `${FRONTEND_URL}/reset-password?token=...`
+  // (ver AuthService.forgotPassword en el backend), así que el token viaja
+  // como query param, no como parte del path.
+  validateSearch: (search: Record<string, unknown>): { token: string | undefined } => ({
+    token: typeof search.token === 'string' ? search.token : undefined,
+  }),
+  component: ResetPasswordPage,
 })
 
 const exploreRoute = createRoute({
@@ -73,6 +93,8 @@ const profileRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
+  forgotPasswordRoute,
+  resetPasswordRoute,
   exploreRoute,
   communitiesRoute,
   favoritesRoute,

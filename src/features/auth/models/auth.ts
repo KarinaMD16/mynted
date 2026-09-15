@@ -21,3 +21,16 @@ export interface AuthUser {
 export interface LogoutResponse {
   message: string
 }
+
+export interface ForgotPasswordPayload {
+  email: string
+}
+
+export interface ResetPasswordPayload {
+  token: string
+  newPassword: string
+}
+
+export interface MessageResponse {
+  message: string
+}
