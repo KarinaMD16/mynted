@@ -14,9 +14,9 @@ import ProfilePage from './pages/ProfilePage'
  *
  * - "/"            -> pantalla base vacía (home), lista para irse llenando
  *                     a medida que avancen los demás módulos.
- * - "/login"       -> tarjeta de autenticación (login / crear cuenta),
- *                     ya conectada del lado del frontend y esperando los
- *                     endpoints reales del backend (ver src/features/auth/api.ts).
+ * - "/login"       -> tarjeta de autenticación (login / crear cuenta).
+ *                     Acepta "?mode=interests" para abrir directo el paso de
+ *                     intereses después de un registro con proveedor.
  * - "/explore", "/communities", "/favorites", "/messages" -> pantallas base
  *                     vacías a las que ya redirigen los ítems del nav del
  *                     header (ver SiteHeader.tsx), listas para irse llenando.
@@ -34,10 +34,17 @@ const homeRoute = createRoute({
   component: HomePage,
 })
 
+interface LoginSearch {
+  mode?: 'interests'
+}
+
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
   component: LoginPage,
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    mode: search.mode === 'interests' ? 'interests' : undefined,
+  }),
 })
 
 const exploreRoute = createRoute({

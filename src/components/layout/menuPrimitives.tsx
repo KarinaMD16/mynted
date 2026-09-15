@@ -22,7 +22,7 @@ export function MenuItem({
         tone === 'danger' ? 'text-red-600' : 'text-mynted-ink'
       }`}
     >
-      <Icon className="size-[18px] shrink-0" aria-hidden="true" />
+      <Icon className="size-4.5 shrink-0" aria-hidden="true" />
       {label}
     </button>
   )
