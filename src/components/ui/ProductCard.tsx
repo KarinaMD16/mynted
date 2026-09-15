@@ -1,11 +1,13 @@
 import { CheckIcon } from 'lucide-react'
 import { cn } from '@/cuicui/utils/cn'
 import type { Product } from '@/features/users/types/appTypes'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { AdvancedColorfulBadges } from './Badge'
 import { Rating } from './Rating'
 
 /** Tarjeta de publicación del marketplace (foto, título, rating, hashtags, verificación, precio y botón de contacto). */
 export function ProductCard({ product }: { product: Product }) {
+  const { t } = useLanguage()
   return (
     <div
       className={cn(
@@ -34,7 +36,7 @@ export function ProductCard({ product }: { product: Product }) {
         {product.verified && (
           <AdvancedColorfulBadges color="green" rounded="full" size="sm">
             <CheckIcon className="size-3.5" />
-            Verified
+            {t('product.verified')}
           </AdvancedColorfulBadges>
         )}
 
@@ -44,7 +46,7 @@ export function ProductCard({ product }: { product: Product }) {
             type="button"
             className="rounded-full bg-mynted-blue-mid px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
-            Contact
+            {t('product.contact')}
           </button>
         </div>
       </div>

@@ -1,34 +1,59 @@
 import { z } from 'zod'
+import type { TranslateFn } from '@/i18n/LanguageContext'
 
-const emailSchema = z
-  .string()
-  .min(1, 'Email is required')
-  .email('Enter a valid email')
+/**
+ * Los schemas se arman con una función `makeXSchema(t)` en vez de ser
+ * objetos estáticos, porque los mensajes de validación son texto que el
+ * usuario ve — tienen que cambiar con el idioma igual que cualquier otro
+ * string de la UI. Cada form (LoginForm, RegisterForm, etc.) llama a su
+ * make*Schema con el `t` de useLanguage() y lo recalcula si el idioma
+ * cambia (ver el `useMemo` en cada componente).
+ */
 
-const passwordSchema = z
-  .string()
-  .min(1, 'Password is required')
-  .min(8, 'Must be at least 8 characters')
-  .regex(
-    /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\W])/,
-    'Password must include at least one uppercase letter, one lowercase letter, and one number or symbol',
-  )
+function buildEmailSchema(t: TranslateFn) {
+  return z.string().min(1, t('validation.emailRequired')).email(t('validation.emailInvalid'))
+}
 
-const usernameSchema = z
-  .string()
-  .min(1, 'Username is required')
-  .min(3, 'Must be at least 3 characters')
+function buildPasswordSchema(t: TranslateFn) {
+  return z
+    .string()
+    .min(1, t('validation.passwordRequired'))
+    .min(8, t('validation.passwordMinLength'))
+    .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\W])/, t('validation.passwordComplexity'))
+}
 
-export const loginSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(1, 'Password is required'),
-})
+function buildUsernameSchema(t: TranslateFn) {
+  return z.string().min(1, t('validation.usernameRequired')).min(3, t('validation.usernameMinLength'))
+}
 
-export const registerSchema = z.object({
-  email: emailSchema,
-  username: usernameSchema,
-  password: passwordSchema,
-})
+export function makeLoginSchema(t: TranslateFn) {
+  return z.object({
+    email: buildEmailSchema(t),
+    password: z.string().min(1, t('validation.passwordRequired')),
+  })
+}
 
-export type LoginFormValues = z.infer<typeof loginSchema>
-export type RegisterFormValues = z.infer<typeof registerSchema>
+export function makeRegisterSchema(t: TranslateFn) {
+  return z.object({
+    email: buildEmailSchema(t),
+    username: buildUsernameSchema(t),
+    password: buildPasswordSchema(t),
+  })
+}
+
+export function makeForgotPasswordSchema(t: TranslateFn) {
+  return z.object({
+    email: buildEmailSchema(t),
+  })
+}
+
+export function makeResetPasswordSchema(t: TranslateFn) {
+  return z.object({
+    newPassword: buildPasswordSchema(t),
+  })
+}
+
+export type LoginFormValues = z.infer<ReturnType<typeof makeLoginSchema>>
+export type RegisterFormValues = z.infer<ReturnType<typeof makeRegisterSchema>>
+export type ForgotPasswordFormValues = z.infer<ReturnType<typeof makeForgotPasswordSchema>>
+export type ResetPasswordFormValues = z.infer<ReturnType<typeof makeResetPasswordSchema>>
