@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/TextField'
 import { getApiErrorMessage } from '@/api/apiError'
 import { getFieldErrorMessage } from '@/utils/form'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { useResetPasswordMutation } from '../hooks/useAuthMutations'
-import { resetPasswordSchema } from '../schema/authSchemas'
+import { makeResetPasswordSchema } from '../schema/authSchemas'
 
 interface ResetPasswordFormProps {
   /** Token de recuperación leído del query param `?token=` del link enviado por correo. */
@@ -14,6 +15,8 @@ interface ResetPasswordFormProps {
 }
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+  const { t } = useLanguage()
+  const resetPasswordSchema = useMemo(() => makeResetPasswordSchema(t), [t])
   const navigate = useNavigate()
   const resetPasswordMutation = useResetPasswordMutation()
   const [isDone, setIsDone] = useState(false)
@@ -34,10 +37,10 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     return (
       <div className="flex w-full flex-col gap-3.5">
         <div>
-          <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">Invalid link</h1>
-          <p className="mt-1.5 text-sm text-mynted-gray">
-            This password reset link is missing its token. Request a new one to continue.
-          </p>
+          <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">
+            {t('auth.resetPassword.invalidLinkTitle')}
+          </h1>
+          <p className="mt-1.5 text-sm text-mynted-gray">{t('auth.resetPassword.invalidLinkBody')}</p>
         </div>
 
         <Button
@@ -45,7 +48,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           className="hover:cursor-pointer"
           onClick={() => void navigate({ to: '/forgot-password' })}
         >
-          Request a new link
+          {t('auth.resetPassword.requestNewLink')}
         </Button>
       </div>
     )
@@ -55,14 +58,14 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     return (
       <div className="flex w-full flex-col gap-3.5">
         <div>
-          <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">Password updated</h1>
-          <p className="mt-1.5 text-sm text-mynted-gray">
-            Your password has been reset. You can sign in with your new password now.
-          </p>
+          <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">
+            {t('auth.resetPassword.doneTitle')}
+          </h1>
+          <p className="mt-1.5 text-sm text-mynted-gray">{t('auth.resetPassword.doneBody')}</p>
         </div>
 
         <Button type="button" className="hover:cursor-pointer" onClick={() => void navigate({ to: '/login' })}>
-          Go to sign in
+          {t('auth.resetPassword.goToSignIn')}
         </Button>
       </div>
     )
@@ -79,17 +82,17 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       noValidate
     >
       <div>
-        <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">Reset your password</h1>
-        <p className="mt-1.5 text-sm text-mynted-gray">Choose a new password for your account.</p>
+        <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">{t('auth.resetPassword.title')}</h1>
+        <p className="mt-1.5 text-sm text-mynted-gray">{t('auth.resetPassword.subtitle')}</p>
       </div>
 
       <form.Field name="newPassword" validators={{ onChange: resetPasswordSchema.shape.newPassword }}>
         {(field) => (
           <TextField
-            label="New password"
+            label={t('auth.resetPassword.newPasswordLabel')}
             type="password"
             autoComplete="new-password"
-            placeholder="Enter a new password"
+            placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
@@ -103,15 +106,15 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         validators={{
           onChangeListenTo: ['newPassword'],
           onChange: ({ value, fieldApi }) =>
-            value !== fieldApi.form.getFieldValue('newPassword') ? "Passwords don't match" : undefined,
+            value !== fieldApi.form.getFieldValue('newPassword') ? t('auth.resetPassword.passwordsDontMatch') : undefined,
         }}
       >
         {(field) => (
           <TextField
-            label="Confirm new password"
+            label={t('auth.resetPassword.confirmPasswordLabel')}
             type="password"
             autoComplete="new-password"
-            placeholder="Re-enter your new password"
+            placeholder={t('auth.resetPassword.confirmPasswordPlaceholder')}
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}
@@ -127,7 +130,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             className="hover:cursor-pointer"
             disabled={!canSubmit || resetPasswordMutation.isPending}
           >
-            {isSubmitting || resetPasswordMutation.isPending ? 'Updating…' : 'Update password'}
+            {isSubmitting || resetPasswordMutation.isPending
+              ? t('auth.resetPassword.updating')
+              : t('auth.resetPassword.submit')}
           </Button>
         )}
       </form.Subscribe>

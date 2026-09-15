@@ -1,13 +1,16 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from './App'
 import { Loader } from './components/ui/Loader'
+import { useLanguage } from './i18n/LanguageContext'
 import CommunitiesPage from './pages/CommunitiesPage'
 import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
+import CookiesPolicyPage from './pages/CookiesPolicyPage'
 import MessagesPage from './pages/MessagesPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 
@@ -97,6 +100,18 @@ const profileRoute = createRoute({
   component: ProfilePage,
 })
 
+const privacyPolicyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/legal/privacidad',
+  component: PrivacyPolicyPage,
+})
+
+const cookiesPolicyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/legal/cookies',
+  component: CookiesPolicyPage,
+})
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
@@ -107,17 +122,30 @@ const routeTree = rootRoute.addChildren([
   favoritesRoute,
   messagesRoute,
   profileRoute,
+  privacyPolicyRoute,
+  cookiesPolicyRoute,
 ])
+
+/**
+ * Pending state por defecto entre rutas. Es un componente aparte (en vez de
+ * JSX inline) solo para poder llamar useLanguage() — este loader vive dentro
+ * de App/LanguageProvider igual que cualquier otra pantalla, así que el
+ * texto también respeta el idioma elegido.
+ */
+function DefaultPending() {
+  const { t } = useLanguage()
+  return (
+    <div className="flex min-h-svh items-center justify-center bg-mynted-bg">
+      <Loader label={t('loader.default')} size={120} />
+    </div>
+  )
+}
 
 export const router = createRouter({
   routeTree,
   // Loader oficial de la app (el gansito) mientras se resuelve la
   // navegación entre rutas o la carga de datos de una ruta.
-  defaultPendingComponent: () => (
-    <div className="flex min-h-svh items-center justify-center bg-mynted-bg">
-      <Loader label="Loading…" size={120} />
-    </div>
-  ),
+  defaultPendingComponent: DefaultPending,
 })
 
 declare module '@tanstack/react-router' {

@@ -1,7 +1,6 @@
 import myntedAPI from '@/api/apiConfig'
 import type {
   AuthUser,
-<<<<<<< HEAD
   ForgotPasswordPayload,
   LoginPayload,
   LogoutResponse,
@@ -12,14 +11,6 @@ import type {
 
 export async function loginRequest(payload: LoginPayload): Promise<AuthUser> {
   // AuthController.login responde { user: {...} }, no el usuario "pelado".
-=======
-  LoginPayload,
-  LogoutResponse,
-  RegisterPayload,
-} from '../models/auth'
-
-export async function loginRequest(payload: LoginPayload): Promise<AuthUser> {
->>>>>>> main
   const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/login', payload)
   return data.user
 }
@@ -31,6 +22,24 @@ export async function registerRequest(payload: RegisterPayload): Promise<AuthUse
 
 export async function getUserByIdRequest(id: string): Promise<AuthUser> {
   const { data } = await myntedAPI.get<AuthUser>(`/users/${id}`)
+  return data
+}
+
+/** GET /users/me — fuente de verdad de "¿hay sesión, y de quién?" (ver useCurrentUserQuery). */
+export async function getCurrentUserRequest(): Promise<AuthUser> {
+  const { data } = await myntedAPI.get<AuthUser>('/users/me')
+  return data
+}
+
+/**
+ * PATCH /users/me — multipart porque puede llevar una foto nueva (ver
+ * EditProfileForm). Mismo patrón que createCommunity: hay que forzar el
+ * Content-Type acá porque myntedAPI por defecto manda 'application/json'.
+ */
+export async function updateProfileRequest(formData: FormData): Promise<AuthUser> {
+  const { data } = await myntedAPI.patch<AuthUser>('/users/me', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
   return data
 }
 

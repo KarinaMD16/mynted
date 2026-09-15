@@ -1,3 +1,5 @@
+import { useLanguage } from '@/i18n/LanguageContext'
+
 /**
  * Rating de estrellas para las ProductCard del marketplace.
  *
@@ -44,13 +46,14 @@ interface RatingProps {
 
 /** Rating de solo lectura (sin interacción) — para mostrar la calificación de un producto/vendedor. */
 export function Rating({ value, max = 5, size = 16, className = '' }: RatingProps) {
+  const { t } = useLanguage()
   const clampedValue = Math.min(Math.max(value, 0), max)
 
   return (
     <div
       className={`flex items-center gap-0.5 ${className}`}
       role="img"
-      aria-label={`${clampedValue} out of ${max} stars`}
+      aria-label={t('product.ratingAriaLabel', { value: clampedValue, max })}
     >
       {Array.from({ length: max }, (_, index) => (
         <StarIcon key={index} size={size} fillRatio={Math.min(Math.max(clampedValue - index, 0), 1)} />

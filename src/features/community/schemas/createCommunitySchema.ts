@@ -1,31 +1,39 @@
 import z from "zod";
+import type { TranslateFn } from "@/i18n/LanguageContext";
 
-export const createCommunitySchema = z.object({
-    name: z.string().trim().min(1, { message: "El nombre no puede ir vacío" }),
+/**
+ * Igual que authSchemas.ts: se arma con makeCreateCommunitySchema(t) en vez
+ * de ser un objeto estático, para que los mensajes de validación respeten
+ * el idioma elegido (ver el useMemo en CreateCommunityForm).
+ */
+export function makeCreateCommunitySchema(t: TranslateFn) {
+    return z.object({
+        name: z.string().trim().min(1, { message: t('validation.community.nameRequired') }),
 
-    description: z.string().trim().min(1, { message: "La descripción no puede ir vacía" }),
+        description: z.string().trim().min(1, { message: t('validation.community.descriptionRequired') }),
 
-    slug: z.string().min(1, { message: "El identificador no puede ir vacío" })
-    .refine((slug) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug), {
-        message: "Solo puede contener letras minúsculas, números y guiones",
-    }),
+        slug: z.string().min(1, { message: t('validation.community.slugRequired') })
+        .refine((slug) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug), {
+            message: t('validation.community.slugFormat'),
+        }),
 
-    isPrivate: z.boolean({ message: "El estado de privacidad de la comunidad debe ser un valor booleano" }),
+        isPrivate: z.boolean({ message: t('validation.community.isPrivateType') }),
 
-    categoryId: z.number({ message: "Selecciona una categoría" }).int().positive({ message: "Selecciona una categoría" }),
+        categoryId: z.number({ message: t('validation.community.categoryRequired') }).int().positive({ message: t('validation.community.categoryRequired') }),
 
-    tagIds: z.array(z.number().int({ message: "El ID del tag debe ser un número entero positivo" }).positive())
-    .min(1, { message: "Selecciona al menos un tag" })
-    .max(3, { message: "No puedes seleccionar más de 3 tags" })
-    .refine((tags) => new Set(tags).size === tags.length, {
-        message: "Los tags no pueden repetirse",
-    }),
+        tagIds: z.array(z.number().int({ message: t('validation.community.tagIdInvalid') }).positive())
+        .min(1, { message: t('validation.community.tagsMin') })
+        .max(3, { message: t('validation.community.tagsMax') })
+        .refine((tags) => new Set(tags).size === tags.length, {
+            message: t('validation.community.tagsDuplicate'),
+        }),
 
-    rules: z.array(z.string().trim().min(1, { message: "La regla no puede ir vacía" }))
-    .min(1, { message: "Debe proporcionar al menos una regla" })
-    .refine((rules) => new Set(rules.map((rule) => rule.trim())).size === rules.length, {
-        message: "Las reglas no pueden repetirse",
-    }),
-});
+        rules: z.array(z.string().trim().min(1, { message: t('validation.community.ruleRequired') }))
+        .min(1, { message: t('validation.community.rulesMin') })
+        .refine((rules) => new Set(rules.map((rule) => rule.trim())).size === rules.length, {
+            message: t('validation.community.rulesDuplicate'),
+        }),
+    });
+}
 
-export type CreateCommunityValues = z.infer<typeof createCommunitySchema>;
+export type CreateCommunityValues = z.infer<ReturnType<typeof makeCreateCommunitySchema>>;

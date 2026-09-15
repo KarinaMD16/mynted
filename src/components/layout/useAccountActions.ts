@@ -1,5 +1,4 @@
 import { useNavigate } from '@tanstack/react-router'
-import { clearCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
 
 /**
@@ -12,11 +11,12 @@ export function useAccountActions() {
 
   async function logout() {
     try {
+      // onSuccess de useLogoutMutation ya deja el cache de "usuario actual"
+      // en null, así que el header pasa a "Login" apenas esto resuelve.
       await logoutMutation.mutateAsync()
     } catch (error) {
       console.error('[auth] No se pudo cerrar sesión:', error)
     } finally {
-      clearCurrentUser()
       await navigate({ to: '/login' })
     }
   }

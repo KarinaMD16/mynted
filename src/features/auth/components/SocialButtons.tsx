@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/Button'
 import { FacebookIcon, GoogleIcon } from '@/components/ui/SocialIcons'
 import { getApiErrorMessage } from '@/api/apiError'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { useFacebookLoginMutation, useGoogleLoginMutation } from '../hooks/useAuthMutations'
 import {
   isFacebookConfigured,
@@ -15,6 +16,7 @@ import type { FacebookSdk, SocialButtonsProps } from '../types/socialTypes'
 
 
 export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const googleLogin = useGoogleLoginMutation()
   const facebookLogin = useFacebookLoginMutation()
@@ -83,11 +85,7 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
   const handleFacebook = () => {
     const fb = facebookSdkRef.current
     if (!fb) {
-      setSdkError(
-        isFacebookConfigured
-          ? 'Todavía estamos cargando Facebook. Intenta de nuevo en un momento.'
-          : 'El inicio de sesión con Facebook no está configurado.',
-      )
+      setSdkError(isFacebookConfigured ? t('auth.social.facebookLoading') : t('auth.social.facebookNotConfigured'))
       return
     }
 
@@ -110,7 +108,7 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
     <div className="flex w-full flex-col gap-3.5">
       <div className="flex w-full items-center gap-3">
         <div className="h-px flex-1 bg-mynted-border" />
-        <span className="text-[12px] font-medium text-mynted-gray">Or sign in with</span>
+        <span className="text-[12px] font-medium text-mynted-gray">{t('auth.social.orSignInWith')}</span>
         <div className="h-px flex-1 bg-mynted-border" />
       </div>
 
@@ -123,7 +121,7 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
           disabled={isBusy || !isFacebookConfigured}
         >
           <FacebookIcon />
-          {facebookLogin.isPending ? 'Signing in…' : 'Facebook'}
+          {facebookLogin.isPending ? t('auth.signingIn') : 'Facebook'}
         </Button>
 
         <div className="relative flex-1 rounded-md focus-within:ring-2 focus-within:ring-mynted-orange focus-within:ring-offset-2 focus-within:ring-offset-white">
@@ -136,12 +134,12 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
             tabIndex={-1}
           >
             <GoogleIcon />
-            {googleLogin.isPending ? 'Signing in…' : 'Google'}
+            {googleLogin.isPending ? t('auth.signingIn') : 'Google'}
           </Button>
           <div
             ref={googleSlotRef}
             className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-0"
-            aria-label="Sign in with Google"
+            aria-label={t('auth.social.googleAriaLabel')}
           />
         </div>
       </div>

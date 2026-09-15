@@ -1,43 +1,27 @@
-import { useSyncExternalStore } from 'react'
-import { clearStoredUserId, getStoredUserId, setStoredUserId } from '../session'
-import { useUserByIdQuery } from './useAuthMutations'
-
-const listeners = new Set<() => void>()
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function notify() {
-  listeners.forEach((listener) => listener())
-}
-
-/** Llamar apenas login/registro devuelven un usuario válido (ver LoginForm/RegisterForm). */
-export function setCurrentUserId(id: string): void {
-  setStoredUserId(id)
-  notify()
-}
-
-/** Llamar al cerrar sesión, para que el header y /profile dejen de mostrar al usuario anterior. */
-export function clearCurrentUser(): void {
-  clearStoredUserId()
-  notify()
-}
+import { useCurrentUserQuery } from './useAuthMutations'
 
 /**
- * Id del usuario logueado (guardado en localStorage al iniciar sesión) +
- * su perfil siempre fresco vía GET /users/{id}. `useSyncExternalStore`
- * mantiene sincronizados todos los componentes que usan este hook (header,
- * /profile, etc.) apenas cambia la sesión, sin necesidad de un store global.
+ * Sesión actual, para cualquier componente que necesite saber "¿hay alguien
+ * logueado, y quién?" (el header, /profile, etc.).
+ *
+ * Antes esto se resolvía guardando el id del usuario en localStorage al
+ * iniciar sesión y confiando en él después — el problema es que eso nunca
+ * verificaba que la sesión siguiera siendo válida (ni se enteraba de un
+ * access_token vencido). Ahora la fuente de verdad es GET /users/me, que el
+ * backend sí valida contra la cookie de sesión; ver useCurrentUserQuery en
+ * useAuthMutations.ts y el interceptor de refresh en api/apiConfig.ts.
+ *
+ * `isLoggedIn` queda en `false` tanto si la query todavía no resolvió como
+ * si ya resolvió y no hay sesión — quien lo use debe mirar también
+ * `isLoading` para no mostrar "no hay sesión" antes de tiempo (ver
+ * AccountControl.tsx).
  */
 export function useCurrentUser() {
-  const userId = useSyncExternalStore(subscribe, getStoredUserId, () => null)
-  const userQuery = useUserByIdQuery(userId ?? undefined)
+  const query = useCurrentUserQuery()
 
   return {
-    userId,
-    isLoggedIn: Boolean(userId),
-    ...userQuery,
+    ...query,
+    userId: query.data?.id ?? null,
+    isLoggedIn: Boolean(query.data),
   }
 }

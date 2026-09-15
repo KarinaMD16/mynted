@@ -1,12 +1,13 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { Camera, Globe, ImagePlus, LoaderCircle, Lock, Plus, X } from 'lucide-react';
 import { getApiErrorMessage } from '@/api/apiError';
 import { getFieldErrorMessage } from '@/utils/form';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useCreateCommunity } from '../hooks/useCommunitiesMutations';
 import { useCategories } from '../hooks/useCommunitiesQueries';
-import { createCommunitySchema } from '../schemas/createCommunitySchema';
+import { makeCreateCommunitySchema } from '../schemas/createCommunitySchema';
 import type { CreateCommunityValues } from '../schemas/createCommunitySchema';
 import type { CreateCommunityFormProps, SelectedImage } from '../types/CommunityTypes';
 import { DEFAULT_RULES, hintClasses, labelClasses, inputClasses, errorClasses } from '../types/DEFAULT_VALUES';
@@ -29,6 +30,7 @@ export const CreateCommunityForm = ({ isOpen, onClose }: CreateCommunityFormProp
 }
 
 const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
+    const { t } = useLanguage();
     const titleId = useId();
     const bannerInputId = useId();
     const imageInputId = useId();
@@ -40,6 +42,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
 
     const createCommunityMutation = useCreateCommunity();
     const categoriesQuery = useCategories();
+    const createCommunitySchema = useMemo(() => makeCreateCommunitySchema(t), [t]);
 
     const defaultValues: CreateCommunityValues = {
         name: '',
@@ -119,15 +122,15 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Cerrar"
+                        aria-label={t('communities.create.close')}
                         className="absolute top-4 right-4 rounded-full p-1.5 text-mynted-gray transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
                     >
                         <X className="size-5" />
                     </button>
 
                     <header className="pr-8">
-                        <h2 id={titleId} className="font-heading text-2xl font-semibold text-mynted-ink sm:text-[28px]">Crea tu comunidad</h2>
-                        <p className="mt-1 text-sm text-mynted-gray">Reúne a coleccionistas que comparten tu franquicia favorita y crea un espacio para intercambiar, vender y conversar</p>
+                        <h2 id={titleId} className="font-heading text-2xl font-semibold text-mynted-ink sm:text-[28px]">{t('communities.create.title')}</h2>
+                        <p className="mt-1 text-sm text-mynted-gray">{t('communities.create.subtitle')}</p>
                     </header>
 
                     <form
@@ -140,19 +143,19 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                     >
                         <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8">
 
-                          
+
                             <div className="relative mb-10">
                                 <label
                                     htmlFor={bannerInputId}
                                     className="flex h-40 cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-mynted-border bg-mynted-bg px-4 text-center transition-colors hover:border-mynted-orange/60 sm:h-50"
                                 >
                                     {banner ? (
-                                        <img src={banner.previewUrl} alt="Vista previa de la portada" className="h-full w-full object-cover" />
+                                        <img src={banner.previewUrl} alt={t('communities.create.bannerPreviewAlt')} className="h-full w-full object-cover" />
                                     ) : (
                                         <>
                                             <ImagePlus className="size-7 text-mynted-orange" aria-hidden="true" />
-                                            <span className="text-sm font-medium text-mynted-ink">Subir imagen de portada</span>
-                                            <span className={hintClasses}>Recomendado 1600×400px · PNG o JPG</span>
+                                            <span className="text-sm font-medium text-mynted-ink">{t('communities.create.uploadBanner')}</span>
+                                            <span className={hintClasses}>{t('communities.create.bannerHint')}</span>
                                         </>
                                     )}
                                 </label>
@@ -162,7 +165,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                     <button
                                         type="button"
                                         onClick={() => setBanner(null)}
-                                        aria-label="Quitar imagen de portada"
+                                        aria-label={t('communities.create.removeBanner')}
                                         className="absolute top-3 right-3 rounded-full bg-white/90 p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-white"
                                     >
                                         <X className="size-4" />
@@ -171,11 +174,11 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
 
                                 <label
                                     htmlFor={imageInputId}
-                                    aria-label="Subir imagen de la comunidad"
+                                    aria-label={t('communities.create.uploadImage')}
                                     className="absolute -bottom-11 left-5 flex size-22 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-white bg-mynted-yellow shadow-sm transition-transform hover:scale-105 sm:left-10"
                                 >
                                     {image ? (
-                                        <img src={image.previewUrl} alt="Vista previa de la imagen de la comunidad" className="h-full w-full object-cover" />
+                                        <img src={image.previewUrl} alt={t('communities.create.imagePreviewAlt')} className="h-full w-full object-cover" />
                                     ) : (
                                         <Camera className="size-6 text-mynted-ink" aria-hidden="true" />
                                     )}
@@ -183,18 +186,18 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                 <input id={imageInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange(setImage)} />
                             </div>
 
-                         
+
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <form.Field name="name">
                                     {(field) => {
                                         const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined;
                                         return (
                                             <div className="flex flex-col gap-1.5">
-                                                <label htmlFor={field.name} className={labelClasses}>Nombre de la comunidad</label>
+                                                <label htmlFor={field.name} className={labelClasses}>{t('communities.create.nameLabel')}</label>
                                                 <input
                                                     id={field.name}
                                                     type="text"
-                                                    placeholder="Ej. My Little Pony Collectors MX"
+                                                    placeholder={t('communities.create.namePlaceholder')}
                                                     className={inputClasses(Boolean(error))}
                                                     value={field.state.value}
                                                     onBlur={field.handleBlur}
@@ -217,7 +220,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                         const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined;
                                         return (
                                             <div className="flex flex-col gap-1.5">
-                                                <label htmlFor={field.name} className={labelClasses}>Identificador único</label>
+                                                <label htmlFor={field.name} className={labelClasses}>{t('communities.create.slugLabel')}</label>
                                                 <div className="relative">
                                                     <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-sm text-mynted-gray">@</span>
                                                     <input
@@ -238,24 +241,24 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                                 </div>
                                                 {error
                                                     ? <span className={errorClasses}>{error}</span>
-                                                    : <span className={hintClasses}>Solo minúsculas, números y guiones</span>}
+                                                    : <span className={hintClasses}>{t('communities.create.slugHint')}</span>}
                                             </div>
                                         );
                                     }}
                                 </form.Field>
                             </div>
 
-                          
+
                             <form.Field name="description">
                                 {(field) => {
                                     const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined;
                                     return (
                                         <div className="flex flex-col gap-1.5">
-                                            <label htmlFor={field.name} className={labelClasses}>Descripción</label>
+                                            <label htmlFor={field.name} className={labelClasses}>{t('communities.create.descriptionLabel')}</label>
                                             <textarea
                                                 id={field.name}
                                                 rows={3}
-                                                placeholder="Cuéntale a los coleccionistas de qué trata tu comunidad, qué tipo de piezas se comparten y qué la hace especial…"
+                                                placeholder={t('communities.create.descriptionPlaceholder')}
                                                 className={`${inputClasses(Boolean(error))} resize-y`}
                                                 value={field.state.value}
                                                 onBlur={field.handleBlur}
@@ -268,14 +271,14 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                 }}
                             </form.Field>
 
-                     
+
                             <form.Field name="categoryId">
                                 {(field) => {
                                     const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined;
                                     return (
                                         <fieldset className="flex flex-col gap-1.5">
-                                            <legend className={labelClasses}>Franquicia o categoría</legend>
-                                            <p className={`${hintClasses} mt-1.5`}>Elige la que mejor describa tu comunidad. Podrás afinarla después</p>
+                                            <legend className={labelClasses}>{t('communities.create.categoryLabel')}</legend>
+                                            <p className={`${hintClasses} mt-1.5`}>{t('communities.create.categoryHint')}</p>
 
                                             <div className="mt-1.5 flex flex-wrap gap-2">
                                                 {categoriesQuery.isPending && Array.from({ length: 6 }, (_, index) => (
@@ -307,7 +310,9 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                             </div>
 
                                             {categoriesQuery.isError && (
-                                                <span className={errorClasses}>No se pudieron cargar las categorías. {getApiErrorMessage(categoriesQuery.error)}</span>
+                                                <span className={errorClasses}>
+                                                    {t('communities.create.categoriesLoadError')} {getApiErrorMessage(categoriesQuery.error)}
+                                                </span>
                                             )}
                                             {error && <span className={errorClasses}>{error}</span>}
                                         </fieldset>
@@ -333,19 +338,19 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                             <form.Field name="isPrivate">
                                 {(field) => (
                                     <div className="flex flex-col gap-1.5">
-                                        <span id={privacyLabelId} className={labelClasses}>Privacidad</span>
+                                        <span id={privacyLabelId} className={labelClasses}>{t('communities.create.privacyLabel')}</span>
                                         <div role="radiogroup" aria-labelledby={privacyLabelId} className="mt-1 grid gap-4 sm:grid-cols-2">
                                             <PrivacyOption
                                                 icon={<Globe className="size-4.5" aria-hidden="true" />}
-                                                title="Pública"
-                                                description="Cualquier coleccionista puede unirse y participar sin aprobación"
+                                                title={t('communities.create.publicTitle')}
+                                                description={t('communities.create.publicDescription')}
                                                 selected={!field.state.value}
                                                 onSelect={() => field.handleChange(false)}
                                             />
                                             <PrivacyOption
                                                 icon={<Lock className="size-4.5" aria-hidden="true" />}
-                                                title="Privada"
-                                                description="Los nuevos miembros deben ser aprobados por un moderador"
+                                                title={t('communities.create.privateTitle')}
+                                                description={t('communities.create.privateDescription')}
                                                 selected={field.state.value}
                                                 onSelect={() => field.handleChange(true)}
                                             />
@@ -354,14 +359,14 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                 )}
                             </form.Field>
 
-                      
+
                             <form.Field name="rules" mode="array">
                                 {(rulesField) => {
                                     const listError = rulesField.state.meta.isTouched ? getFieldErrorMessage(rulesField.state.meta.errors) : undefined;
                                     return (
                                         <div className="flex flex-col gap-1.5">
-                                            <span className={labelClasses}>Reglas de la comunidad</span>
-                                            <p className={hintClasses}>Ayuda a que todos sepan qué esperar — podrás editarlas cuando quieras</p>
+                                            <span className={labelClasses}>{t('communities.create.rulesLabel')}</span>
+                                            <p className={hintClasses}>{t('communities.create.rulesHint')}</p>
 
                                             <ol className="mt-1.5 flex flex-col gap-2.5">
                                                 {rulesField.state.value.map((_, index) => (
@@ -376,8 +381,8 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                                                         </span>
                                                                         <input
                                                                             type="text"
-                                                                            aria-label={`Regla ${index + 1}`}
-                                                                            placeholder="Escribe una regla…"
+                                                                            aria-label={t('communities.create.ruleAriaLabel', { number: index + 1 })}
+                                                                            placeholder={t('communities.create.rulePlaceholder')}
                                                                             className="min-w-0 flex-1 bg-transparent text-[13px] text-mynted-ink outline-none placeholder:text-mynted-gray-light"
                                                                             value={ruleField.state.value}
                                                                             onBlur={ruleField.handleBlur}
@@ -387,7 +392,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() => rulesField.removeValue(index)}
-                                                                                aria-label={`Eliminar regla ${index + 1}`}
+                                                                                aria-label={t('communities.create.removeRuleAriaLabel', { number: index + 1 })}
                                                                                 className="rounded-full p-1 text-mynted-gray-light transition-colors hover:cursor-pointer hover:bg-white hover:text-red-500"
                                                                             >
                                                                                 <X className="size-4" />
@@ -410,7 +415,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                                 className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg border border-dashed border-mynted-border px-3 py-1.5 text-[13px] text-mynted-gray transition-colors hover:cursor-pointer hover:border-mynted-orange hover:text-mynted-orange"
                                             >
                                                 <Plus className="size-4" aria-hidden="true" />
-                                                Añadir regla
+                                                {t('communities.create.addRule')}
                                             </button>
                                         </div>
                                     );
@@ -430,7 +435,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                 onClick={onClose}
                                 className="rounded-xl border border-mynted-border bg-white px-7 py-3 font-heading text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
                             >
-                                Cancelar
+                                {t('communities.create.cancel')}
                             </button>
 
                             <form.Subscribe selector={(state) => state.isSubmitting}>
@@ -443,11 +448,11 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                         {isSubmitting ? (
                                             <>
                                                 <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-                                                Creando…
+                                                {t('communities.create.creating')}
                                             </>
                                         ) : (
                                             <>
-                                                Crear comunidad
+                                                {t('communities.create.submit')}
                                             </>
                                         )}
                                     </button>

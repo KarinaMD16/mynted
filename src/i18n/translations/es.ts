@@ -1,0 +1,286 @@
+/**
+ * Diccionario de español
+ */
+export const es = {
+  'cookieBanner.title': 'Usamos cookies para mejorar tu experiencia',
+  'cookieBanner.description': 'Al hacer clic en "Aceptar todas" aceptás el uso de todas las cookies. Visitá nuestra',
+  'cookieBanner.cookiesPolicyLinkText': 'Política de Cookies',
+  'cookieBanner.descriptionSuffix': 'para saber más.',
+  'cookieBanner.necessaryTitle': 'Necesarias',
+  'cookieBanner.necessaryDescription': 'Imprescindibles para que el sitio funcione. Siempre activas.',
+  'cookieBanner.marketingTitle': 'Marketing',
+  'cookieBanner.marketingDescription': 'Nos ayudan a entender qué contenido funciona mejor.',
+  'cookieBanner.savePreferences': 'Guardar preferencias',
+  'cookieBanner.allowAll': 'Aceptar todas',
+  'cookieBanner.manageCookies': 'Gestionar cookies',
+  'cookieBanner.hideOptions': 'Ocultar opciones',
+
+  'header.login': 'Iniciar sesión',
+  'header.account': 'Cuenta',
+  'header.myProfile': 'Mi perfil',
+  'header.settings': 'Configuración',
+  'header.logout': 'Cerrar sesión',
+  'header.loggingOut': 'Cerrando sesión…',
+  'header.notifications': 'Notificaciones',
+  'header.notificationsEmpty':
+    'Todavía no tenés notificaciones. Acá vas a ver la actividad de tus comunidades, intercambios y mensajes.',
+  'header.openMenu': 'Abrir menú',
+  'header.closeMenu': 'Cerrar menú',
+
+  'nav.home': 'Inicio',
+  'nav.explore': 'Explorar',
+  'nav.communities': 'Comunidades',
+  'nav.favorites': 'Favoritos',
+  'nav.messages': 'Mensajes',
+
+  'languageSwitcher.label': 'Cambiar idioma',
+
+  // Paso de intereses del onboarding (InterestsStep): es la única pantalla
+  // que hace aceptar la política de privacidad, así que va junto con las
+  // páginas legales en la lista de "esto tiene que estar bien traducido".
+  'onboarding.stepInterests': 'Paso 2 de 3',
+  'onboarding.interestsTitle': 'Elegí tus intereses',
+  'onboarding.interestsSubtitle': 'Te vamos a mostrar comunidades y productos según lo que te gusta.',
+  'onboarding.loadingInterests': 'Cargando intereses…',
+  'onboarding.loadInterestsError': 'No pudimos cargar los intereses. Intentá de nuevo.',
+  'onboarding.selectedCount': '{{count}} seleccionados · elegí al menos {{min}} para continuar',
+  'onboarding.acceptPrivacyPrefix': 'Leí y acepto la',
+  'onboarding.privacyPolicyLinkText': 'Política de Privacidad',
+  'onboarding.saving': 'Guardando…',
+  'onboarding.continue': 'Continuar',
+  'onboarding.skipForNow': 'Omitir por ahora',
+
+  // ProfilePage
+  'profile.loadingProfile': 'Cargando tu perfil…',
+  'profile.signedOutTitle': 'Iniciá sesión para ver tu perfil',
+  'profile.signedOutSubtitle': 'Necesitás una cuenta para ver y gestionar tu perfil de mynted.',
+  'profile.goToLogin': 'Ir a iniciar sesión',
+  'profile.loadErrorTitle': 'No pudimos cargar tu perfil',
+  'profile.loadErrorSubtitle': 'Algo falló al traer tu cuenta. Intentá recargar la página.',
+  'profile.memberSince': 'Miembro desde {{date}}',
+  'profile.editProfile': 'Editar perfil',
+  'profile.myInterests': 'Mis intereses',
+  'profile.loadingInterests': 'Cargando…',
+  'profile.loadInterestsError': 'No pudimos cargar tus intereses.',
+  'profile.noInterestsYet': 'Todavía no elegiste ningún interés.',
+  'profile.sellerStatsTitle': 'Tus estadísticas de vendedor están en camino',
+  'profile.sellerStatsSubtitle':
+    'Las ventas, calificaciones, insignias y tus publicaciones van a aparecer acá cuando esas funciones estén disponibles.',
+  'profile.comingSoon': 'Próximamente',
+
+  // Header de perfil rediseñado (referencia Figma "Seller Profile", node 135:519)
+  'profile.tabs.posts': 'Publicaciones',
+  'profile.tabs.threads': 'Threads',
+  'profile.tabs.products': 'Productos en venta',
+  'profile.tabs.favorites': 'Favoritos',
+  'profile.tabs.postsEmptyTitle': 'Todavía no hay publicaciones',
+  'profile.tabs.postsEmptySubtitle': 'Cuando compartas tu primera publicación, va a aparecer acá.',
+  'profile.tabs.threadsEmptyTitle': 'Todavía no hay threads',
+  'profile.tabs.threadsEmptySubtitle': 'Los threads que empieces o en los que participes van a aparecer acá.',
+  'profile.tabs.productsEmptyTitle': 'Todavía no publicaste productos',
+  'profile.tabs.productsEmptySubtitle': 'Los productos que pongas en venta van a aparecer acá.',
+  'profile.tabs.favoritesEmptyTitle': 'Todavía no guardaste favoritos',
+  'profile.tabs.favoritesEmptySubtitle': 'Los productos y publicaciones que guardes van a aparecer acá.',
+
+  'profile.stats.placeholderLabel': 'Ventas',
+
+  'profile.social.groupLabel': 'Redes sociales',
+
+  'profile.about.title': 'Sobre mí',
+  'profile.about.noBio': 'Todavía no agregaste una biografía.',
+  'profile.about.locationLabel': 'Ubicación',
+  'profile.about.noLocation': 'Ubicación no indicada',
+  'profile.about.memberSinceLabel': 'Miembro desde {{date}}',
+  'profile.about.respondsInPlaceholder': 'Tiempo de respuesta: próximamente',
+
+  'profile.badges.title': 'Insignias · {{count}}',
+  'profile.badges.previewNote': 'Vista previa — el sistema de insignias todavía está en desarrollo.',
+  'profile.badges.topSeller': 'Vendedor destacado',
+  'profile.badges.fastResponder': 'Responde rápido',
+  'profile.badges.sales100': '100+ ventas',
+  'profile.badges.rating5': '5.0 estrellas',
+  'profile.badges.secureShipping': 'Envío seguro',
+  'profile.badges.trusted': 'Confiable',
+
+  // Modal de editar perfil (EditProfileForm)
+  'profile.edit.close': 'Cerrar',
+  'profile.edit.title': 'Editar perfil',
+  'profile.edit.subtitle': 'Actualizá tu foto, nombre de usuario, bio y ubicación.',
+  'profile.edit.changePhotoLabel': 'Cambiar foto de perfil',
+  'profile.edit.avatarHint': 'máximo 5MB',
+  'profile.edit.bioLabel': 'Biografía',
+  'profile.edit.bioPlaceholder': 'Contales a otros coleccionistas sobre vos…',
+  'profile.edit.locationLabel': 'Ubicación',
+  'profile.edit.locationPlaceholder': 'Ej. San José, Costa Rica',
+  'profile.edit.cancel': 'Cancelar',
+  'profile.edit.saving': 'Guardando…',
+  'profile.edit.submit': 'Guardar cambios',
+
+  // HomePage
+  'home.goToLogin': 'Ir a iniciar sesión',
+
+  // Pantallas placeholder (Explore/Favorites/Messages, vía PlaceholderPage)
+  'placeholder.explore.title': 'Explorar',
+  'placeholder.explore.description':
+    'Acá vas a poder descubrir nuevas comunidades y publicaciones. Esta sección todavía está en construcción.',
+  'placeholder.favorites.title': 'Favoritos',
+  'placeholder.favorites.description':
+    'Acá vas a ver los productos y publicaciones que guardaste. Esta sección todavía está en construcción.',
+  'placeholder.messages.title': 'Mensajes',
+  'placeholder.messages.description':
+    'Acá vas a poder chatear con otros coleccionistas sobre intercambios y ventas. Esta sección todavía está en construcción.',
+
+  // CommunitiesPage + CreateCommunityForm + TagPicker
+  'communities.myCommunities': 'Mis comunidades',
+  'communities.createCommunity': 'Crear comunidad',
+  'communities.create.close': 'Cerrar',
+  'communities.create.title': 'Crea tu comunidad',
+  'communities.create.subtitle':
+    'Reúne a coleccionistas que comparten tu franquicia favorita y crea un espacio para intercambiar, vender y conversar',
+  'communities.create.bannerPreviewAlt': 'Vista previa de la portada',
+  'communities.create.uploadBanner': 'Subir imagen de portada',
+  'communities.create.bannerHint': 'Recomendado 1600×400px · PNG o JPG',
+  'communities.create.removeBanner': 'Quitar imagen de portada',
+  'communities.create.uploadImage': 'Subir imagen de la comunidad',
+  'communities.create.imagePreviewAlt': 'Vista previa de la imagen de la comunidad',
+  'communities.create.nameLabel': 'Nombre de la comunidad',
+  'communities.create.namePlaceholder': 'Ej. My Little Pony Collectors MX',
+  'communities.create.slugLabel': 'Identificador único',
+  'communities.create.slugHint': 'Solo minúsculas, números y guiones',
+  'communities.create.descriptionLabel': 'Descripción',
+  'communities.create.descriptionPlaceholder':
+    'Cuéntale a los coleccionistas de qué trata tu comunidad, qué tipo de piezas se comparten y qué la hace especial…',
+  'communities.create.categoryLabel': 'Franquicia o categoría',
+  'communities.create.categoryHint': 'Elige la que mejor describa tu comunidad. Podrás afinarla después',
+  'communities.create.categoriesLoadError': 'No se pudieron cargar las categorías.',
+  'communities.create.privacyLabel': 'Privacidad',
+  'communities.create.publicTitle': 'Pública',
+  'communities.create.publicDescription': 'Cualquier coleccionista puede unirse y participar sin aprobación',
+  'communities.create.privateTitle': 'Privada',
+  'communities.create.privateDescription': 'Los nuevos miembros deben ser aprobados por un moderador',
+  'communities.create.rulesLabel': 'Reglas de la comunidad',
+  'communities.create.rulesHint': 'Ayuda a que todos sepan qué esperar — podrás editarlas cuando quieras',
+  'communities.create.rulePlaceholder': 'Escribe una regla…',
+  'communities.create.ruleAriaLabel': 'Regla {{number}}',
+  'communities.create.removeRuleAriaLabel': 'Eliminar regla {{number}}',
+  'communities.create.addRule': 'Añadir regla',
+  'communities.create.cancel': 'Cancelar',
+  'communities.create.creating': 'Creando…',
+  'communities.create.submit': 'Crear comunidad',
+  'communities.tags.legend': 'Etiquetas',
+  'communities.tags.hint': 'Elige de 1 a {{max}} tags · {{count}}/{{max}} seleccionados',
+  'communities.tags.empty': 'Esta categoría todavía no tiene tags disponibles.',
+  'communities.tags.loadError': 'No se pudieron cargar los tags.',
+
+  // ProductCard
+  'product.verified': 'Verificado',
+  'product.contact': 'Contactar',
+  'product.ratingAriaLabel': '{{value}} de {{max}} estrellas',
+
+  // SearchBar
+  'search.placeholder': 'Buscar',
+  'search.searchingToast': 'Buscando {{query}}',
+
+  // Formularios de auth compartidos (login/registro/recuperación)
+  'auth.emailLabel': 'Correo electrónico',
+  'auth.emailPlaceholder': 'Ingresá tu correo',
+  'auth.passwordLabel': 'Contraseña',
+  'auth.passwordPlaceholder': 'Ingresá tu contraseña',
+  'auth.usernameLabel': 'Nombre de usuario',
+  'auth.usernamePlaceholder': 'Elegí un nombre de usuario',
+  'auth.forgotPasswordLink': '¿Olvidaste tu contraseña?',
+  'auth.signingIn': 'Iniciando sesión…',
+
+  'auth.login.title': 'Bienvenido de nuevo',
+  'auth.login.subtitle': 'Iniciá sesión para seguir coleccionando con tus comunidades.',
+  'auth.login.submit': 'Iniciar sesión',
+  'auth.login.switchToRegister': '¿No tenés una cuenta? Creá una',
+
+  'auth.register.title': 'Creá tu cuenta',
+  'auth.register.subtitle': 'Unite a coleccionistas de todas las edades, de cada fandom.',
+  'auth.register.passwordPlaceholder': 'Ingresá una contraseña',
+  'auth.register.creatingAccount': 'Creando cuenta…',
+  'auth.register.submit': 'Registrarme',
+  'auth.register.switchToLogin': 'Ya tengo una cuenta',
+
+  'auth.forgotPassword.checkEmailTitle': 'Revisá tu correo',
+  'auth.forgotPassword.checkEmailBody':
+    'Si existe una cuenta para {{email}}, te enviamos un link para restablecer tu contraseña. Vence en 1 hora.',
+  'auth.forgotPassword.backToSignIn': 'Volver a iniciar sesión',
+  'auth.forgotPassword.title': '¿Olvidaste tu contraseña?',
+  'auth.forgotPassword.subtitle': 'Ingresá tu correo y te vamos a mandar un link para restablecerla.',
+  'auth.forgotPassword.sending': 'Enviando…',
+  'auth.forgotPassword.submit': 'Enviar link de recuperación',
+
+  'auth.resetPassword.invalidLinkTitle': 'Link inválido',
+  'auth.resetPassword.invalidLinkBody':
+    'A este link de recuperación le falta el token. Pedí uno nuevo para continuar.',
+  'auth.resetPassword.requestNewLink': 'Pedir un link nuevo',
+  'auth.resetPassword.doneTitle': 'Contraseña actualizada',
+  'auth.resetPassword.doneBody': 'Tu contraseña fue restablecida. Ya podés iniciar sesión con tu nueva contraseña.',
+  'auth.resetPassword.goToSignIn': 'Ir a iniciar sesión',
+  'auth.resetPassword.title': 'Restablecé tu contraseña',
+  'auth.resetPassword.subtitle': 'Elegí una nueva contraseña para tu cuenta.',
+  'auth.resetPassword.newPasswordLabel': 'Contraseña nueva',
+  'auth.resetPassword.newPasswordPlaceholder': 'Ingresá una contraseña nueva',
+  'auth.resetPassword.confirmPasswordLabel': 'Confirmá la contraseña nueva',
+  'auth.resetPassword.confirmPasswordPlaceholder': 'Volvé a ingresar tu contraseña nueva',
+  'auth.resetPassword.passwordsDontMatch': 'Las contraseñas no coinciden',
+  'auth.resetPassword.updating': 'Actualizando…',
+  'auth.resetPassword.submit': 'Actualizar contraseña',
+
+  'auth.social.orSignInWith': 'O iniciá sesión con',
+  'auth.social.facebookLoading': 'Todavía estamos cargando Facebook. Intentá de nuevo en un momento.',
+  'auth.social.facebookNotConfigured': 'El inicio de sesión con Facebook no está configurado.',
+  'auth.social.googleAriaLabel': 'Iniciar sesión con Google',
+
+  'auth.mascot.loadError': 'No pudimos cargar la escena 3D',
+  'auth.mascot.loading': 'Cargando mascota…',
+
+  // Paso 3 del onboarding (CommunitiesStep)
+  'onboarding.stepCommunities': 'Paso 3 de 3',
+  'onboarding.communitiesTitle': 'Unite a algunas comunidades',
+  'onboarding.communitiesSubtitle': 'Según tus intereses, acá tenés algunas comunidades que te podrían gustar.',
+  'onboarding.loadingCommunities': 'Cargando comunidades…',
+  'onboarding.loadCommunitiesError': 'No pudimos cargar las comunidades. Intentá de nuevo.',
+  'onboarding.noCommunitiesYet': 'Todavía no hay comunidades para mostrar.',
+  'onboarding.communitiesSelectedCount': '{{count}} seleccionadas',
+  'onboarding.communitiesSavingSuffix': ' · Guardando…',
+
+  // Loader (gif del gansito) y estado de carga entre rutas
+  'loader.loadingAlt': 'Cargando…',
+  'loader.default': 'Cargando…',
+
+  // Mensajes de validación de zod (authSchemas / createCommunitySchema).
+  // Van acá y no en el schema directamente porque el schema se arma con
+  // makeXSchema(t) dentro del componente, para que el mensaje cambie con el
+  // idioma sin tener que recargar la página.
+  'validation.emailRequired': 'El correo es obligatorio',
+  'validation.emailInvalid': 'Ingresá un correo válido',
+  'validation.passwordRequired': 'La contraseña es obligatoria',
+  'validation.passwordMinLength': 'Debe tener al menos 8 caracteres',
+  'validation.passwordComplexity':
+    'La contraseña debe incluir al menos una mayúscula, una minúscula y un número o símbolo',
+  'validation.usernameRequired': 'El nombre de usuario es obligatorio',
+  'validation.usernameMinLength': 'Debe tener al menos 3 caracteres',
+  'validation.usernameMaxLength': 'No puede superar 20 caracteres',
+  'validation.usernameFormat': 'Solo puede contener letras, números y guión bajo',
+  'validation.bioMaxLength': 'La biografía no puede superar 500 caracteres',
+  'validation.locationMaxLength': 'La ubicación no puede superar 100 caracteres',
+
+  'validation.community.nameRequired': 'El nombre no puede ir vacío',
+  'validation.community.descriptionRequired': 'La descripción no puede ir vacía',
+  'validation.community.slugRequired': 'El identificador no puede ir vacío',
+  'validation.community.slugFormat': 'Solo puede contener letras minúsculas, números y guiones',
+  'validation.community.isPrivateType': 'El estado de privacidad de la comunidad debe ser un valor booleano',
+  'validation.community.categoryRequired': 'Selecciona una categoría',
+  'validation.community.tagIdInvalid': 'El ID del tag debe ser un número entero positivo',
+  'validation.community.tagsMin': 'Selecciona al menos un tag',
+  'validation.community.tagsMax': 'No puedes seleccionar más de 3 tags',
+  'validation.community.tagsDuplicate': 'Los tags no pueden repetirse',
+  'validation.community.ruleRequired': 'La regla no puede ir vacía',
+  'validation.community.rulesMin': 'Debe proporcionar al menos una regla',
+  'validation.community.rulesDuplicate': 'Las reglas no pueden repetirse',
+} as const
+
+export type TranslationKey = keyof typeof es

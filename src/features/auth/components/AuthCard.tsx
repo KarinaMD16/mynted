@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { RegisterForm } from './RegisterForm'
 import { LoginForm } from './LoginForm'
 import { InterestsStep } from './InterestsStep'
+import { CommunitiesStep } from './CommunitiesStep'
 import { AuthShell } from './AuthShell'
 
-type AuthMode = 'login' | 'register' | 'interests'
+type AuthMode = 'login' | 'register' | 'interests' | 'communities'
 
 interface AuthCardProps {
   initialMode?: AuthMode
@@ -22,7 +23,8 @@ export function AuthCard({ initialMode = 'register' }: AuthCardProps) {
           <RegisterForm onSwitchToLogin={() => setMode('login')} onRegistered={() => setMode('interests')} />
         )}
         {mode === 'login' && <LoginForm onSwitchToRegister={() => setMode('register')} />}
-        {mode === 'interests' && <InterestsStep />}
+        {mode === 'interests' && <InterestsStep onContinue={() => setMode('communities')} />}
+        {mode === 'communities' && <CommunitiesStep />}
       </div>
     </AuthShell>
   )

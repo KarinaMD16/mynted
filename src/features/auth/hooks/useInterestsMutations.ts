@@ -14,7 +14,7 @@ export function useSaveInterestsMutation() {
   })
 }
 
-/** `enabled` debe ser `false` mientras no haya sesión, para no pegarle a /interests/me sin cookie. */
+/** `enabled` debe ser `false` mientras no haya sesión, para no pegarle a /users/me/tags sin cookie. */
 export function useMyInterestsQuery(enabled: boolean) {
   return useQuery({
     queryKey: ['interests', 'me'],

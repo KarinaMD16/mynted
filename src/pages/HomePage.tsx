@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import ProductCard from '@/features/app/components/ProductCard'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Logo } from '../components/ui/Logo'
 import type { Product } from '@/features/app/types/appTypes'
@@ -19,6 +20,8 @@ const DEMO_PRODUCT: Product = {
 }
 
 export default function HomePage() {
+  const { t } = useLanguage()
+
   return (
     <div className="min-h-svh bg-mynted-bg">
       <div className="px-4 pt-5 sm:px-6">
@@ -32,7 +35,7 @@ export default function HomePage() {
           to="/login"
           className="mt-2 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
         >
-          Go to Login
+          {t('home.goToLogin')}
         </Link>
       </main>
     </div>

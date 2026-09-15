@@ -2,6 +2,9 @@ export const OAUTH_PROVIDERS = ['google', 'facebook'] as const
 
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 
+/** Espeja el enum UserRole del backend (users/entities/user.entity.ts). */
+export type UserRole = 'user' | 'seller' | 'superadmin'
+
 export interface LoginPayload {
   email: string
   password: string
@@ -20,13 +23,21 @@ export interface AuthUser {
   photoUrl: string | null
   createdAt: string
   updatedAt: string
+  /**
+   * El backend ya devuelve estos campos (User entity), pero el frontend
+   * todavía no tenía pantallas que los usaran (ver ProfilePage). Opcionales
+   * porque una respuesta vieja en cache de React Query, guardada antes de
+   * este cambio, no los va a traer hasta el próximo refetch.
+   */
+  role?: UserRole
+  bio?: string | null
+  location?: string | null
 }
 
 export interface LogoutResponse {
   message: string
 }
 
-<<<<<<< HEAD
 export interface ForgotPasswordPayload {
   email: string
 }
@@ -38,7 +49,8 @@ export interface ResetPasswordPayload {
 
 export interface MessageResponse {
   message: string
-=======
+}
+
 /**
  * Login social: el navegador consigue el token en el proveedor y el backend lo
  * verifica. Google firma un ID token (JWT); Facebook entrega un access token.
@@ -54,5 +66,4 @@ export interface FacebookLoginPayload {
 export const PROVIDER_LABELS: Record<OAuthProvider, string> = {
   google: 'Google',
   facebook: 'Facebook',
->>>>>>> main
 }

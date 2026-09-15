@@ -1,11 +1,9 @@
+import { useLanguage } from '@/i18n/LanguageContext'
 import { PlaceholderPage } from '../components/layout/PlaceholderPage'
 
-/** Pantalla base de "/messages", vacía a propósito — todavía sin el chat real. */
 export default function MessagesPage() {
+  const { t } = useLanguage()
   return (
-    <PlaceholderPage
-      title="Messages"
-      description="Here you'll be able to chat with other collectors about trades and sales. This section is still under construction."
-    />
+    <PlaceholderPage title={t('placeholder.messages.title')} description={t('placeholder.messages.description')} />
   )
 }

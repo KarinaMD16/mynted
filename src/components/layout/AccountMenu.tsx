@@ -5,12 +5,14 @@ import {
   DialogTrigger as AriaDialogTrigger,
   Popover as AriaPopover,
 } from 'react-aria-components'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { GooseIcon } from '../ui/GooseIcon'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { MenuItem } from './menuPrimitives'
 import { useAccountActions } from './useAccountActions'
 
 export function AccountMenu({ userName }: { userName: string }) {
+  const { t } = useLanguage()
   const { logout, goToProfile, isLoggingOut } = useAccountActions()
 
   return (
@@ -25,12 +27,12 @@ export function AccountMenu({ userName }: { userName: string }) {
 
       <AriaPopover placement="bottom right" offset={8} className={popoverAnimationClass}>
         <AriaDialog className="w-56 rounded-xl border border-mynted-border bg-mynted-white p-1.5 shadow-lg outline-none">
-          <MenuItem icon={User01} label="My profile" onPress={goToProfile} />
-          <MenuItem icon={Settings01} label="Settings" />
+          <MenuItem icon={User01} label={t('header.myProfile')} onPress={goToProfile} />
+          <MenuItem icon={Settings01} label={t('header.settings')} />
           <div className="my-1 border-t border-mynted-border" />
           <MenuItem
             icon={LogOut01}
-            label={isLoggingOut ? 'Logging out…' : 'Log out'}
+            label={isLoggingOut ? t('header.loggingOut') : t('header.logout')}
             tone="danger"
             disabled={isLoggingOut}
             onPress={() => void logout()}

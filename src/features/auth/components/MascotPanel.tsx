@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState, type RefObject } from 'react'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { Loader } from '@/components/ui/Loader'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
 
@@ -8,6 +9,7 @@ const SPLINE_SCENE_URL = '/scene.splinecode'
 
 
 export function MascotPanel() {
+  const { t } = useLanguage()
   const containerRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -22,8 +24,8 @@ export function MascotPanel() {
         login: el ErrorBoundary atrapa errores síncronos y `onError` de
         <Spline> atrapa los fallos de carga asíncronos.
       */}
-      <ErrorBoundary fallback={<MascotFallback label="Couldn't load the 3D scene" />}>
-        <Suspense fallback={<MascotFallback label="Loading mascot…" />}>
+      <ErrorBoundary fallback={<MascotFallback label={t('auth.mascot.loadError')} />}>
+        <Suspense fallback={<MascotFallback label={t('auth.mascot.loading')} />}>
           <SplineScene containerRef={containerRef} />
         </Suspense>
       </ErrorBoundary>
@@ -35,6 +37,7 @@ export function MascotPanel() {
 const LOAD_TIMEOUT_MS = 12_000
 
 function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement | null> }) {
+  const { t } = useLanguage()
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
 
   // @splinetool/react-spline no expone un callback de error para fallos de
@@ -94,12 +97,12 @@ function SplineScene({ containerRef }: { containerRef: RefObject<HTMLDivElement 
   }, [status, containerRef])
 
   if (status === 'error') {
-    return <MascotFallback label="Couldn't load the 3D scene" />
+    return <MascotFallback label={t('auth.mascot.loadError')} />
   }
 
   return (
     <>
-      {status === 'loading' && <MascotFallback label="Loading mascot…" />}
+      {status === 'loading' && <MascotFallback label={t('auth.mascot.loading')} />}
       <Spline
         scene={SPLINE_SCENE_URL}
         className="h-full w-full"
