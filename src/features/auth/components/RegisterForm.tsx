@@ -121,7 +121,7 @@ export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProp
         I already have an account
       </button>
 
-      <SocialButtons />
+      <SocialButtons onAuthenticated={onRegistered} />
     </form>
   )
 }

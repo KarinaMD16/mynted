@@ -1,6 +1,7 @@
 import myntedAPI from '@/api/apiConfig'
 import type {
   AuthUser,
+<<<<<<< HEAD
   ForgotPasswordPayload,
   LoginPayload,
   LogoutResponse,
@@ -11,6 +12,14 @@ import type {
 
 export async function loginRequest(payload: LoginPayload): Promise<AuthUser> {
   // AuthController.login responde { user: {...} }, no el usuario "pelado".
+=======
+  LoginPayload,
+  LogoutResponse,
+  RegisterPayload,
+} from '../models/auth'
+
+export async function loginRequest(payload: LoginPayload): Promise<AuthUser> {
+>>>>>>> main
   const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/login', payload)
   return data.user
 }
@@ -30,10 +39,25 @@ export async function logoutRequest(): Promise<LogoutResponse> {
   return data
 }
 
-// TODO(backend): el login social todavía no forma parte de los endpoints conectados.
-export async function socialLoginRequest(provider: 'google' | 'facebook'): Promise<AuthUser> {
-  console.debug('[auth] socialLoginRequest (stub, sin backend todavía):', provider)
-  throw new Error(`Sign-in with ${provider} isn't connected to the backend yet.`)
+// -----------------------------------------------------------------------------
+// Login social
+// -----------------------------------------------------------------------------
+
+/**
+ * El backend no redirige al proveedor: recibe el token que el SDK ya consiguió
+ * en el navegador, lo verifica contra Google/Facebook y responde con la sesión
+ * en una cookie httpOnly (`access_token`) más el usuario en el body.
+ *
+ * Si el correo del proveedor ya tiene cuenta local, el backend la vincula solo
+ */
+export async function loginWithGoogleRequest(idToken: string): Promise<AuthUser> {
+  const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/google', { idToken })
+  return data.user
+}
+
+export async function loginWithFacebookRequest(accessToken: string): Promise<AuthUser> {
+  const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/facebook', { accessToken })
+  return data.user
 }
 
 export async function forgotPasswordRequest(payload: ForgotPasswordPayload): Promise<MessageResponse> {
