@@ -5,6 +5,12 @@ export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 /** Espeja el enum UserRole del backend (users/entities/user.entity.ts). */
 export type UserRole = 'user' | 'seller' | 'superadmin'
 
+/** Espeja el enum SellerRequestStatus del backend. */
+export type SellerRequestStatus = 'none' | 'pending' | 'approved' | 'rejected'
+
+/** Espeja el enum PaymentType del backend (sellers/entities/payment-info.entity.ts). */
+export type PaymentType = 'bank_account' | 'paypal'
+
 /** `identifier` acepta username o email (ver LoginDto en el backend). */
 export interface LoginPayload {
   identifier: string
@@ -33,6 +39,7 @@ export interface AuthUser {
   role?: UserRole
   bio?: string | null
   location?: string | null
+  sellerRequestStatus?: SellerRequestStatus
 }
 
 export interface LogoutResponse {
@@ -50,6 +57,28 @@ export interface ResetPasswordPayload {
 
 export interface MessageResponse {
   message: string
+}
+
+/** POST /auth/change-password (ver ChangePasswordDto en el backend). */
+export interface ChangePasswordPayload {
+  currentPassword: string
+  newPassword: string
+}
+
+/**
+ * POST users/me/request-seller (ver RequestSellerDto en el backend). `name` y
+ * `number` cambian de sentido según `type`: para banco son el nombre del
+ * banco y el número de cuenta/IBAN; para PayPal, el nombre del titular y el
+ * correo de la cuenta.
+ */
+export interface RequestSellerPayload {
+  displayName: string
+  description: string
+  location: string
+  ownerFullName: string
+  name: string
+  number: string
+  type: PaymentType
 }
 
 /**

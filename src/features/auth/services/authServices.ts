@@ -1,6 +1,7 @@
 import myntedAPI from '@/api/apiConfig'
 import type {
   AuthUser,
+  ChangePasswordPayload,
   ForgotPasswordPayload,
   LoginPayload,
   LogoutResponse,
@@ -76,5 +77,11 @@ export async function forgotPasswordRequest(payload: ForgotPasswordPayload): Pro
 
 export async function resetPasswordRequest(payload: ResetPasswordPayload): Promise<MessageResponse> {
   const { data } = await myntedAPI.post<MessageResponse>('/auth/reset-password', payload)
+  return data
+}
+
+/** POST /auth/change-password — requiere sesión activa (JwtAuthGuard), a diferencia de reset-password. */
+export async function changePasswordRequest(payload: ChangePasswordPayload): Promise<MessageResponse> {
+  const { data } = await myntedAPI.post<MessageResponse>('/auth/change-password', payload)
   return data
 }
