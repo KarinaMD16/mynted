@@ -5,8 +5,9 @@ export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 /** Espeja el enum UserRole del backend (users/entities/user.entity.ts). */
 export type UserRole = 'user' | 'seller' | 'superadmin'
 
+/** `identifier` acepta username o email (ver LoginDto en el backend). */
 export interface LoginPayload {
-  email: string
+  identifier: string
   password: string
 }
 

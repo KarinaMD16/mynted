@@ -24,7 +24,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
   const form = useForm({
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
     },
     onSubmit: async ({ value }) => {
@@ -51,13 +51,13 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         <p className="mt-1.5 text-sm text-mynted-gray">{t('auth.login.subtitle')}</p>
       </div>
 
-      <form.Field name="email" validators={{ onChange: loginSchema.shape.email }}>
+      <form.Field name="identifier" validators={{ onChange: loginSchema.shape.identifier }}>
         {(field) => (
           <TextField
-            label={t('auth.emailLabel')}
-            type="email"
-            autoComplete="email"
-            placeholder={t('auth.emailPlaceholder')}
+            label={t('auth.identifierLabel')}
+            type="text"
+            autoComplete="username"
+            placeholder={t('auth.identifierPlaceholder')}
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
             onBlur={field.handleBlur}

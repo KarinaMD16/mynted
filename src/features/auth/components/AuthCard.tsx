@@ -11,7 +11,7 @@ interface AuthCardProps {
   initialMode?: AuthMode
 }
 
-export function AuthCard({ initialMode = 'register' }: AuthCardProps) {
+export function AuthCard({ initialMode = 'login' }: AuthCardProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode)
 
   return (

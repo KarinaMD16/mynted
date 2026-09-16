@@ -184,6 +184,8 @@ export const es = {
   // Formularios de auth compartidos (login/registro/recuperación)
   'auth.emailLabel': 'Correo electrónico',
   'auth.emailPlaceholder': 'Ingresá tu correo',
+  'auth.identifierLabel': 'Usuario o correo electrónico',
+  'auth.identifierPlaceholder': 'Ingresá tu usuario o correo',
   'auth.passwordLabel': 'Contraseña',
   'auth.passwordPlaceholder': 'Ingresá tu contraseña',
   'auth.usernameLabel': 'Nombre de usuario',
@@ -257,6 +259,7 @@ export const es = {
   // idioma sin tener que recargar la página.
   'validation.emailRequired': 'El correo es obligatorio',
   'validation.emailInvalid': 'Ingresá un correo válido',
+  'validation.identifierRequired': 'El usuario o correo es obligatorio',
   'validation.passwordRequired': 'La contraseña es obligatoria',
   'validation.passwordMinLength': 'Debe tener al menos 8 caracteres',
   'validation.passwordComplexity':

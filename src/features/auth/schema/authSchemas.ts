@@ -26,9 +26,13 @@ function buildUsernameSchema(t: TranslateFn) {
   return z.string().min(1, t('validation.usernameRequired')).min(3, t('validation.usernameMinLength'))
 }
 
+/**
+ * `identifier` acepta username o email (ver LoginDto en el backend), así
+ * que a propósito no se valida como email — solo que no venga vacío.
+ */
 export function makeLoginSchema(t: TranslateFn) {
   return z.object({
-    email: buildEmailSchema(t),
+    identifier: z.string().min(1, t('validation.identifierRequired')),
     password: z.string().min(1, t('validation.passwordRequired')),
   })
 }

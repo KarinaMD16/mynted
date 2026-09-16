@@ -186,6 +186,8 @@ export const en: Record<TranslationKey, string> = {
   // Shared auth forms (login/register/recovery)
   'auth.emailLabel': 'Email',
   'auth.emailPlaceholder': 'Enter your email',
+  'auth.identifierLabel': 'Username or email',
+  'auth.identifierPlaceholder': 'Enter your username or email',
   'auth.passwordLabel': 'Password',
   'auth.passwordPlaceholder': 'Enter your password',
   'auth.usernameLabel': 'Username',
@@ -259,6 +261,7 @@ export const en: Record<TranslationKey, string> = {
   // with the language without a page reload.
   'validation.emailRequired': 'Email is required',
   'validation.emailInvalid': 'Enter a valid email',
+  'validation.identifierRequired': 'Username or email is required',
   'validation.passwordRequired': 'Password is required',
   'validation.passwordMinLength': 'Must be at least 8 characters',
   'validation.passwordComplexity':
