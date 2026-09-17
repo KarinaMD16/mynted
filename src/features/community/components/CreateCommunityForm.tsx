@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useForm } from '@tanstack/react-form';
-import { Camera, Globe, ImagePlus, LoaderCircle, Lock, Plus, X } from 'lucide-react';
+import { Camera, Eye, Globe, ImagePlus, LoaderCircle, Lock, Plus, X } from 'lucide-react';
 import { getApiErrorMessage } from '@/api/apiError';
 import { getFieldErrorMessage } from '@/utils/form';
+import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useCreateCommunity } from '../hooks/useCommunitiesMutations';
 import { useCategories } from '../hooks/useCommunitiesQueries';
@@ -49,6 +50,8 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
     const [banner, setBanner] = useState<SelectedImage | null>(null);
     const [image, setImage] = useState<SelectedImage | null>(null);
     const slugEditedRef = useRef(false);
+    // Cual de las dos imagenes se esta viendo en grande (null = visor cerrado)
+    const [preview, setPreview] = useState<'banner' | 'image' | null>(null);
 
     const createCommunityMutation = useCreateCommunity();
     const categoriesQuery = useCategories();
@@ -101,6 +104,14 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
 
     return (
         <>
+            <ImagePreviewDialog
+                src={preview === 'banner' ? (banner?.previewUrl ?? null) : (image?.previewUrl ?? null)}
+                alt={preview === 'banner' ? t('communities.create.bannerPreviewAlt') : t('communities.create.imagePreviewAlt')}
+                title={preview === 'banner' ? t('communities.create.previewBanner') : t('communities.create.previewImage')}
+                isOpen={preview !== null}
+                onClose={() => setPreview(null)}
+            />
+
             <DialogHeader>
                 <DialogTitle>{t('communities.create.title')}</DialogTitle>
                 <DialogDescription>{t('communities.create.subtitle')}</DialogDescription>
@@ -114,7 +125,7 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                             void form.handleSubmit();
                         }}
                     >
-                        <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8">
+                        <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8 overflow-y-auto max-h-[60vh]">
 
 
                             <div className="relative mb-10">
@@ -135,14 +146,25 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                 <input id={bannerInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange(setBanner)} />
 
                                 {banner && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setBanner(null)}
-                                        aria-label={t('communities.create.removeBanner')}
-                                        className="absolute top-3 right-3 rounded-full bg-white/90 p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-white"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
+                                    <div className="absolute top-3 right-3 flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreview('banner')}
+                                            aria-label={t('communities.create.previewBanner')}
+                                            className="rounded-full bg-white/90 p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-white"
+                                        >
+                                            <Eye className="size-4" />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setBanner(null)}
+                                            aria-label={t('communities.create.removeBanner')}
+                                            className="rounded-full bg-white/90 p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-white"
+                                        >
+                                            <X className="size-4" />
+                                        </button>
+                                    </div>
                                 )}
 
                                 <label
@@ -157,6 +179,17 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                     )}
                                 </label>
                                 <input id={imageInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange(setImage)} />
+
+                                {image && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setPreview('image')}
+                                        aria-label={t('communities.create.previewImage')}
+                                        className="absolute -bottom-11 left-24 rounded-full bg-white p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-mynted-bg sm:left-29"
+                                    >
+                                        <Eye className="size-4" />
+                                    </button>
+                                )}
                             </div>
 
 

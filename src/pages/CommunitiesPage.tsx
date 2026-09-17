@@ -1,45 +1,28 @@
+import { useState } from 'react'
 import { SiteHeader } from '@/components/layout/SiteHeader'
-import { CreateCommunityForm } from '@/features/community/components/CreateCommunityForm';
-import { useLanguage } from '@/i18n/LanguageContext';
-import { useState } from 'react';
+import { CreateCommunityForm } from '@/features/community/components/CreateCommunityForm'
+import { ExploreCommunitiesSection } from '@/features/community/components/ExploreCommunitiesSection'
+import { MyCommunitiesSection } from '@/features/community/components/MyCommunitiesSection'
+
 
 export default function CommunitiesPage() {
-  const { t } = useLanguage()
-  const [isCreateCommunityFormOpen, setIsCreateCommunityFormOpen] = useState(false);
-
-  const handleCreateCommunity = () => {
-    setIsCreateCommunityFormOpen(true);
-  }
+  const [isCreateCommunityFormOpen, setIsCreateCommunityFormOpen] = useState(false)
 
   return (
-      <section className="min-h-svh bg-mynted-bg">
-         <div className="px-4 pt-5 sm:px-6">
-           <SiteHeader />
-         </div>
+    <section className="min-h-svh bg-mynted-bg">
+      <div className="px-4 pt-5 sm:px-6">
+        <SiteHeader />
+      </div>
 
-        <main className="gap-3 px-14 py-15">
-          <div className="flex items-center justify-between">
-            <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{t('communities.myCommunities')}</h1>
-            <button className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-             onClick={() => {
-              handleCreateCommunity();
-            }}>
-              {t('communities.createCommunity')}
-            </button>
-          </div>
+      <main className="flex flex-col gap-10 px-6 py-10 sm:px-14 sm:py-15">
+        <MyCommunitiesSection onCreateCommunity={() => setIsCreateCommunityFormOpen(true)} />
+        <ExploreCommunitiesSection />
+      </main>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          </div>
-        </main>
-     <CreateCommunityForm
-         isOpen={isCreateCommunityFormOpen}
-          onClose={() => {
-           setIsCreateCommunityFormOpen(false);
-          }}
+      <CreateCommunityForm
+        isOpen={isCreateCommunityFormOpen}
+        onClose={() => setIsCreateCommunityFormOpen(false)}
       />
     </section>
-
   )
-
 }
-

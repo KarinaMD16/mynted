@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { CommunityListItem, ForumPost } from "../models/communityDTOs";
 
 export interface CreateCommunityFormProps {
     isOpen: boolean;
@@ -24,4 +25,15 @@ export interface TagPickerProps {
     selected: number[];
     onChange: (tagIds: number[]) => void;
     error?: string;
+}
+
+export interface ForumPostCardProps {
+  post: ForumPost
+  index: number
+}
+
+export interface MyCommunityCardProps {
+  community: CommunityListItem
+  featured?: boolean
+  variant: 'blue' | 'yellow'
 }

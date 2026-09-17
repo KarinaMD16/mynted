@@ -3,6 +3,7 @@ import App from './App'
 import { Loader } from './components/ui/Loader'
 import { useLanguage } from './i18n/LanguageContext'
 import CommunitiesPage from './pages/CommunitiesPage'
+import CommunityDetailPage from './pages/CommunityDetailPage'
 import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -82,6 +83,12 @@ const communitiesRoute = createRoute({
   component: CommunitiesPage,
 })
 
+const communityDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/communities/$communityId',
+  component: CommunityDetailPage,
+})
+
 const favoritesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/favorites',
@@ -119,6 +126,7 @@ const routeTree = rootRoute.addChildren([
   resetPasswordRoute,
   exploreRoute,
   communitiesRoute,
+  communityDetailRoute,
   favoritesRoute,
   messagesRoute,
   profileRoute,

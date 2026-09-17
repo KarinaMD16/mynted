@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createCommunity } from "../services/communityService"
+import { createCommunity, joinCommunity, leaveCommunity } from "../services/communityService"
+import { communityKeys } from "./useCommunitiesQueries"
 
 
 export const useCreateCommunity = () => {
@@ -18,3 +19,25 @@ export const useCreateCommunity = () => {
   return createCommunityMutation
 }
 
+
+export const useJoinCommunity = (communityId: number) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => joinCommunity(communityId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: communityKeys.all })
+    },
+  })
+}
+
+export const useLeaveCommunity = (communityId: number) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => leaveCommunity(communityId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: communityKeys.all })
+    },
+  })
+}
