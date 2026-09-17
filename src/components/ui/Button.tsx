@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-type ButtonVariant = 'primary' | 'facebook' | 'google'
+type ButtonVariant = 'primary' | 'secondary' | 'facebook' | 'google'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -13,6 +13,7 @@ const baseClasses =
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
     'bg-mynted-orange text-white shadow-[0_4px_10px_-2px_rgba(47,95,255,0.25)] hover:bg-mynted-orange-hover',
+  secondary: 'border border-mynted-border bg-mynted-bg text-mynted-ink hover:bg-mynted-border/60',
   facebook: 'border border-mynted-blue-dark bg-mynted-blue-mid text-white hover:brightness-105',
   google: 'border border-mynted-border bg-white text-mynted-ink hover:bg-mynted-bg',
 }

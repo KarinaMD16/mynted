@@ -1,9 +1,11 @@
 import { getApiErrorMessage } from "@/api/apiError";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { useTags } from "../hooks/useCommunitiesQueries";
 import type { TagPickerProps } from "../types/CommunityTypes";
 import { labelClasses, hintClasses, MAX_TAGS, errorClasses } from "../types/DEFAULT_VALUES";
 
 export const TagPicker = ({ categoryId, selected, onChange, error }: TagPickerProps) => {
+    const { t } = useLanguage()
     const tagsQuery = useTags();
 
     const availableTags = tagsQuery.data?.filter((tag) => tag.categoryId === null || tag.categoryId === categoryId);
@@ -14,8 +16,10 @@ export const TagPicker = ({ categoryId, selected, onChange, error }: TagPickerPr
 
     return (
         <fieldset className="flex flex-col gap-1.5">
-            <legend className={labelClasses}>Tags</legend>
-            <p className={`${hintClasses} mt-1.5`}>Elige de 1 a {MAX_TAGS} tags · {selected.length}/{MAX_TAGS} seleccionados</p>
+            <legend className={labelClasses}>{t('communities.tags.legend')}</legend>
+            <p className={`${hintClasses} mt-1.5`}>
+                {t('communities.tags.hint', { max: MAX_TAGS, count: selected.length })}
+            </p>
 
             <div className="mt-1.5 flex flex-wrap gap-2">
                 {tagsQuery.isPending && Array.from({ length: 4 }, (_, index) => (
@@ -44,8 +48,12 @@ export const TagPicker = ({ categoryId, selected, onChange, error }: TagPickerPr
                 })}
             </div>
 
-            {availableTags?.length === 0 &&<span className={hintClasses}>Esta categoría todavía no tiene tags disponibles.</span>}
-            {tagsQuery.isError && <span className={errorClasses}>No se pudieron cargar los tags. {getApiErrorMessage(tagsQuery.error)}</span>}
+            {availableTags?.length === 0 && <span className={hintClasses}>{t('communities.tags.empty')}</span>}
+            {tagsQuery.isError && (
+                <span className={errorClasses}>
+                    {t('communities.tags.loadError')} {getApiErrorMessage(tagsQuery.error)}
+                </span>
+            )}
             {error && <span className={errorClasses}>{error}</span>}
         </fieldset>
     );

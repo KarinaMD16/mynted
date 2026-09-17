@@ -1,10 +1,12 @@
 import { cn } from '@/cuicui/utils/cn'
 import type { Product } from '@/features/app/types/appTypes'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { Rating } from '../../../components/ui/Rating'
 import { AdvancedColorfulBadges } from '../../../components/ui/Badge'
 import { CheckIcon } from 'lucide-react'
 
 export function ProductCard({ product }: { product: Product }) {
+  const { t } = useLanguage()
   return (
     <div
       className={cn(
@@ -33,7 +35,7 @@ export function ProductCard({ product }: { product: Product }) {
         {product.verified && (
           <AdvancedColorfulBadges color="green" rounded="full" size="sm" className='text-sm'>
             <CheckIcon className="size-3.5" />
-            Verified
+            {t('product.verified')}
           </AdvancedColorfulBadges>
         )}
 
@@ -43,7 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
             type="button"
             className="rounded-full bg-mynted-blue-mid px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
-            Contact
+            {t('product.contact')}
           </button>
         </div>
       </div>

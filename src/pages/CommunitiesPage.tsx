@@ -1,9 +1,10 @@
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CreateCommunityForm } from '@/features/community/components/CreateCommunityForm';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 
 export default function CommunitiesPage() {
-
+  const { t } = useLanguage()
   const [isCreateCommunityFormOpen, setIsCreateCommunityFormOpen] = useState(false);
 
   const handleCreateCommunity = () => {
@@ -18,12 +19,12 @@ export default function CommunitiesPage() {
 
         <main className="gap-3 px-14 py-15">
           <div className="flex items-center justify-between">
-            <h1 className="font-heading text-2xl font-semibold text-mynted-ink">My Communities</h1>
+            <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{t('communities.myCommunities')}</h1>
             <button className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
              onClick={() => {
               handleCreateCommunity();
             }}>
-              Create Community
+              {t('communities.createCommunity')}
             </button>
           </div>
 
@@ -31,7 +32,7 @@ export default function CommunitiesPage() {
           </div>
         </main>
      <CreateCommunityForm
-         isOpen={isCreateCommunityFormOpen} 
+         isOpen={isCreateCommunityFormOpen}
           onClose={() => {
            setIsCreateCommunityFormOpen(false);
           }}
@@ -39,7 +40,6 @@ export default function CommunitiesPage() {
     </section>
 
   )
-  
-}
 
+}
 

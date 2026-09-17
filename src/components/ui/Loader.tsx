@@ -1,4 +1,5 @@
 import loaderGif from '../../assets/loader-goose.gif'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 const GIF_ASPECT_RATIO = 480 / 360
 
@@ -18,11 +19,12 @@ interface LoaderProps {
  * carga de la mascota de Spline en el login.
  */
 export function Loader({ label, size = 96, className = '', labelClassName = 'text-mynted-gray' }: LoaderProps) {
+  const { t } = useLanguage()
   return (
     <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
       <img
         src={loaderGif}
-        alt="Loading..."
+        alt={t('loader.loadingAlt')}
         width={size}
         height={Math.round(size * GIF_ASPECT_RATIO)}
         draggable={false}

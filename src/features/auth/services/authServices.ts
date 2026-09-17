@@ -1,12 +1,17 @@
 import myntedAPI from '@/api/apiConfig'
 import type {
   AuthUser,
+  ChangePasswordPayload,
+  ForgotPasswordPayload,
   LoginPayload,
   LogoutResponse,
+  MessageResponse,
   RegisterPayload,
+  ResetPasswordPayload,
 } from '../models/auth'
 
 export async function loginRequest(payload: LoginPayload): Promise<AuthUser> {
+  // AuthController.login responde { user: {...} }, no el usuario "pelado".
   const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/login', payload)
   return data.user
 }
@@ -18,6 +23,24 @@ export async function registerRequest(payload: RegisterPayload): Promise<AuthUse
 
 export async function getUserByIdRequest(id: string): Promise<AuthUser> {
   const { data } = await myntedAPI.get<AuthUser>(`/users/${id}`)
+  return data
+}
+
+/** GET /users/me — fuente de verdad de "¿hay sesión, y de quién?" (ver useCurrentUserQuery). */
+export async function getCurrentUserRequest(): Promise<AuthUser> {
+  const { data } = await myntedAPI.get<AuthUser>('/users/me')
+  return data
+}
+
+/**
+ * PATCH /users/me — multipart porque puede llevar una foto nueva (ver
+ * EditProfileForm). Mismo patrón que createCommunity: hay que forzar el
+ * Content-Type acá porque myntedAPI por defecto manda 'application/json'.
+ */
+export async function updateProfileRequest(formData: FormData): Promise<AuthUser> {
+  const { data } = await myntedAPI.patch<AuthUser>('/users/me', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
   return data
 }
 
@@ -45,4 +68,20 @@ export async function loginWithGoogleRequest(idToken: string): Promise<AuthUser>
 export async function loginWithFacebookRequest(accessToken: string): Promise<AuthUser> {
   const { data } = await myntedAPI.post<{ user: AuthUser }>('/auth/facebook', { accessToken })
   return data.user
+}
+
+export async function forgotPasswordRequest(payload: ForgotPasswordPayload): Promise<MessageResponse> {
+  const { data } = await myntedAPI.post<MessageResponse>('/auth/forgot-password', payload)
+  return data
+}
+
+export async function resetPasswordRequest(payload: ResetPasswordPayload): Promise<MessageResponse> {
+  const { data } = await myntedAPI.post<MessageResponse>('/auth/reset-password', payload)
+  return data
+}
+
+/** POST /auth/change-password — requiere sesión activa (JwtAuthGuard), a diferencia de reset-password. */
+export async function changePasswordRequest(payload: ChangePasswordPayload): Promise<MessageResponse> {
+  const { data } = await myntedAPI.post<MessageResponse>('/auth/change-password', payload)
+  return data
 }

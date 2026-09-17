@@ -1,11 +1,9 @@
+import { useLanguage } from '@/i18n/LanguageContext'
 import { PlaceholderPage } from '../components/layout/PlaceholderPage'
 
-/** Pantalla base de "/favorites", vacía a propósito — todavía sin los guardados reales del usuario. */
 export default function FavoritesPage() {
+  const { t } = useLanguage()
   return (
-    <PlaceholderPage
-      title="Favorites"
-      description="Here you'll see the items and posts you've saved. This section is still under construction."
-    />
+    <PlaceholderPage title={t('placeholder.favorites.title')} description={t('placeholder.favorites.description')} />
   )
 }

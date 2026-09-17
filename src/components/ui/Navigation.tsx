@@ -2,6 +2,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { NAV_ITEMS } from "./navItems";
 
 interface NavigationProps {
@@ -10,6 +11,7 @@ interface NavigationProps {
 
 export function Navigation({ className = 'flex flex-col items-center gap-1.5 sm:flex-row' }: NavigationProps) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const { t } = useLanguage();
   const activeIndex = NAV_ITEMS.findIndex((item) => item.href === pathname);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const highlightedIndex = hoveredIndex ?? (activeIndex === -1 ? null : activeIndex);
@@ -26,7 +28,7 @@ export function Navigation({ className = 'flex flex-col items-center gap-1.5 sm:
             highlightedIndex === index ? 'font-semibold text-mynted-white' : 'font-medium text-mynted-gray'
           }`}
         >
-          {item.label}
+          {t(item.labelKey)}
           <AnimatePresence>
             {highlightedIndex === index && (
               <motion.div

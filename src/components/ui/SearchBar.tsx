@@ -3,12 +3,14 @@ import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/cuicui/utils/cn";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function GrowingSearchVariant1() {
+    const { t } = useLanguage()
     return (
         <div className="flex flex-col items-center">
             <p className="mb-8 text-neutral-500/70 tracking-tighter">
-                Press enter to see all the effects
+                {t('search.placeholder')}
             </p>
             <SearchBar />
         </div>
@@ -16,6 +18,7 @@ export default function GrowingSearchVariant1() {
 }
 
 export const SearchBar = () => {
+    const { t } = useLanguage()
     const [searchSubmittedOutline, setSearchSubmittedOutline] = useState(false);
     const [searchSubmittedShadow, setSearchSubmittedShadow] = useState(false);
     const [searchValue, setSearchValue] = useState("");
@@ -23,7 +26,7 @@ export const SearchBar = () => {
     function handleSearch() {
         setSearchSubmittedOutline(true);
         setSearchSubmittedShadow(true);
-        toast(`Searching for ${searchValue}`);
+        toast(t('search.searchingToast', { query: searchValue }));
     }
 
     useEffect(() => {
@@ -99,7 +102,7 @@ export const SearchBar = () => {
                     }
                 }}
                 onSubmit={handleSearch}
-                placeholder="Search"
+                placeholder={t('search.placeholder')}
                 type="search"
                 value={searchValue}
             />

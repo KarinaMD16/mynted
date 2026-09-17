@@ -11,6 +11,8 @@ export function useAccountActions() {
 
   async function logout() {
     try {
+      // onSuccess de useLogoutMutation ya deja el cache de "usuario actual"
+      // en null, así que el header pasa a "Login" apenas esto resuelve.
       await logoutMutation.mutateAsync()
     } catch (error) {
       console.error('[auth] No se pudo cerrar sesión:', error)
