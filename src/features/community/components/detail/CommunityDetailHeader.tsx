@@ -11,9 +11,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useJoinCommunity, useLeaveCommunity } from '../hooks/useCommunitiesMutations'
-import type { CommunityDetail } from '../models/communityDTOs'
-import { CommunityPattern } from './CommunityPattern'
+import { useJoinCommunity, useLeaveCommunity } from '@/features/community/hooks/useCommunitiesMutations'
+import type { CommunityDetail } from '@/features/community/models/communityDTOs'
+import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
 
 type PreviewTarget = 'banner' | 'image'
 

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import {
   getCategories,
   getCommunities,
-  getCommunityDetail,
+  getCommunityDetailBySlug,
   getMyCommunities,
   getTags,
 } from "../services/communityService"
@@ -12,7 +12,7 @@ export const communityKeys = {
   all: ['communities'] as const,
   list: (query: CommunitiesQuery) => ['communities', 'list', query] as const,
   mine: (query: CommunitiesQuery) => ['communities', 'mine', query] as const,
-  detail: (communityId: number) => ['communities', 'detail', communityId] as const,
+  detailBySlug: (slug: string) => ['communities', 'detail', 'slug', slug] as const,
 }
 
 export const useCategories = () => {
@@ -46,10 +46,10 @@ export const useMyCommunities = (query: CommunitiesQuery = {}, enabled = true) =
   })
 }
 
-export const useCommunityDetail = (communityId: number, enabled = true) => {
+export const useCommunityDetailBySlug = (slug: string, enabled = true) => {
   return useQuery({
-    queryKey: communityKeys.detail(communityId),
-    queryFn: () => getCommunityDetail(communityId),
-    enabled: enabled && Number.isFinite(communityId) && communityId > 0,
+    queryKey: communityKeys.detailBySlug(slug),
+    queryFn: () => getCommunityDetailBySlug(slug),
+    enabled: enabled && slug.length > 0,
   })
 }

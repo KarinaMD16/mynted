@@ -1,8 +1,8 @@
 import { ArrowDown, ArrowUp, Star } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
-import type { ForumPostCardProps } from '../types/CommunityTypes'
-import { AVATAR_COLORS } from '../types/DEFAULT_VALUES'
+import type { ForumPostCardProps } from '@/features/community/types/CommunityTypes'
+import { AVATAR_COLORS } from '@/features/community/types/DEFAULT_VALUES'
 
 
 export function ForumPostCard({ post, index }: ForumPostCardProps) {

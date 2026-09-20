@@ -1,5 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createCommunity, joinCommunity, leaveCommunity } from "../services/communityService"
+import {
+  createCommunity,
+  createCommunityRules,
+  deactivateCommunity,
+  deleteCommunityRule,
+  joinCommunity,
+  leaveCommunity,
+  setCommunityPrivacy,
+  updateCommunity,
+  updateCommunityRule,
+} from "../services/communityService"
 import { communityKeys } from "./useCommunitiesQueries"
 
 
@@ -40,4 +50,43 @@ export const useLeaveCommunity = (communityId: number) => {
       void queryClient.invalidateQueries({ queryKey: communityKeys.all })
     },
   })
+}
+
+
+export const useCommunityModeration = (communityId: number) => {
+  const queryClient = useQueryClient()
+  const refresh = () => queryClient.invalidateQueries({ queryKey: communityKeys.all })
+
+  const addRules = useMutation({
+    mutationFn: (descriptions: string[]) => createCommunityRules(communityId, descriptions),
+    onSuccess: refresh,
+  })
+
+  const editRule = useMutation({
+    mutationFn: ({ ruleId, description }: { ruleId: number; description: string }) =>
+      updateCommunityRule(communityId, ruleId, description),
+    onSuccess: refresh,
+  })
+
+  const removeRule = useMutation({
+    mutationFn: (ruleId: number) => deleteCommunityRule(communityId, ruleId),
+    onSuccess: refresh,
+  })
+
+  const saveSettings = useMutation({
+    mutationFn: (data: FormData) => updateCommunity(communityId, data),
+    onSuccess: refresh,
+  })
+
+  const changePrivacy = useMutation({
+    mutationFn: (isPrivate: boolean) => setCommunityPrivacy(communityId, isPrivate),
+    onSuccess: refresh,
+  })
+
+  const deactivate = useMutation({
+    mutationFn: () => deactivateCommunity(communityId),
+    onSuccess: refresh,
+  })
+
+  return { addRules, editRule, removeRule, saveSettings, changePrivacy, deactivate }
 }

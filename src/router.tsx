@@ -4,6 +4,7 @@ import { Loader } from './components/ui/Loader'
 import { useLanguage } from './i18n/LanguageContext'
 import CommunitiesPage from './pages/CommunitiesPage'
 import CommunityDetailPage from './pages/CommunityDetailPage'
+import CommunityModerationPage from './pages/CommunityModerationPage'
 import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -85,8 +86,14 @@ const communitiesRoute = createRoute({
 
 const communityDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/communities/$communityId',
+  path: '/communities/$slug',
   component: CommunityDetailPage,
+})
+
+const communityModerationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/communities/$slug/moderacion',
+  component: CommunityModerationPage,
 })
 
 const favoritesRoute = createRoute({
@@ -127,6 +134,7 @@ const routeTree = rootRoute.addChildren([
   exploreRoute,
   communitiesRoute,
   communityDetailRoute,
+  communityModerationRoute,
   favoritesRoute,
   messagesRoute,
   profileRoute,

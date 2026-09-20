@@ -6,12 +6,12 @@ import { getApiErrorMessage } from '@/api/apiError';
 import { getFieldErrorMessage } from '@/utils/form';
 import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useCreateCommunity } from '../hooks/useCommunitiesMutations';
-import { useCategories } from '../hooks/useCommunitiesQueries';
-import { makeCreateCommunitySchema } from '../schemas/createCommunitySchema';
-import type { CreateCommunityValues } from '../schemas/createCommunitySchema';
-import type { CreateCommunityFormProps, SelectedImage } from '../types/CommunityTypes';
-import { BANNER_CROP, DEFAULT_RULES, IMAGE_CROP, hintClasses, labelClasses, inputClasses, errorClasses } from '../types/DEFAULT_VALUES';
+import { useCreateCommunity } from '@/features/community/hooks/useCommunitiesMutations';
+import { useCategories } from '@/features/community/hooks/useCommunitiesQueries';
+import { makeCreateCommunitySchema } from '@/features/community/schemas/createCommunitySchema';
+import type { CreateCommunityValues } from '@/features/community/schemas/createCommunitySchema';
+import type { CreateCommunityFormProps, SelectedImage } from '@/features/community/types/CommunityTypes';
+import { BANNER_CROP, DEFAULT_RULES, IMAGE_CROP, hintClasses, labelClasses, inputClasses, errorClasses } from '@/features/community/types/DEFAULT_VALUES';
 import {
   Dialog,
   DialogContent,
@@ -20,11 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { CommunityCardsPreview } from './CommunityCardsPreview';
-import { ImageCropDialog } from './ImageCropDialog';
-import type { CropSource } from './ImageCropDialog';
-import { PrivacyOption } from './PrivacyOption';
-import { TagPicker } from './TagPicker';
+import { CommunityCardsPreview } from '@/features/community/components/create/CommunityCardsPreview';
+import { ImageCropDialog } from '@/features/community/components/ui/ImageCropDialog';
+import type { CropSource } from '@/features/community/components/ui/ImageCropDialog';
+import { PrivacyOption } from '@/features/community/components/ui/PrivacyOption';
+import { TagPicker } from '@/features/community/components/ui/TagPicker';
 
 const slugify = (value: string) =>
     value
@@ -494,7 +494,8 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                             id: previewSeed,
                                             name: values.name.trim() || t('communities.create.previewNamePlaceholder'),
                                             description: values.description.trim() || t('communities.create.previewDescriptionPlaceholder'),
-                                            slug: values.slug,
+                                            // La vista previa es un link: sin slug todavia, uno de relleno
+                                            slug: values.slug || 'preview',
                                             isPrivate: values.isPrivate,
                                             imageUrl: image?.previewUrl ?? null,
                                             bannerUrl: banner?.previewUrl ?? null,

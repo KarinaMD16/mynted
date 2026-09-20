@@ -1,8 +1,8 @@
 import { getApiErrorMessage } from "@/api/apiError";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useTags } from "../hooks/useCommunitiesQueries";
-import type { TagPickerProps } from "../types/CommunityTypes";
-import { labelClasses, hintClasses, MAX_TAGS, errorClasses } from "../types/DEFAULT_VALUES";
+import { useTags } from "@/features/community/hooks/useCommunitiesQueries";
+import type { TagPickerProps } from "@/features/community/types/CommunityTypes";
+import { labelClasses, hintClasses, MAX_TAGS, errorClasses } from "@/features/community/types/DEFAULT_VALUES";
 
 export const TagPicker = ({ categoryId, selected, onChange, error }: TagPickerProps) => {
     const { t } = useLanguage()

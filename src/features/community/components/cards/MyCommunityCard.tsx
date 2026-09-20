@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { MyCommunityCardProps } from '../types/CommunityTypes'
-import { variantClasses } from '../types/DEFAULT_VALUES'
+import type { MyCommunityCardProps } from '@/features/community/types/CommunityTypes'
+import { variantClasses } from '@/features/community/types/DEFAULT_VALUES'
 
 
 export function MyCommunityCard({ community, featured = false, variant }: MyCommunityCardProps) {
@@ -10,8 +10,8 @@ export function MyCommunityCard({ community, featured = false, variant }: MyComm
 
   return (
     <Link
-      to="/communities/$communityId"
-      params={{ communityId: String(community.id) }}
+      to="/communities/$slug"
+      params={{ slug: community.slug }}
       aria-label={t('community.card.open', { name: community.name })}
       className={`relative flex h-full flex-col justify-end overflow-hidden rounded-2xl p-6 transition-transform hover:scale-[1.01] ${colors.card} ${
         featured ? 'min-h-56 lg:min-h-full' : 'min-h-40'

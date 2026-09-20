@@ -1,7 +1,7 @@
 import { CalendarDays } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatShortDate } from '@/utils/relativeTime'
-import type { CommunityDetail } from '../models/communityDTOs'
+import type { CommunityDetail } from '@/features/community/models/communityDTOs'
 
 export function CommunitySidebar({ community }: { community: CommunityDetail }) {
   const { t, language } = useLanguage()

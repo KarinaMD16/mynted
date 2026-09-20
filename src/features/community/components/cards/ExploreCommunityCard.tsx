@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { CommunityListItem } from '../models/communityDTOs'
-import { CommunityPattern } from './CommunityPattern'
+import type { CommunityListItem } from '@/features/community/models/communityDTOs'
+import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
 
 
 interface ExploreCommunityCardProps {
@@ -14,8 +14,8 @@ export function ExploreCommunityCard({ community, dotClassName }: ExploreCommuni
 
   return (
     <Link
-      to="/communities/$communityId"
-      params={{ communityId: String(community.id) }}
+      to="/communities/$slug"
+      params={{ slug: community.slug }}
       aria-label={t('community.card.open', { name: community.name })}
       className="group flex flex-col overflow-hidden rounded-xl border border-mynted-border bg-white transition-transform hover:scale-[1.02]"
     >

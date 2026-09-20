@@ -1,6 +1,7 @@
 import myntedAPI from "@/api/apiConfig";
 import type {
     CategoryOption,
+    CommunityRuleItem,
     CommunitiesQuery,
     CommunityDetail,
     CommunityListItem,
@@ -9,24 +10,16 @@ import type {
 } from "../models/communityDTOs";
 
 export const createCommunity = async (data: FormData) => {
-    try {
-        const response = await myntedAPI.post('/communities', data, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Error creating community:', error);
-        throw error;
-    }
+    const response = await myntedAPI.post('/communities', data, {
+        headers: { 'Content-Type': 'multipart/form-data', }, 
+    });
+    return response.data;
 };
 
 export const getCategories = async (): Promise<CategoryOption[]> => {
     const { data } = await myntedAPI.get<CategoryOption[]>('/categories');
     return data;
 };
-
 
 export const getTags = async (): Promise<TagOption[]> => {
     const { data } = await myntedAPI.get<PaginatedResponse<TagOption>>('/tags', {
@@ -53,11 +46,6 @@ export const getMyCommunities = async (
     return data;
 };
 
-export const getCommunityDetail = async (communityId: number): Promise<CommunityDetail> => {
-    const { data } = await myntedAPI.get<CommunityDetail>(`/communities/${communityId}`);
-    return data;
-};
-
 export const joinCommunity = async (communityId: number) => {
     const { data } = await myntedAPI.post(`/communities/${communityId}/join`);
     return data;
@@ -65,5 +53,53 @@ export const joinCommunity = async (communityId: number) => {
 
 export const leaveCommunity = async (communityId: number) => {
     const { data } = await myntedAPI.delete(`/communities/${communityId}/leave`);
+    return data;
+};
+
+export const getCommunityDetailBySlug = async (slug: string): Promise<CommunityDetail> => {
+    const { data } = await myntedAPI.get<CommunityDetail>(`/communities/by-slug/${slug}`);
+    return data;
+};
+
+// --------------------------------------------------------------------------
+// Moderacion: reglas y ajustes de la comunidad. El backend valida el rol
+// (ver assertCommunityRole): reglas y editar son de dueno y moderadores;
+// privacidad y desactivar son solo del dueno.
+// --------------------------------------------------------------------------
+
+export const getCommunityRules = async (communityId: number): Promise<CommunityRuleItem[]> => {
+    const { data } = await myntedAPI.get<CommunityRuleItem[]>(`/communities/${communityId}/rules`);
+    return data;
+};
+
+export const createCommunityRules = async (communityId: number, descriptions: string[]) => {
+    const { data } = await myntedAPI.post(`/communities/${communityId}/rules`, { description: descriptions });
+    return data;
+};
+
+export const updateCommunityRule = async (communityId: number, ruleId: number, description: string) => {
+    const { data } = await myntedAPI.patch(`/communities/${communityId}/rules/${ruleId}`, { description });
+    return data;
+};
+
+export const deleteCommunityRule = async (communityId: number, ruleId: number) => {
+    const { data } = await myntedAPI.delete(`/communities/${communityId}/rules/${ruleId}`);
+    return data;
+};
+
+export const updateCommunity = async (communityId: number, data: FormData) => {
+    const response = await myntedAPI.patch(`/communities/${communityId}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+export const setCommunityPrivacy = async (communityId: number, isPrivate: boolean) => {
+    const { data } = await myntedAPI.patch(`/communities/${communityId}/${isPrivate ? 'private' : 'public'}`);
+    return data;
+};
+
+export const deactivateCommunity = async (communityId: number) => {
+    const { data } = await myntedAPI.patch(`/communities/${communityId}/deactivate`);
     return data;
 };

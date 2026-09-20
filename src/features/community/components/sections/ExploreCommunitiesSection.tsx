@@ -3,14 +3,14 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useCommunities, useMyCommunities } from '../hooks/useCommunitiesQueries'
+import { useCommunities, useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import {
   EXPLORE_COMMUNITIES_QUERY,
   EXPLORE_DOT_COLORS,
   EXPLORE_LIMIT,
   MY_COMMUNITIES_QUERY,
-} from '../types/DEFAULT_VALUES'
-import { ExploreCommunityCard } from './ExploreCommunityCard'
+} from '@/features/community/types/DEFAULT_VALUES'
+import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
 
 
 export function ExploreCommunitiesSection() {

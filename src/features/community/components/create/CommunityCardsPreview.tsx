@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { CommunityListItem } from '../models/communityDTOs'
-import { EXPLORE_DOT_COLORS, EXPLORE_LIMIT, hintClasses, labelClasses } from '../types/DEFAULT_VALUES'
-import { ExploreCommunityCard } from './ExploreCommunityCard'
-import { MyCommunityCard } from './MyCommunityCard'
+import type { CommunityListItem } from '@/features/community/models/communityDTOs'
+import { EXPLORE_DOT_COLORS, EXPLORE_LIMIT, hintClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
+import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
+import { MyCommunityCard } from '@/features/community/components/cards/MyCommunityCard'
 
 /**
  * Ancho real del contenido de /communities en una pantalla de escritorio

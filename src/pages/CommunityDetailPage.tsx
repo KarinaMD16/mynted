@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Shield } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { SiteHeader } from '@/components/layout/SiteHeader'
-import { CommunityDetailHeader } from '@/features/community/components/CommunityDetailHeader'
-import { CommunityNotice } from '@/features/community/components/CommunityNotice'
-import { CommunitySidebar } from '@/features/community/components/CommunitySidebar'
-import { ForumPostCard } from '@/features/community/components/ForumPostCard'
-import { useCommunityDetail } from '@/features/community/hooks/useCommunitiesQueries'
+import { CommunityDetailHeader } from '@/features/community/components/detail/CommunityDetailHeader'
+import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
+import { CommunitySidebar } from '@/features/community/components/detail/CommunitySidebar'
+import { ForumPostCard } from '@/features/community/components/cards/ForumPostCard'
+import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 
@@ -15,11 +15,11 @@ type CommunityTab = 'talk' | 'shop'
 
 export default function CommunityDetailPage() {
   const { t } = useLanguage()
-  const { communityId } = useParams({ from: '/communities/$communityId' })
+  const { slug } = useParams({ from: '/communities/$slug' })
   const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
 
-  const communityQuery = useCommunityDetail(Number(communityId), isLoggedIn)
+  const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
   const community = communityQuery.data
 
   return (
@@ -38,7 +38,19 @@ export default function CommunityDetailPage() {
             {t('community.detail.back')}
           </Link>
 
-          <div className="flex gap-2" role="tablist" aria-label={t('community.detail.tabsLabel')}>
+          <div className="flex items-center gap-3">
+            {(community?.membershipRole === 'owner' || community?.membershipRole === 'moderator') && (
+              <Link
+                to="/communities/$slug/moderacion"
+                params={{ slug }}
+                className="flex items-center gap-1.5 rounded-lg border border-mynted-border bg-white px-3 py-1.5 text-sm font-semibold text-mynted-ink hover:bg-mynted-bg"
+              >
+                <Shield className="size-4" aria-hidden="true" />
+                {t('moderation.openPanel')}
+              </Link>
+            )}
+
+            <div className="flex gap-2" role="tablist" aria-label={t('community.detail.tabsLabel')}>
             {(['shop', 'talk'] as const).map((tab) => (
               <button
                 key={tab}
@@ -55,6 +67,7 @@ export default function CommunityDetailPage() {
                 {tab === 'shop' ? t('community.detail.tabShop') : t('community.detail.tabTalk')}
               </button>
             ))}
+            </div>
           </div>
         </div>
 

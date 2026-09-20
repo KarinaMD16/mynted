@@ -4,15 +4,15 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useMyCommunities } from '../hooks/useCommunitiesQueries'
+import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import {
   EXPLORE_DOT_COLORS,
   MY_COMMUNITIES_BENTO_LIMIT,
   MY_COMMUNITIES_QUERY,
-} from '../types/DEFAULT_VALUES'
-import { CommunityNotice } from './CommunityNotice'
-import { ExploreCommunityCard } from './ExploreCommunityCard'
-import { MyCommunityCard } from './MyCommunityCard'
+} from '@/features/community/types/DEFAULT_VALUES'
+import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
+import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
+import { MyCommunityCard } from '@/features/community/components/cards/MyCommunityCard'
 
 export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity: () => void }) {
   const { t } = useLanguage()
