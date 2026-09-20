@@ -13,6 +13,7 @@ import {
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useJoinCommunity, useLeaveCommunity } from '../hooks/useCommunitiesMutations'
 import type { CommunityDetail } from '../models/communityDTOs'
+import { CommunityPattern } from './CommunityPattern'
 
 type PreviewTarget = 'banner' | 'image'
 
@@ -46,7 +47,8 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
   return (
     <header className="flex flex-col items-center">
       <div className="relative w-full">
-        <div className="h-40 w-full overflow-hidden rounded-2xl bg-mynted-bg sm:h-56">
+        <div className="h-40 w-full overflow-hidden rounded-2xl sm:h-56">
+          {!community.bannerUrl && <CommunityPattern seed={community.id} />}
           {community.bannerUrl && (
             <button
               type="button"

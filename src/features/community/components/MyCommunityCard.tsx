@@ -17,15 +17,29 @@ export function MyCommunityCard({ community, featured = false, variant }: MyComm
         featured ? 'min-h-56 lg:min-h-full' : 'min-h-40'
       }`}
     >
-      {community.imageUrl && (
+      {community.imageUrl ? (
         <img
           src={community.imageUrl}
           alt={t('communities.card.imageAlt', { name: community.name })}
           aria-hidden="true"
           className={`pointer-events-none absolute right-0 bottom-0 object-contain ${
-            featured ? 'h-4/5 max-w-[45%]' : 'h-full max-w-[35%]'
+            featured ? 'h-4/4 max-w-[45%]' : 'h-full max-w-[100%]'
           }`}
         />
+      ) : (
+        // Sin foto de perfil: la inicial. El patron es solo para el banner.
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute top-0 right-0 h-full ${featured ? 'w-[45%]' : 'w-[35%]'}`}
+        >
+          <span
+            className={`absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white font-heading font-semibold text-mynted-ink shadow-sm ${
+              featured ? 'size-16 text-2xl' : 'size-11 text-lg'
+            }`}
+          >
+            {community.name.charAt(0).toUpperCase()}
+          </span>
+        </div>
       )}
 
       <div className={`relative flex flex-col gap-2 ${featured ? 'max-w-[55%]' : 'max-w-[65%]'}`}>

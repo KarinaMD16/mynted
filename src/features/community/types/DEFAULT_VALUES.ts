@@ -55,3 +55,8 @@ export const variantClasses = {
     description: 'text-mynted-ink/70',
   },
 }
+/** Recorte de la portada: 1600x400, lo mismo que dice el hint del formulario. */
+export const BANNER_CROP = { aspect: 4, outputWidth: 1600 } as const;
+
+/** Recorte de la foto de la comunidad: cuadrada, se muestra en circulo. */
+export const IMAGE_CROP = { aspect: 1, outputWidth: 512 } as const;

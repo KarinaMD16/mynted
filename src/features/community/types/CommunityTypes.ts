@@ -7,8 +7,11 @@ export interface CreateCommunityFormProps {
   }
 
 export interface SelectedImage {
+    /** Imagen ya recortada: es la que se sube. */
     file: File;
     previewUrl: string;
+    /** Archivo original, para poder volver a ajustar el recorte. */
+    original: File;
 }
 
 
