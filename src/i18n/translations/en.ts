@@ -287,10 +287,10 @@ export const en: Record<TranslationKey, string> = {
   'community.detail.signedOutTitle': 'Sign in to see this community',
   'community.detail.signedOutDescription': 'Community details are only available to signed-in users.',
 
-  // Moderation panel
-  'moderation.title': 'Moderation panel',
+  // Admin panel
+  'moderation.title': 'Admin panel',
   'moderation.subtitle': 'manage your community rules and settings',
-  'moderation.openPanel': 'Moderation',
+  'moderation.openPanel': 'Manage',
   'moderation.backToCommunity': 'Back to community',
   'moderation.forbiddenTitle': "You don't have access to this panel",
   'moderation.forbiddenDescription': 'Only the community owner and moderators can open it.',

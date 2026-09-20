@@ -286,10 +286,11 @@ export const es = {
   'community.detail.signedOutDescription':
     'El detalle de una comunidad solo está disponible para personas con sesión iniciada.',
 
-  // Panel de moderacion
-  'moderation.title': 'Panel de moderación',
+
+  // Panel de administración
+  'moderation.title': 'Panel de administración',
   'moderation.subtitle': 'gestiona las reglas y los ajustes de tu comunidad',
-  'moderation.openPanel': 'Moderación',
+  'moderation.openPanel': 'Administrar',
   'moderation.backToCommunity': 'Volver a la comunidad',
   'moderation.forbiddenTitle': 'No tienes acceso a este panel',
   'moderation.forbiddenDescription': 'Solo el dueño y los moderadores de la comunidad pueden entrar.',
