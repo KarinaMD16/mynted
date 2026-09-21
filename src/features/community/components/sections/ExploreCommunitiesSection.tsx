@@ -21,7 +21,8 @@ export function ExploreCommunitiesSection() {
   const exploreQuery = useCommunities(EXPLORE_COMMUNITIES_QUERY)
   const myCommunitiesQuery = useMyCommunities(MY_COMMUNITIES_QUERY, isLoggedIn)
 
-  const myCommunityIds = new Set((myCommunitiesQuery.data?.data ?? []).map((community) => community.id))
+  const myCommunities = isLoggedIn ? (myCommunitiesQuery.data?.data ?? []) : []
+  const myCommunityIds = new Set(myCommunities.map((community) => community.id))
   const otherCommunities = (exploreQuery.data?.data ?? []).filter(
     (community) => !myCommunityIds.has(community.id),
   )

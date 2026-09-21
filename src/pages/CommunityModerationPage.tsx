@@ -27,7 +27,8 @@ export default function CommunityModerationPage() {
   const [activeTab, setActiveTab] = useState<ModerationTab>('rules')
 
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
-  const community = communityQuery.data
+  // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
+  const community = isLoggedIn ? communityQuery.data : undefined
 
   const isOwner = community?.membershipRole === 'owner'
   const canModerate = isOwner || community?.membershipRole === 'moderator'

@@ -19,7 +19,8 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
   const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
   const myCommunitiesQuery = useMyCommunities(MY_COMMUNITIES_QUERY, isLoggedIn)
   const [showAll, setShowAll] = useState(false)
-  const communities = myCommunitiesQuery.data?.data ?? []
+  // Sin sesion no se usa lo que haya quedado en cache de la cuenta anterior
+  const communities = isLoggedIn ? (myCommunitiesQuery.data?.data ?? []) : []
   const bentoCommunities = communities.slice(0, MY_COMMUNITIES_BENTO_LIMIT)
   const restCommunities = communities.slice(MY_COMMUNITIES_BENTO_LIMIT)
   const isLoading = isLoadingSession || (isLoggedIn && myCommunitiesQuery.isPending)

@@ -79,7 +79,7 @@ export function ModerationSettingsSection({
     formData.append('name', name.trim())
     formData.append('description', description.trim())
     if (categoryId > 0) formData.append('categoryId', String(categoryId))
-    if (tagIds.length > 0) formData.append('tagIds', JSON.stringify(tagIds))
+    formData.append('tagIds', JSON.stringify(tagIds))
     if (image) formData.append('image', image.file)
     if (banner) formData.append('banner', banner.file)
     saveSettings.mutate(formData, {
@@ -90,7 +90,11 @@ export function ModerationSettingsSection({
     })
   }
 
-  const canSave = name.trim().length > 0 && description.trim().length > 0 && !saveSettings.isPending
+  // El backend exige al menos un tag; sin esto el guardado "salia bien" pero
+  // los tags quitados volvian a aparecer
+  const hasTags = tagIds.length > 0
+  const canSave =
+    name.trim().length > 0 && description.trim().length > 0 && hasTags && !saveSettings.isPending
 
   return (
     <section className="flex flex-col gap-6">
@@ -256,7 +260,14 @@ export function ModerationSettingsSection({
         </div>
       </fieldset>
 
-      {categoryId > 0 && <TagPicker categoryId={categoryId} selected={tagIds} onChange={setTagIds} />}
+      {categoryId > 0 && (
+        <TagPicker
+          categoryId={categoryId}
+          selected={tagIds}
+          onChange={setTagIds}
+          error={hasTags ? undefined : t('validation.community.tagsMin')}
+        />
+      )}
 
       <div className="flex flex-col items-start gap-2">
         <button

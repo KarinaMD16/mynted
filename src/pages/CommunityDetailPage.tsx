@@ -20,7 +20,8 @@ export default function CommunityDetailPage() {
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
 
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
-  const community = communityQuery.data
+  // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
+  const community = isLoggedIn ? communityQuery.data : undefined
 
   return (
     <section className="min-h-svh bg-mynted-bg">
