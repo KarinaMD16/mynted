@@ -31,7 +31,6 @@ export interface PaginatedResponse<T> {
   }
 }
 
-/** Filtros de `GET /communities` y `GET /users/me/communities`. */
 export interface CommunitiesQuery {
   search?: string
   categoryId?: number
@@ -40,7 +39,6 @@ export interface CommunitiesQuery {
   limit?: number
 }
 
-/** Elemento de la lista de comunidades (ver mapCommunityList en el backend). */
 export interface CommunityListItem {
   id: number
   name: string
@@ -103,4 +101,15 @@ export interface CommunityDetail {
   isMember: boolean
   membershipRole: string | null
   forumPosts: ForumPost[]
+}
+
+export interface RecommendedCommunityListItem extends CommunityListItem {
+  matchedInterestCount: number
+}
+
+export interface CommunityStats {
+  communityId: number
+  memberCount: number
+  postCount: number
+  recentPostCount: number
 }

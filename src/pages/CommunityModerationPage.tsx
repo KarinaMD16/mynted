@@ -6,7 +6,10 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { ModerationRulesSection } from '@/features/community/components/moderation/ModerationRulesSection'
 import { ModerationSettingsSection } from '@/features/community/components/moderation/ModerationSettingsSection'
-import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
+import {
+  useCommunityDetailBySlug,
+  useCommunityStats,
+} from '@/features/community/hooks/useCommunitiesQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
@@ -29,6 +32,10 @@ export default function CommunityModerationPage() {
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
   // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
   const community = isLoggedIn ? communityQuery.data : undefined
+
+  // El detalle no trae el total de publicaciones; eso viene de /communities/:id/stats
+  const statsQuery = useCommunityStats(community?.id, isLoggedIn)
+  const stats = isLoggedIn ? statsQuery.data : undefined
 
   const isOwner = community?.membershipRole === 'owner'
   const canModerate = isOwner || community?.membershipRole === 'moderator'
@@ -119,14 +126,18 @@ export default function CommunityModerationPage() {
             </header>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard value={community.memberCount} label={t('moderation.stats.members')} color="text-mynted-blue" />
               <StatCard
-                value={community.recentPostCount}
+                value={stats?.memberCount ?? community.memberCount}
+                label={t('moderation.stats.members')}
+                color="text-mynted-blue"
+              />
+              <StatCard value={stats?.postCount} label={t('moderation.stats.posts')} color="text-mynted-blue" />
+              <StatCard
+                value={stats?.recentPostCount ?? community.recentPostCount}
                 label={t('moderation.stats.recentPosts')}
                 color="text-emerald-600"
               />
               <StatCard value={community.rules.length} label={t('moderation.stats.rules')} color="text-mynted-orange" />
-              <StatCard value={community.tags.length} label={t('moderation.stats.tags')} color="text-violet-500" />
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
@@ -185,10 +196,10 @@ export default function CommunityModerationPage() {
   )
 }
 
-function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
+function StatCard({ value, label, color }: { value: number | undefined; label: string; color: string }) {
   return (
     <div className="rounded-2xl border border-mynted-border bg-white px-5 py-4">
-      <p className={`font-heading text-2xl font-semibold ${color}`}>{value.toLocaleString()}</p>
+      <p className={`font-heading text-2xl font-semibold ${color}`}>{value?.toLocaleString() ?? '—'}</p>
       <p className="mt-0.5 text-sm text-mynted-gray">{label}</p>
     </div>
   )

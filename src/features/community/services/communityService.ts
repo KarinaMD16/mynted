@@ -5,6 +5,8 @@ import type {
     CommunitiesQuery,
     CommunityDetail,
     CommunityListItem,
+    CommunityStats,
+    RecommendedCommunityListItem,
     PaginatedResponse,
     TagOption,
 } from "../models/communityDTOs";
@@ -101,5 +103,26 @@ export const setCommunityPrivacy = async (communityId: number, isPrivate: boolea
 
 export const deactivateCommunity = async (communityId: number) => {
     const { data } = await myntedAPI.patch(`/communities/${communityId}/deactivate`);
+    return data;
+};
+
+/**
+ * Comunidades recomendadas para el usuario
+ * El backend las ordena por intereses, luego por las categorias de sus
+ * comunidades y al final por popularidad, y ya deja fuera las propias y las
+ * privadas.
+ */
+export const getRecommendedCommunities = async (
+    query: CommunitiesQuery = {},
+): Promise<PaginatedResponse<RecommendedCommunityListItem>> => {
+    const { data } = await myntedAPI.get<PaginatedResponse<RecommendedCommunityListItem>>(
+        '/users/me/recommended-communities',
+        { params: query },
+    );
+    return data;
+};
+
+export const getCommunityStats = async (communityId: number): Promise<CommunityStats> => {
+    const { data } = await myntedAPI.get<CommunityStats>(`/communities/${communityId}/stats`);
     return data;
 };

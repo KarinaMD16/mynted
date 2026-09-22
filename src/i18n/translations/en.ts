@@ -300,6 +300,7 @@ export const en: Record<TranslationKey, string> = {
   'moderation.tabs.rules': 'Rules',
   'moderation.tabs.settings': 'Settings',
   'moderation.stats.members': 'Members',
+  'moderation.stats.posts': 'Posts',
   'moderation.stats.recentPosts': 'Recent posts',
   'moderation.stats.rules': 'Rules',
   'moderation.stats.tags': 'Tags',

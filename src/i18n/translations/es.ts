@@ -300,6 +300,7 @@ export const es = {
   'moderation.tabs.rules': 'Reglas',
   'moderation.tabs.settings': 'Configuración',
   'moderation.stats.members': 'Miembros',
+  'moderation.stats.posts': 'Publicaciones',
   'moderation.stats.recentPosts': 'Publicaciones recientes',
   'moderation.stats.rules': 'Reglas',
   'moderation.stats.tags': 'Tags',

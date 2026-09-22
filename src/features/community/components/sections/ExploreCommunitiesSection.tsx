@@ -3,7 +3,11 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useCommunities, useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
+import {
+  useCommunities,
+  useMyCommunities,
+  useRecommendedCommunities,
+} from '@/features/community/hooks/useCommunitiesQueries'
 import {
   EXPLORE_COMMUNITIES_QUERY,
   EXPLORE_DOT_COLORS,
@@ -18,13 +22,18 @@ export function ExploreCommunitiesSection() {
   const { isLoggedIn } = useCurrentUser()
   const [showAll, setShowAll] = useState(false)
 
-  const exploreQuery = useCommunities(EXPLORE_COMMUNITIES_QUERY)
+  // Con sesion: recomendadas segun intereses y categorias, que ya vienen sin
+  // las propias ni las privadas. Sin sesion: el catalogo publico por popularidad.
+  const recommendedQuery = useRecommendedCommunities(EXPLORE_COMMUNITIES_QUERY, isLoggedIn)
+  const publicQuery = useCommunities(EXPLORE_COMMUNITIES_QUERY, !isLoggedIn)
+  const exploreQuery = isLoggedIn ? recommendedQuery : publicQuery
   const myCommunitiesQuery = useMyCommunities(MY_COMMUNITIES_QUERY, isLoggedIn)
 
   const myCommunities = isLoggedIn ? (myCommunitiesQuery.data?.data ?? []) : []
   const myCommunityIds = new Set(myCommunities.map((community) => community.id))
+
   const otherCommunities = (exploreQuery.data?.data ?? []).filter(
-    (community) => !myCommunityIds.has(community.id),
+    (community) => isLoggedIn || !myCommunityIds.has(community.id),
   )
   const visibleCommunities = showAll ? otherCommunities : otherCommunities.slice(0, EXPLORE_LIMIT)
   const canToggle = otherCommunities.length > EXPLORE_LIMIT
