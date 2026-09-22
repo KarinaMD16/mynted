@@ -2,8 +2,9 @@ import { useState } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Calendar, Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
-import { Clock, LayoutGrid, type LucideIcon, Link2, MapPin, MessageCircle, ShoppingBag, TrendingUp } from 'lucide-react'
+import { Clock, Info, LayoutGrid, type LucideIcon, Link2, MapPin, MessageCircle, ShoppingBag, TrendingUp } from 'lucide-react'
 import { EditProfileForm } from '@/features/auth/components/EditProfileForm'
+import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useMyInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -14,7 +15,7 @@ import type { Interest } from '@/features/auth/models/interests'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
 
-type ProfileTab = 'posts' | 'threads' | 'products' | 'favorites'
+type ProfileTab = 'posts' | 'threads' | 'products' | 'favorites' | 'info'
 
 function getInitials(username: string): string {
   return username.slice(0, 2).toUpperCase()
@@ -33,6 +34,7 @@ export default function ProfilePage() {
   const interestsQuery = useMyInterestsQuery(isLoggedIn)
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
 
   const isSeller = user?.role === 'seller'
 
@@ -55,21 +57,34 @@ export default function ProfilePage() {
 
         {isLoggedIn && user && (
           <>
-            <ProfileHeader user={user} language={language} onEditProfile={() => setIsEditOpen(true)} />
+            <ProfileHeader
+              user={user}
+              language={language}
+              onEditProfile={() => setIsEditOpen(true)}
+              onBecomeSeller={() => setIsBecomeSellerOpen(true)}
+            />
 
             <ProfileTabsBar activeTab={activeTab} onChange={setActiveTab} isSeller={isSeller} />
 
             <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
-              <div className="flex flex-col gap-6">
+              {/* En mobile/tablet la barra lateral (About/Badges/Intereses) deja de
+                  convivir con el contenido de las tabs: pasa a ser ella misma una tab
+                  más ("Info", ver PROFILE_TABS) para no empujar las publicaciones muy
+                  abajo. En desktop (lg+) vuelve a mostrarse siempre, fija a la
+                  izquierda, sin depender de qué tab esté activa. */}
+              <div className={`${activeTab === 'info' ? 'flex' : 'hidden'} flex-col gap-6 lg:order-1 lg:flex`}>
                 <AboutCard user={user} language={language} />
                 <BadgesCard />
                 <InterestsCard interestsQuery={interestsQuery} />
               </div>
 
-              <TabContent activeTab={activeTab} />
+              <div className={`${activeTab === 'info' ? 'hidden' : ''} lg:order-2 lg:block`}>
+                <TabContent activeTab={activeTab} />
+              </div>
             </div>
 
             <EditProfileForm isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} user={user} />
+            <BecomeSellerForm isOpen={isBecomeSellerOpen} onClose={() => setIsBecomeSellerOpen(false)} />
           </>
         )}
       </main>
@@ -120,26 +135,51 @@ function ProfileHeader({
   user,
   language,
   onEditProfile,
+  onBecomeSeller,
 }: {
   user: AuthUser
   language: AppLanguage
   onEditProfile: () => void
+  onBecomeSeller: () => void
 }) {
   const { t } = useLanguage()
+  const isSeller = user.role === 'seller'
+  const isSellerRequestPending = user.sellerRequestStatus === 'pending'
+
   return (
     <div>
       <CoverBanner />
 
       <div className="relative -mt-10 rounded-2xl border border-mynted-border bg-mynted-white pt-16 pb-6 shadow-[0_16px_40px_-8px_rgba(13,13,20,0.08)] sm:pb-8">
-        <button
-          type="button"
-          onClick={onEditProfile}
-          aria-label={t('profile.editProfile')}
-          className="absolute -top-5 right-4 z-10 flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-border bg-mynted-white px-3 py-2.5 text-sm font-semibold text-mynted-ink shadow-sm transition-colors hover:bg-mynted-bg sm:right-6 sm:px-4"
-        >
-          <Edit05 className="size-4" aria-hidden="true" />
-          <span className="hidden sm:inline">{t('profile.editProfile')}</span>
-        </button>
+        <div className="absolute -top-5 right-4 z-10 flex items-center gap-2 sm:right-6">
+          {!isSeller &&
+            (isSellerRequestPending ? (
+              <span className="flex cursor-default items-center gap-1.5 rounded-[10px] border border-mynted-border bg-mynted-bg px-3 py-2.5 text-sm font-semibold text-mynted-gray sm:px-4">
+                <ShoppingBag className="size-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{t('profile.becomeSeller.pendingPill')}</span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onBecomeSeller}
+                aria-label={t('profile.becomeSeller.cta')}
+                className="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-orange bg-mynted-orange px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mynted-orange-hover sm:px-4"
+              >
+                <ShoppingBag className="size-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{t('profile.becomeSeller.cta')}</span>
+              </button>
+            ))}
+
+          <button
+            type="button"
+            onClick={onEditProfile}
+            aria-label={t('profile.editProfile')}
+            className="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-border bg-mynted-white px-3 py-2.5 text-sm font-semibold text-mynted-ink shadow-sm transition-colors hover:bg-mynted-bg sm:px-4"
+          >
+            <Edit05 className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t('profile.editProfile')}</span>
+          </button>
+        </div>
 
         <span className="absolute -top-14 left-1/2 z-20 flex size-28 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
           {user.photoUrl ? (
@@ -198,11 +238,13 @@ function SocialLinksPlaceholder() {
   )
 }
 
-const PROFILE_TABS: { id: ProfileTab; labelKey: TranslationKey; icon: LucideIcon; sellerOnly?: boolean }[] = [
+const PROFILE_TABS: { id: ProfileTab; labelKey: TranslationKey; icon: LucideIcon; sellerOnly?: boolean; mobileOnly?: boolean }[] = [
   { id: 'posts', labelKey: 'profile.tabs.posts', icon: LayoutGrid },
   { id: 'threads', labelKey: 'profile.tabs.threads', icon: MessageCircle },
   { id: 'products', labelKey: 'profile.tabs.products', icon: ShoppingBag, sellerOnly: true },
   { id: 'favorites', labelKey: 'profile.tabs.favorites', icon: HeartOutline },
+  // Solo en mobile/tablet: en desktop el About/Badges/Intereses ya está siempre visible a la izquierda.
+  { id: 'info', labelKey: 'profile.tabs.info', icon: Info, mobileOnly: true },
 ]
 
 function ProfileTabsBar({
@@ -218,16 +260,16 @@ function ProfileTabsBar({
   const visibleTabs = PROFILE_TABS.filter((tab) => !tab.sellerOnly || isSeller)
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-2 border-b border-mynted-border pb-1">
-      {visibleTabs.map(({ id, labelKey, icon: Icon }) => (
+    <div className="mt-6 flex items-center gap-2 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]">
+      {visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => (
         <button
           key={id}
           type="button"
           onClick={() => onChange(id)}
           aria-pressed={activeTab === id}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-            activeTab === id ? 'bg-mynted-orange text-white' : 'text-mynted-gray hover:text-mynted-ink'
-          }`}
+          className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${
+            mobileOnly ? 'lg:hidden' : ''
+          } ${activeTab === id ? 'bg-mynted-orange text-white' : 'text-mynted-gray hover:text-mynted-ink'}`}
         >
           <Icon className="size-4" aria-hidden="true" />
           {t(labelKey)}
@@ -244,6 +286,10 @@ function TabContent({ activeTab }: { activeTab: ProfileTab }) {
     threads: { title: 'profile.tabs.threadsEmptyTitle', subtitle: 'profile.tabs.threadsEmptySubtitle' },
     products: { title: 'profile.tabs.productsEmptyTitle', subtitle: 'profile.tabs.productsEmptySubtitle' },
     favorites: { title: 'profile.tabs.favoritesEmptyTitle', subtitle: 'profile.tabs.favoritesEmptySubtitle' },
+    // 'info' no tiene tab propia en desktop (el sidebar ya está siempre visible ahí):
+    // este fallback solo cubre el caso raro de pasar a desktop con activeTab='info'
+    // todavía elegido desde una vista mobile anterior.
+    info: { title: 'profile.tabs.postsEmptyTitle', subtitle: 'profile.tabs.postsEmptySubtitle' },
   }
   const { title, subtitle } = copy[activeTab]
 

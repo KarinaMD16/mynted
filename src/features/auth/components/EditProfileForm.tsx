@@ -1,11 +1,12 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useForm } from '@tanstack/react-form'
-import { Camera, LoaderCircle, X } from 'lucide-react'
+import { Camera, LoaderCircle } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { getFieldErrorMessage } from '@/utils/form'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { TextField } from '@/components/ui/TextField'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { AuthUser } from '../models/auth'
 import { useUpdateProfileMutation } from '../hooks/useAuthMutations'
 import { makeEditProfileSchema } from '../schema/editProfileSchema'
@@ -22,13 +23,20 @@ function getInitials(username: string): string {
 
 /** Modal de editar perfil, abierto desde el botón "Editar perfil" del header de /profile (ver ProfilePage). */
 export function EditProfileForm({ isOpen, onClose, user }: EditProfileFormProps) {
-  if (!isOpen) return null
-  return <EditProfileDialog onClose={onClose} user={user} />
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+    >
+      <DialogContent className="max-w-lg">{isOpen && <EditProfileDialogBody onClose={onClose} user={user} />}</DialogContent>
+    </Dialog>
+  )
 }
 
-function EditProfileDialog({ onClose, user }: { onClose: () => void; user: AuthUser }) {
+function EditProfileDialogBody({ onClose, user }: { onClose: () => void; user: AuthUser }) {
   const { t } = useLanguage()
-  const titleId = useId()
   const avatarInputId = useId()
 
   const [avatar, setAvatar] = useState<{ file: File; previewUrl: string } | null>(null)
@@ -61,21 +69,6 @@ function EditProfileDialog({ onClose, user }: { onClose: () => void; user: AuthU
     },
   })
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [onClose])
-
   useEffect(
     () => () => {
       if (avatar) URL.revokeObjectURL(avatar.previewUrl)
@@ -93,165 +86,140 @@ function EditProfileDialog({ onClose, user }: { onClose: () => void; user: AuthU
   const avatarPreviewUrl = avatar?.previewUrl ?? user.photoUrl ?? null
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50">
-      <div
-        className="flex min-h-full items-start justify-center p-4 sm:items-center sm:p-8"
-        onMouseDown={(event) => {
-          if (event.target === event.currentTarget) onClose()
+    <>
+      <DialogHeader>
+        <DialogTitle>{t('profile.edit.title')}</DialogTitle>
+        <DialogDescription>{t('profile.edit.subtitle')}</DialogDescription>
+      </DialogHeader>
+
+      <form
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          void form.handleSubmit()
         }}
       >
-        <section
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          className="relative w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-8"
-        >
+        <div className="mt-6 flex flex-col gap-5">
+          <div className="flex items-center gap-4">
+            <label
+              htmlFor={avatarInputId}
+              aria-label={t('profile.edit.changePhotoLabel')}
+              className="group relative flex size-20 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-xl font-semibold text-white shadow-sm transition-transform hover:scale-105"
+            >
+              {avatarPreviewUrl ? (
+                <img src={avatarPreviewUrl} alt="" className="size-full object-cover" />
+              ) : (
+                getInitials(user.username)
+              )}
+              <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                <Camera className="size-5 text-white" aria-hidden="true" />
+              </span>
+            </label>
+            <input
+              id={avatarInputId}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="sr-only"
+              onChange={handleAvatarChange}
+            />
+            <p className="text-xs text-mynted-gray">{t('profile.edit.avatarHint')}</p>
+          </div>
+
+          <form.Field name="username">
+            {(field) => {
+              const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
+              return (
+                <TextField
+                  label={t('auth.usernameLabel')}
+                  placeholder={t('auth.usernamePlaceholder')}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  error={error}
+                />
+              )
+            }}
+          </form.Field>
+
+          <form.Field name="bio">
+            {(field) => {
+              const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
+              return (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor={field.name} className="text-[13px] font-medium text-mynted-ink">
+                    {t('profile.edit.bioLabel')}
+                  </label>
+                  <textarea
+                    id={field.name}
+                    rows={3}
+                    placeholder={t('profile.edit.bioPlaceholder')}
+                    className={`w-full resize-y rounded-[10px] border bg-white px-3.5 py-2.5 text-sm text-mynted-ink outline-none transition-shadow placeholder:text-mynted-gray-light focus:ring-2 focus:ring-mynted-orange/20 ${
+                      error ? 'border-red-400' : 'border-mynted-border focus:border-mynted-orange'
+                    }`}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    aria-invalid={Boolean(error)}
+                  />
+                  {error && <span className="text-xs text-red-500">{error}</span>}
+                </div>
+              )
+            }}
+          </form.Field>
+
+          <form.Field name="location">
+            {(field) => {
+              const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
+              return (
+                <TextField
+                  label={t('profile.edit.locationLabel')}
+                  placeholder={t('profile.edit.locationPlaceholder')}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  error={error}
+                />
+              )
+            }}
+          </form.Field>
+        </div>
+
+        {updateProfileMutation.isError && (
+          <p className="mt-4 text-right text-sm text-red-500" role="alert">
+            {getApiErrorMessage(updateProfileMutation.error)}
+          </p>
+        )}
+
+        <DialogFooter>
           <button
             type="button"
             onClick={onClose}
-            aria-label={t('profile.edit.close')}
-            className="absolute top-4 right-4 rounded-full p-1.5 text-mynted-gray transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+            className="rounded-xl border border-mynted-border bg-white px-6 py-2.5 font-heading text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
           >
-            <X className="size-5" />
+            {t('profile.edit.cancel')}
           </button>
 
-          <header className="pr-8">
-            <h2 id={titleId} className="font-heading text-2xl font-semibold text-mynted-ink">
-              {t('profile.edit.title')}
-            </h2>
-            <p className="mt-1 text-sm text-mynted-gray">{t('profile.edit.subtitle')}</p>
-          </header>
-
-          <form
-            noValidate
-            onSubmit={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-              void form.handleSubmit()
-            }}
-          >
-            <div className="mt-6 flex flex-col gap-5">
-              <div className="flex items-center gap-4">
-                <label
-                  htmlFor={avatarInputId}
-                  aria-label={t('profile.edit.changePhotoLabel')}
-                  className="group relative flex size-20 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-xl font-semibold text-white shadow-sm transition-transform hover:scale-105"
-                >
-                  {avatarPreviewUrl ? (
-                    <img src={avatarPreviewUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    getInitials(user.username)
-                  )}
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Camera className="size-5 text-white" aria-hidden="true" />
-                  </span>
-                </label>
-                <input
-                  id={avatarInputId}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  className="sr-only"
-                  onChange={handleAvatarChange}
-                />
-                <p className="text-xs text-mynted-gray">{t('profile.edit.avatarHint')}</p>
-              </div>
-
-              <form.Field name="username">
-                {(field) => {
-                  const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
-                  return (
-                    <TextField
-                      label={t('auth.usernameLabel')}
-                      placeholder={t('auth.usernamePlaceholder')}
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      error={error}
-                    />
-                  )
-                }}
-              </form.Field>
-
-              <form.Field name="bio">
-                {(field) => {
-                  const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
-                  return (
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor={field.name} className="text-[13px] font-medium text-mynted-ink">
-                        {t('profile.edit.bioLabel')}
-                      </label>
-                      <textarea
-                        id={field.name}
-                        rows={3}
-                        placeholder={t('profile.edit.bioPlaceholder')}
-                        className={`w-full resize-y rounded-[10px] border bg-white px-3.5 py-2.5 text-sm text-mynted-ink outline-none transition-shadow placeholder:text-mynted-gray-light focus:ring-2 focus:ring-mynted-orange/20 ${
-                          error ? 'border-red-400' : 'border-mynted-border focus:border-mynted-orange'
-                        }`}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                        aria-invalid={Boolean(error)}
-                      />
-                      {error && <span className="text-xs text-red-500">{error}</span>}
-                    </div>
-                  )
-                }}
-              </form.Field>
-
-              <form.Field name="location">
-                {(field) => {
-                  const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
-                  return (
-                    <TextField
-                      label={t('profile.edit.locationLabel')}
-                      placeholder={t('profile.edit.locationPlaceholder')}
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      error={error}
-                    />
-                  )
-                }}
-              </form.Field>
-            </div>
-
-            {updateProfileMutation.isError && (
-              <p className="mt-4 text-right text-sm text-red-500" role="alert">
-                {getApiErrorMessage(updateProfileMutation.error)}
-              </p>
-            )}
-
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
+            {([canSubmit, isSubmitting]) => (
               <button
-                type="button"
-                onClick={onClose}
-                className="rounded-xl border border-mynted-border bg-white px-6 py-2.5 font-heading text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+                type="submit"
+                disabled={!canSubmit || updateProfileMutation.isPending}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-6 py-2.5 font-heading text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {t('profile.edit.cancel')}
-              </button>
-
-              <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
-                {([canSubmit, isSubmitting]) => (
-                  <button
-                    type="submit"
-                    disabled={!canSubmit || updateProfileMutation.isPending}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-6 py-2.5 font-heading text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSubmitting || updateProfileMutation.isPending ? (
-                      <>
-                        <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-                        {t('profile.edit.saving')}
-                      </>
-                    ) : (
-                      t('profile.edit.submit')
-                    )}
-                  </button>
+                {isSubmitting || updateProfileMutation.isPending ? (
+                  <>
+                    <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                    {t('profile.edit.saving')}
+                  </>
+                ) : (
+                  t('profile.edit.submit')
                 )}
-              </form.Subscribe>
-            </div>
-          </form>
-        </section>
-      </div>
-    </div>
+              </button>
+            )}
+          </form.Subscribe>
+        </DialogFooter>
+      </form>
+    </>
   )
 }

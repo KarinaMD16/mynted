@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AuthUser } from '../models/auth'
 import {
+  changePasswordRequest,
   forgotPasswordRequest,
   getCurrentUserRequest,
   getUserByIdRequest,
@@ -12,6 +13,7 @@ import {
   resetPasswordRequest,
   updateProfileRequest,
 } from '../services/authServices'
+import { requestSellerRequest } from '../services/sellersService'
 
 export const authKeys = {
   me: ['auth', 'me'] as const,
@@ -90,6 +92,17 @@ export function useResetPasswordMutation() {
 }
 
 /**
+ * Cambiar contraseña estando logueado (distinto del flujo de "olvidé mi
+ * contraseña"). No toca el cache de authKeys.me: la respuesta es solo un
+ * mensaje, no el usuario actualizado.
+ */
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: changePasswordRequest,
+  })
+}
+
+/**
  * Actualiza el perfil (ver EditProfileForm). useCurrentUser/ProfilePage leen
  * de useCurrentUserQuery (clave authKeys.me), así que ahí hay que refrescar
  * el cache — ya tenemos el usuario actualizado en la respuesta, así que se
@@ -99,6 +112,21 @@ export function useUpdateProfileMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: updateProfileRequest,
+    onSuccess: (user) => {
+      queryClient.setQueryData<AuthUser>(authKeys.me, user)
+    },
+  })
+}
+
+/**
+ * Solicitar convertirse en vendedor (ver BecomeSellerForm). Igual que
+ * useUpdateProfileMutation: la respuesta ya trae el User con
+ * sellerRequestStatus al día, así que se escribe directo en el cache.
+ */
+export function useRequestSellerMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: requestSellerRequest,
     onSuccess: (user) => {
       queryClient.setQueryData<AuthUser>(authKeys.me, user)
     },

@@ -11,6 +11,14 @@ import { makeCreateCommunitySchema } from '../schemas/createCommunitySchema';
 import type { CreateCommunityValues } from '../schemas/createCommunitySchema';
 import type { CreateCommunityFormProps, SelectedImage } from '../types/CommunityTypes';
 import { DEFAULT_RULES, hintClasses, labelClasses, inputClasses, errorClasses } from '../types/DEFAULT_VALUES';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { PrivacyOption } from './PrivacyOption';
 import { TagPicker } from './TagPicker';
 
@@ -23,15 +31,17 @@ const slugify = (value: string) =>
         .replace(/^-+|-+$/g, '');
 
 export const CreateCommunityForm = ({ isOpen, onClose }: CreateCommunityFormProps) => {
-
-    if (!isOpen) return null;
-
-    return <CreateCommunityDialog onClose={onClose} />;
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <DialogContent className="max-w-5xl">
+                {isOpen && <CreateCommunityDialogBody onClose={onClose} />}
+            </DialogContent>
+        </Dialog>
+    );
 }
 
-const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
+const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
     const { t } = useLanguage();
-    const titleId = useId();
     const bannerInputId = useId();
     const imageInputId = useId();
     const privacyLabelId = useId();
@@ -79,22 +89,6 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
     });
 
 
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onClose();
-        };
-
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            document.body.style.overflow = previousOverflow;
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [onClose]);
-
-
     useEffect(() => () => { if (banner) URL.revokeObjectURL(banner.previewUrl); }, [banner]);
     useEffect(() => () => { if (image) URL.revokeObjectURL(image.previewUrl); }, [image]);
 
@@ -106,32 +100,11 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50">
-            <div
-                className="flex min-h-full items-start justify-center p-4 sm:items-center sm:p-8"
-                onMouseDown={(event) => {
-                    if (event.target === event.currentTarget) onClose();
-                }}
-            >
-                <section
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby={titleId}
-                    className="relative w-full max-w-5xl rounded-2xl bg-white p-5 shadow-xl sm:p-10"
-                >
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label={t('communities.create.close')}
-                        className="absolute top-4 right-4 rounded-full p-1.5 text-mynted-gray transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
-                    >
-                        <X className="size-5" />
-                    </button>
-
-                    <header className="pr-8">
-                        <h2 id={titleId} className="font-heading text-2xl font-semibold text-mynted-ink sm:text-[28px]">{t('communities.create.title')}</h2>
-                        <p className="mt-1 text-sm text-mynted-gray">{t('communities.create.subtitle')}</p>
-                    </header>
+        <>
+            <DialogHeader>
+                <DialogTitle>{t('communities.create.title')}</DialogTitle>
+                <DialogDescription>{t('communities.create.subtitle')}</DialogDescription>
+            </DialogHeader>
 
                     <form
                         noValidate
@@ -429,7 +402,7 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                             </p>
                         )}
 
-                        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <DialogFooter>
                             <button
                                 type="button"
                                 onClick={onClose}
@@ -458,10 +431,8 @@ const CreateCommunityDialog = ({ onClose }: { onClose: () => void }) => {
                                     </button>
                                 )}
                             </form.Subscribe>
-                        </div>
+                        </DialogFooter>
                     </form>
-                </section>
-            </div>
-        </div>
+        </>
     );
 }

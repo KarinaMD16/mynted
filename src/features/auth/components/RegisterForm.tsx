@@ -33,7 +33,7 @@ export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProp
       // 401 Unauthorized. Iniciamos sesión con las mismas credenciales para
       // obtener la cookie de sesión antes de continuar (useLoginMutation ya
       // invalida el cache de "usuario actual" con eso).
-      await loginMutation.mutateAsync({ email: value.email, password: value.password })
+      await loginMutation.mutateAsync({ identifier: value.email, password: value.password })
       onRegistered()
     },
   })

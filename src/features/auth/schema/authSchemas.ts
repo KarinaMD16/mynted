@@ -26,9 +26,13 @@ function buildUsernameSchema(t: TranslateFn) {
   return z.string().min(1, t('validation.usernameRequired')).min(3, t('validation.usernameMinLength'))
 }
 
+/**
+ * `identifier` acepta username o email (ver LoginDto en el backend), así
+ * que a propósito no se valida como email — solo que no venga vacío.
+ */
 export function makeLoginSchema(t: TranslateFn) {
   return z.object({
-    email: buildEmailSchema(t),
+    identifier: z.string().min(1, t('validation.identifierRequired')),
     password: z.string().min(1, t('validation.passwordRequired')),
   })
 }
@@ -53,7 +57,21 @@ export function makeResetPasswordSchema(t: TranslateFn) {
   })
 }
 
+/**
+ * Igual que makeResetPasswordSchema: `confirmPassword` no viaja al backend
+ * (ChangePasswordPayload no lo tiene) y por eso no vive acá — se valida a
+ * mano en el form con un field validator `onChangeListenTo`, como hace
+ * ResetPasswordForm.
+ */
+export function makeChangePasswordSchema(t: TranslateFn) {
+  return z.object({
+    currentPassword: z.string().min(1, t('validation.passwordRequired')),
+    newPassword: buildPasswordSchema(t),
+  })
+}
+
 export type LoginFormValues = z.infer<ReturnType<typeof makeLoginSchema>>
 export type RegisterFormValues = z.infer<ReturnType<typeof makeRegisterSchema>>
 export type ForgotPasswordFormValues = z.infer<ReturnType<typeof makeForgotPasswordSchema>>
 export type ResetPasswordFormValues = z.infer<ReturnType<typeof makeResetPasswordSchema>>
+export type ChangePasswordFormValues = z.infer<ReturnType<typeof makeChangePasswordSchema>>
