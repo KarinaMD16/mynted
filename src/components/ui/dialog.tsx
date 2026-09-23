@@ -61,7 +61,14 @@ function DialogContent({
           // scroll propio) para que el scrollbar del div interior quede recortado por
           // las esquinas redondeadas en vez de sobresalir con bordes cuadrados (el div
           // interior de abajo, con overflow-y-auto, es el que realmente scrollea).
-          'fixed top-[50%] left-[50%] z-50 grid max-h-[85vh] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden rounded-2xl border border-mynted-border bg-white shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          //
+          // grid-rows-[minmax(0,1fr)] es lo que hace que ese scroll funcione: sin
+          // él, la única fila del grid mide lo que mida el contenido ("auto"), el
+          // div interior crece igual de alto y no scrollea, y lo que no entra en
+          // max-h queda recortado. Con la fila limitada al alto disponible, el div
+          // interior se ajusta a ese alto y el resto se recorre con scroll.
+          // 85dvh (y no vh) para que en mobile no quede tapado por la barra del navegador.
+          'fixed top-[50%] left-[50%] z-50 grid max-h-[85dvh] grid-rows-[minmax(0,1fr)] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden rounded-2xl border border-mynted-border bg-white shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
           className,
         )}
         {...props}
@@ -70,7 +77,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-4 right-4 rounded-full p-1.5 text-mynted-gray outline-none transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+            className="absolute top-4 right-4 rounded-full bg-white/90 p-1.5 text-mynted-gray outline-none transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
           >
             <X className="size-5" />
             <span className="sr-only">Cerrar</span>

@@ -1,7 +1,9 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from './App'
+import { ADMIN_SECTIONS, ADMIN_TABS, type AdminSection, type AdminTab } from './features/admin/models/admin'
 import { Loader } from './components/ui/Loader'
 import { useLanguage } from './i18n/LanguageContext'
+import AdminPage from './pages/AdminPage'
 import CommunitiesPage from './pages/CommunitiesPage'
 import CommunityDetailPage from './pages/CommunityDetailPage'
 import CommunityModerationPage from './pages/CommunityModerationPage'
@@ -126,6 +128,27 @@ const cookiesPolicyRoute = createRoute({
   component: CookiesPolicyPage,
 })
 
+interface AdminSearch {
+  section: AdminSection
+  tab: AdminTab
+}
+
+/**
+ * Panel de superadmin. La sección (?section=) y la pestaña (?tab=) van en la
+ * URL; un valor desconocido cae en Comunidades / Resumen.
+ */
+const adminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin',
+  component: AdminPage,
+  validateSearch: (search: Record<string, unknown>): AdminSearch => ({
+    section: (ADMIN_SECTIONS as readonly unknown[]).includes(search.section)
+      ? (search.section as AdminSection)
+      : 'communities',
+    tab: (ADMIN_TABS as readonly unknown[]).includes(search.tab) ? (search.tab as AdminTab) : 'overview',
+  }),
+})
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
@@ -140,6 +163,7 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   privacyPolicyRoute,
   cookiesPolicyRoute,
+  adminRoute,
 ])
 
 /**

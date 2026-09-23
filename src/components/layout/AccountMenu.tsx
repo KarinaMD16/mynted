@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, LogOut01, Settings01, User01 } from '@untitledui/icons'
+import { ChevronDown, LayoutAlt01, LogOut01, Settings01, User01 } from '@untitledui/icons'
 import {
   Button as AriaButton,
   Dialog as AriaDialog,
@@ -11,13 +11,17 @@ import { GooseIcon } from '../ui/GooseIcon'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
 import { ChangePasswordForm } from '@/features/auth/components/ChangePasswordForm'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { MenuItem } from './menuPrimitives'
 import { useAccountActions } from './useAccountActions'
 
 export function AccountMenu({ userName }: { userName: string }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToAdmin, isLoggingOut } = useAccountActions()
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  // Un superadmin no usa perfil ni ajustes de cuenta normal: su única opción
+  // es el panel de administración (ver AdminPage).
+  const isSuperAdmin = useCurrentUser().data?.role === 'superadmin'
 
   return (
     <>
@@ -34,15 +38,21 @@ export function AccountMenu({ userName }: { userName: string }) {
           <AriaDialog className="w-56 rounded-xl border border-mynted-border bg-mynted-white p-1.5 shadow-lg outline-none">
             {({ close }) => (
               <BlurAppear>
-                <MenuItem icon={User01} label={t('header.myProfile')} onPress={goToProfile} />
-                <MenuItem
-                  icon={Settings01}
-                  label={t('header.settings')}
-                  onPress={() => {
-                    close()
-                    setIsChangePasswordOpen(true)
-                  }}
-                />
+                {isSuperAdmin ? (
+                  <MenuItem icon={LayoutAlt01} label={t('admin.menu.open')} onPress={goToAdmin} />
+                ) : (
+                  <>
+                    <MenuItem icon={User01} label={t('header.myProfile')} onPress={goToProfile} />
+                    <MenuItem
+                      icon={Settings01}
+                      label={t('header.settings')}
+                      onPress={() => {
+                        close()
+                        setIsChangePasswordOpen(true)
+                      }}
+                    />
+                  </>
+                )}
                 <div className="my-1 border-t border-mynted-border" />
                 <MenuItem
                   icon={LogOut01}

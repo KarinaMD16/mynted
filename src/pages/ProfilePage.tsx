@@ -9,7 +9,7 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useMyInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import type { AppLanguage } from '@/utils/locale'
+import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
 import type { Interest } from '@/features/auth/models/interests'
 import { SiteHeader } from '../components/layout/SiteHeader'
@@ -24,8 +24,7 @@ function getInitials(username: string): string {
 function formatMemberSince(createdAt: string, language: AppLanguage): string {
   const date = new Date(createdAt)
   if (Number.isNaN(date.getTime())) return '—'
-  const locale = language === 'es' ? 'es-CR' : 'en-US'
-  return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+  return date.toLocaleDateString(INTL_LOCALES[language], { month: 'long', year: 'numeric' })
 }
 
 export default function ProfilePage() {

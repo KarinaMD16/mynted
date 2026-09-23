@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Bell01, Menu02, Settings01, User01, LogOut01, X as CloseIcon } from '@untitledui/icons'
+import { Bell01, LayoutAlt01, Menu02, Settings01, User01, LogOut01, X as CloseIcon } from '@untitledui/icons'
 import {
   Button as AriaButton,
   Dialog as AriaDialog,
@@ -91,8 +91,9 @@ function MobileMenuTrigger({
   pathname: string
 }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToAdmin, isLoggingOut } = useAccountActions()
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const isSuperAdmin = useCurrentUser().data?.role === 'superadmin'
 
   return (
     <>
@@ -183,22 +184,35 @@ function MobileMenuTrigger({
                       </span>
                       <span className="text-sm font-semibold text-mynted-ink">{userName ?? t('header.account')}</span>
                     </div>
-                    <MenuItem
-                      icon={User01}
-                      label={t('header.myProfile')}
-                      onPress={() => {
-                        state.close()
-                        goToProfile()
-                      }}
-                    />
-                    <MenuItem
-                      icon={Settings01}
-                      label={t('header.settings')}
-                      onPress={() => {
-                        state.close()
-                        setIsChangePasswordOpen(true)
-                      }}
-                    />
+                    {isSuperAdmin ? (
+                      <MenuItem
+                        icon={LayoutAlt01}
+                        label={t('admin.menu.open')}
+                        onPress={() => {
+                          state.close()
+                          goToAdmin()
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <MenuItem
+                          icon={User01}
+                          label={t('header.myProfile')}
+                          onPress={() => {
+                            state.close()
+                            goToProfile()
+                          }}
+                        />
+                        <MenuItem
+                          icon={Settings01}
+                          label={t('header.settings')}
+                          onPress={() => {
+                            state.close()
+                            setIsChangePasswordOpen(true)
+                          }}
+                        />
+                      </>
+                    )}
                     <div className="my-1 border-t border-mynted-border" />
                     <MenuItem
                       icon={LogOut01}
