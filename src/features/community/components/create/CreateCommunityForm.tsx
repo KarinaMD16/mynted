@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { CommunityCardsPreview } from '@/features/community/components/create/CommunityCardsPreview';
 import { ImageCropDialog } from '@/features/community/components/ui/ImageCropDialog';
+import { useLastDefined } from '@/hooks/useLastDefined';
 import type { CropSource } from '@/features/community/components/ui/ImageCropDialog';
 import { PrivacyOption } from '@/features/community/components/ui/PrivacyOption';
 import { TagPicker } from '@/features/community/components/ui/TagPicker';
@@ -38,7 +39,7 @@ export const CreateCommunityForm = ({ isOpen, onClose }: CreateCommunityFormProp
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
             <DialogContent className="max-w-5xl">
-                {isOpen && <CreateCommunityDialogBody onClose={onClose} />}
+                <CreateCommunityDialogBody onClose={onClose} />
             </DialogContent>
         </Dialog>
     );
@@ -128,26 +129,30 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
         setCropTarget(null);
     };
 
-    const cropSettings = cropTarget?.kind === 'image' ? IMAGE_CROP : BANNER_CROP;
+    // Se sigue mostrando la última imagen mientras el diálogo se cierra (animación de salida).
+    const shownCrop = useLastDefined(cropTarget);
+    const shownPreview = useLastDefined(preview);
+    const cropSettings = shownCrop?.kind === 'image' ? IMAGE_CROP : BANNER_CROP;
 
     return (
         <>
             <ImagePreviewDialog
-                src={preview === 'banner' ? (banner?.previewUrl ?? null) : (image?.previewUrl ?? null)}
-                alt={preview === 'banner' ? t('communities.create.bannerPreviewAlt') : t('communities.create.imagePreviewAlt')}
-                title={preview === 'banner' ? t('communities.create.previewBanner') : t('communities.create.previewImage')}
+                src={shownPreview === 'banner' ? (banner?.previewUrl ?? null) : (image?.previewUrl ?? null)}
+                alt={shownPreview === 'banner' ? t('communities.create.bannerPreviewAlt') : t('communities.create.imagePreviewAlt')}
+                title={shownPreview === 'banner' ? t('communities.create.previewBanner') : t('communities.create.previewImage')}
                 isOpen={preview !== null}
                 onClose={() => setPreview(null)}
             />
 
             <ImageCropDialog
                 // key: cada imagen nueva arranca con el zoom y la posicion en cero
-                key={cropTarget?.source.url ?? 'closed'}
-                source={cropTarget?.source ?? null}
+                key={shownCrop?.source.url ?? 'closed'}
+                source={shownCrop?.source ?? null}
+                isOpen={cropTarget !== null}
                 aspect={cropSettings.aspect}
                 outputWidth={cropSettings.outputWidth}
-                shape={cropTarget?.kind === 'image' ? 'round' : 'rect'}
-                title={cropTarget?.kind === 'image' ? t('communities.crop.imageTitle') : t('communities.crop.bannerTitle')}
+                shape={shownCrop?.kind === 'image' ? 'round' : 'rect'}
+                title={shownCrop?.kind === 'image' ? t('communities.crop.imageTitle') : t('communities.crop.bannerTitle')}
                 onCancel={() => setCropTarget(null)}
                 onConfirm={handleCropConfirm}
             />

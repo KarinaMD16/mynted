@@ -24,7 +24,9 @@ export function BecomeSellerForm({ isOpen, onClose }: BecomeSellerFormProps) {
         if (!open) onClose()
       }}
     >
-      <DialogContent className="max-w-lg">{isOpen && <BecomeSellerDialogBody onClose={onClose} />}</DialogContent>
+      <DialogContent className="max-w-lg">
+        <BecomeSellerDialogBody onClose={onClose} />
+      </DialogContent>
     </Dialog>
   )
 }

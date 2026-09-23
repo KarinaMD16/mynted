@@ -19,6 +19,12 @@ export interface CropSource {
 
 interface ImageCropDialogProps {
   source: CropSource | null
+  /**
+   * Si se pasa, controla la apertura por separado de `source`: permite seguir
+   * mostrando la imagen durante la animación de cierre (ver useLastDefined).
+   * Sin él, el diálogo está abierto mientras haya `source`.
+   */
+  isOpen?: boolean
   /** Ancho / alto del recorte (4 para la portada 1600x400, 1 para la foto). */
   aspect: number
   /** 'round' muestra el marco circular, igual que el avatar de la comunidad. */
@@ -48,7 +54,7 @@ type Quality = 'good' | 'ok' | 'low'
  * exporta ya recortado y reducido a `outputWidth`, asi lo que se ve aca es lo
  * que se sube.
  */
-export function ImageCropDialog({ source, aspect, shape, outputWidth, title, onCancel, onConfirm }: ImageCropDialogProps) {
+export function ImageCropDialog({ source, isOpen, aspect, shape, outputWidth, title, onCancel, onConfirm }: ImageCropDialogProps) {
   const { t } = useLanguage()
   // Callback ref (y no useRef): el contenido del Dialog de Radix se monta un
   // render despues, asi el observer se engancha recien cuando el nodo existe
@@ -253,7 +259,7 @@ export function ImageCropDialog({ source, aspect, shape, outputWidth, title, onC
 
   return (
     <Dialog
-      open={source !== null}
+      open={isOpen ?? source !== null}
       onOpenChange={(open) => {
         if (!open) onCancel()
       }}

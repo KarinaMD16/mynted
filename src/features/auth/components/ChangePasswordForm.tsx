@@ -23,7 +23,9 @@ export function ChangePasswordForm({ isOpen, onClose }: ChangePasswordFormProps)
         if (!open) onClose()
       }}
     >
-      <DialogContent className="max-w-md">{isOpen && <ChangePasswordDialogBody onClose={onClose} />}</DialogContent>
+      <DialogContent className="max-w-md">
+        <ChangePasswordDialogBody onClose={onClose} />
+      </DialogContent>
     </Dialog>
   )
 }

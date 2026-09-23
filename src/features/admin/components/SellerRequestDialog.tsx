@@ -4,6 +4,7 @@ import { Building2, Check, Eye, EyeOff, LoaderCircle, MapPin, Wallet, X } from '
 import { getApiErrorMessage } from '@/api/apiError'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useLastDefined } from '@/hooks/useLastDefined'
 import { formatShortDate } from '@/utils/relativeTime'
 import { Avatar, StatusPill } from './AdminUi'
 import { useSellerDecisionMutation, useSellerRequest } from '../hooks/useAdminQueries'
@@ -18,7 +19,9 @@ import type { SellerDecision, SellerPaymentInfo, SellerRequestDetail } from '../
  */
 export function SellerRequestDialog({ userId, onClose }: { userId: string | null; onClose: () => void }) {
   const { t } = useLanguage()
-  const requestQuery = useSellerRequest(userId)
+  // Durante la animación de cierre userId ya es null: se siguen mostrando los datos de la última solicitud.
+  const shownUserId = useLastDefined(userId)
+  const requestQuery = useSellerRequest(shownUserId)
   const decision = useSellerDecisionMutation()
   const [pendingDecision, setPendingDecision] = useState<SellerDecision | null>(null)
 

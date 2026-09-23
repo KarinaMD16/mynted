@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { Ban, Check, Copy, FileText, MapPin, RotateCcw, X } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useLastDefined } from '@/hooks/useLastDefined'
 import type { TranslationKey } from '@/i18n/translations/es'
 import type { SellerRequestStatus, UserRole } from '@/features/auth/models/auth'
 import { formatShortDate } from '@/utils/relativeTime'
@@ -61,6 +62,8 @@ export function UserReviewDrawer({
   const { t } = useLanguage()
   const usersQuery = useAdminUsers()
   const user = usersQuery.data?.find((item) => item.id === userId)
+  // Se sigue mostrando el último usuario mientras el panel se desliza hacia afuera.
+  const shownUser = useLastDefined(user)
 
   return (
     <DialogPrimitive.Root open={userId !== null && Boolean(user)} onOpenChange={(open) => !open && onClose()}>
@@ -82,7 +85,7 @@ export function UserReviewDrawer({
             </DialogPrimitive.Close>
           </div>
 
-          {user && <ReviewBody user={user} isSelf={user.id === currentUserId} />}
+          {shownUser && <ReviewBody user={shownUser} isSelf={shownUser.id === currentUserId} />}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

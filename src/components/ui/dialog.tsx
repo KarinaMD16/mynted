@@ -57,7 +57,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          // El overflow-hidden + rounded-2xl van acá (en el contenedor exterior, sin
+          // El overflow-clip + rounded-2xl van acá (en el contenedor exterior, sin
           // scroll propio) para que el scrollbar del div interior quede recortado por
           // las esquinas redondeadas en vez de sobresalir con bordes cuadrados (el div
           // interior de abajo, con overflow-y-auto, es el que realmente scrollea).
@@ -68,12 +68,25 @@ function DialogContent({
           // max-h queda recortado. Con la fila limitada al alto disponible, el div
           // interior se ajusta a ese alto y el resto se recorre con scroll.
           // 85dvh (y no vh) para que en mobile no quede tapado por la barra del navegador.
-          'fixed top-[50%] left-[50%] z-50 grid max-h-[85dvh] grid-rows-[minmax(0,1fr)] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden rounded-2xl border border-mynted-border bg-white shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          //
+          // overflow-clip (y no overflow-hidden): un contenedor con overflow-hidden
+          // igual se puede desplazar por código. Cuando el navegador devolvía el
+          // foco a un <input type="file"> oculto (al cerrar el explorador de
+          // archivos), lo "llevaba a la vista" desplazando este contenedor, que
+          // el usuario ya no podía volver a subir. Con clip no hay scroll posible
+          // acá; solo scrollea el div interior (que además es `relative`, para que
+          // los elementos absolutos del contenido queden dentro de él).
+          //
+          // La animación de salida (fade + zoom) la corre Radix antes de
+          // desmontar; para que se vea, el contenido no debe desaparecer al
+          // cerrar (no envolverlo en `{isOpen && ...}`: Radix ya lo desmonta al
+          // terminar, y al reabrir se monta de cero).
+          'fixed top-[50%] left-[50%] z-50 grid max-h-[85dvh] grid-rows-[minmax(0,1fr)] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-0 overflow-clip rounded-2xl border border-mynted-border bg-white shadow-xl duration-200 ease-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-bottom-2 data-[state=open]:slide-in-from-bottom-2',
           className,
         )}
         {...props}
       >
-        <div className="min-h-0 overflow-y-auto p-5 sm:p-8">{children}</div>
+        <div className="relative min-h-0 overflow-y-auto p-5 sm:p-8">{children}</div>
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"

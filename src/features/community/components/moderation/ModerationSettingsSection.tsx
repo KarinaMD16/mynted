@@ -19,6 +19,7 @@ import type { SelectedImage } from '@/features/community/types/CommunityTypes'
 import { BANNER_CROP, IMAGE_CROP } from '@/features/community/types/DEFAULT_VALUES'
 import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
 import { ImageCropDialog } from '@/features/community/components/ui/ImageCropDialog'
+import { useLastDefined } from '@/hooks/useLastDefined'
 import type { CropSource } from '@/features/community/components/ui/ImageCropDialog'
 import { PrivacyOption } from '@/features/community/components/ui/PrivacyOption'
 import { TagPicker } from '@/features/community/components/ui/TagPicker'
@@ -72,7 +73,9 @@ export function ModerationSettingsSection({
     setCropTarget(null)
   }
 
-  const cropSettings = cropTarget?.kind === 'image' ? IMAGE_CROP : BANNER_CROP
+  // Se sigue mostrando la última imagen mientras el diálogo se cierra (animación de salida).
+  const shownCrop = useLastDefined(cropTarget)
+  const cropSettings = shownCrop?.kind === 'image' ? IMAGE_CROP : BANNER_CROP
 
   const handleSave = () => {
     const formData = new FormData()
@@ -196,12 +199,13 @@ export function ModerationSettingsSection({
       </div>
 
       <ImageCropDialog
-        key={cropTarget?.source.url ?? 'closed'}
-        source={cropTarget?.source ?? null}
+        key={shownCrop?.source.url ?? 'closed'}
+        source={shownCrop?.source ?? null}
+        isOpen={cropTarget !== null}
         aspect={cropSettings.aspect}
         outputWidth={cropSettings.outputWidth}
-        shape={cropTarget?.kind === 'image' ? 'round' : 'rect'}
-        title={cropTarget?.kind === 'image' ? t('communities.crop.imageTitle') : t('communities.crop.bannerTitle')}
+        shape={shownCrop?.kind === 'image' ? 'round' : 'rect'}
+        title={shownCrop?.kind === 'image' ? t('communities.crop.imageTitle') : t('communities.crop.bannerTitle')}
         onCancel={() => setCropTarget(null)}
         onConfirm={handleCropConfirm}
       />
