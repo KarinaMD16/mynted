@@ -1,4 +1,4 @@
-import type { PrivacyOptionProps } from "../types/CommunityTypes";
+import type { PrivacyOptionProps } from "@/features/community/types/CommunityTypes";
 
 export const PrivacyOption = ({ icon, title, description, selected, onSelect }: PrivacyOptionProps) => (
     <button

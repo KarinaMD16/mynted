@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
 import type { AuthUser } from '../models/auth'
 import {
   changePasswordRequest,
@@ -20,6 +21,24 @@ export const authKeys = {
 }
 
 /**
+ * Al cambiar de sesion se vacia todo el cache de React Query. React Query
+ * conserva el ultimo resultado aunque la consulta quede desactivada, y sin
+ * esto la cuenta siguiente veia un momento los datos de la anterior (sus
+ * comunidades, su rol, sus intereses...). Se borra todo en vez de una lista de
+ * claves para que ninguna consulta nueva se quede afuera por olvido; lo
+ * publico (categorias, tags) simplemente se vuelve a pedir.
+ */
+function clearSessionCache(queryClient: QueryClient) {
+  queryClient.clear()
+}
+
+/** Al entrar con una cuenta: fuera lo de la sesion anterior y guardar el usuario nuevo. */
+function startSession(queryClient: QueryClient, user: AuthUser) {
+  clearSessionCache(queryClient)
+  queryClient.setQueryData<AuthUser>(authKeys.me, user)
+}
+
+/**
  * "¿Hay sesión, y de quién?" — la fuente de verdad es GET /users/me, que el
  * backend valida contra la cookie de sesión (ver el interceptor de refresh
  * en api/apiConfig.ts). Un 401 acá significa "no hay sesión", no un error
@@ -37,7 +56,7 @@ export function useLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: loginRequest,
-    onSuccess: (user) => queryClient.setQueryData<AuthUser>(authKeys.me, user),
+    onSuccess: (user) => startSession(queryClient, user),
   })
 }
 
@@ -51,7 +70,8 @@ export function useLogoutMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: logoutRequest,
-    onSuccess: () => queryClient.removeQueries({ queryKey: authKeys.me }),
+    // clear() tambien borra authKeys.me, asi que el header pasa a "sin sesion"
+    onSuccess: () => clearSessionCache(queryClient),
   })
 }
 
@@ -59,7 +79,7 @@ export function useGoogleLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: loginWithGoogleRequest,
-    onSuccess: (user) => queryClient.setQueryData<AuthUser>(authKeys.me, user),
+    onSuccess: (user) => startSession(queryClient, user),
   })
 }
 
@@ -67,7 +87,7 @@ export function useFacebookLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: loginWithFacebookRequest,
-    onSuccess: (user) => queryClient.setQueryData<AuthUser>(authKeys.me, user),
+    onSuccess: (user) => startSession(queryClient, user),
   })
 }
 
