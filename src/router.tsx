@@ -11,6 +11,7 @@ import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
+import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import CookiesPolicyPage from './pages/CookiesPolicyPage'
 import MessagesPage from './pages/MessagesPage'
@@ -44,7 +45,8 @@ const homeRoute = createRoute({
 })
 
 interface LoginSearch {
-  mode?: 'interests'
+  /** "register" abre directo el formulario de crear cuenta (lo usa la landing /descubre). */
+  mode?: 'interests' | 'register'
 }
 
 const loginRoute = createRoute({
@@ -52,7 +54,7 @@ const loginRoute = createRoute({
   path: '/login',
   component: LoginPage,
   validateSearch: (search: Record<string, unknown>): LoginSearch => ({
-    mode: search.mode === 'interests' ? 'interests' : undefined,
+    mode: search.mode === 'interests' || search.mode === 'register' ? search.mode : undefined,
   }),
 })
 
@@ -149,6 +151,17 @@ const adminRoute = createRoute({
   }),
 })
 
+/**
+ * Landing promocional ("anuncio") para compartir en campañas y links
+ * externos. Usa el mismo header que el resto del sitio y lleva a "/" (los
+ * productos destacados) o a crear una cuenta. Ver pages/LandingPage.tsx.
+ */
+const landingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/mynted',
+  component: LandingPage,
+})
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
@@ -164,6 +177,7 @@ const routeTree = rootRoute.addChildren([
   privacyPolicyRoute,
   cookiesPolicyRoute,
   adminRoute,
+  landingRoute,
 ])
 
 /**
