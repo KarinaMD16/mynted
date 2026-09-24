@@ -2,6 +2,7 @@ import { useId, useMemo, useState, type ReactNode } from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsUpDown, Search } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { Button } from '@/components/ui/Button'
 
 export interface AdminColumn<T> {
   id: string
@@ -206,13 +207,15 @@ export function AdminDataTable<T>({
                 <td colSpan={columnCount} className="px-4 py-12 text-center">
                   <p className="text-sm font-semibold text-mynted-ink">{t('admin.table.loadError')}</p>
                   <p className="mt-1 text-sm text-mynted-gray">{getApiErrorMessage(error)}</p>
-                  <button
+                  <Button
                     type="button"
                     onClick={onRetry}
-                    className="mt-4 rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+                    variant="secondary"
+                    size="sm"
+                    className="mt-4"
                   >
                     {t('communities.list.retry')}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             )}
@@ -293,7 +296,7 @@ function Pagination({
 }) {
   const { t, language } = useLanguage()
   const buttonBase =
-    'flex h-9 min-w-9 items-center justify-center rounded-lg px-2.5 text-sm font-medium transition-colors outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid'
+    'flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid'
 
   return (
     <nav aria-label={t('admin.table.paginationLabel')} className="flex items-center gap-1.5">

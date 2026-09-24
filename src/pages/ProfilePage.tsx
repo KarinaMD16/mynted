@@ -17,6 +17,7 @@ import type { AuthUser } from '@/features/auth/models/auth'
 import type { Interest } from '@/features/auth/models/interests'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
+import { Button } from '@/components/ui/Button'
 
 type ProfileTab = 'posts' | 'threads' | 'products' | 'favorites' | 'info'
 
@@ -168,43 +169,49 @@ function ProfileHeader({
         <div className="absolute -top-5 right-4 z-10 flex items-center gap-2 sm:right-6">
           {!isSeller &&
             (isSellerRequestPending ? (
-              <span className="flex cursor-default items-center gap-1.5 rounded-[10px] border border-mynted-border bg-mynted-bg px-3 py-2.5 text-sm font-semibold text-mynted-gray sm:px-4">
+              <span className="flex h-10 cursor-default items-center gap-1.5 rounded-xl border border-mynted-border bg-mynted-bg px-3 text-sm font-semibold text-mynted-gray sm:px-4">
                 <ShoppingBag className="size-4" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('profile.becomeSeller.pendingPill')}</span>
               </span>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={onBecomeSeller}
                 aria-label={t('profile.becomeSeller.cta')}
-                className="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-orange bg-mynted-orange px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mynted-orange-hover sm:px-4"
+                variant="primary"
+                size="md"
+                className="max-sm:w-10 max-sm:px-0"
               >
                 <ShoppingBag className="size-4" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('profile.becomeSeller.cta')}</span>
-              </button>
+              </Button>
             ))}
 
           {isSeller && (
-            <button
+            <Button
               type="button"
               onClick={onCreateProduct}
               aria-label={t('products.create.cta')}
-              className="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-orange bg-mynted-orange px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mynted-orange-hover sm:px-4"
+              variant="primary"
+              size="md"
+              className="max-sm:w-10 max-sm:px-0"
             >
               <Plus className="size-4" aria-hidden="true" />
               <span className="hidden sm:inline">{t('products.create.cta')}</span>
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
             type="button"
             onClick={onEditProfile}
             aria-label={t('profile.editProfile')}
-            className="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-border bg-mynted-white px-3 py-2.5 text-sm font-semibold text-mynted-ink shadow-sm transition-colors hover:bg-mynted-bg sm:px-4"
+            variant="secondary"
+            size="md"
+            className="max-sm:w-10 max-sm:px-0"
           >
             <Edit05 className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">{t('profile.editProfile')}</span>
-          </button>
+          </Button>
         </div>
 
         <span className="absolute -top-14 left-1/2 z-20 flex size-28 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
@@ -433,14 +440,16 @@ function MyProductsTab({ onCreateProduct }: { onCreateProduct: () => void }) {
         <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
           <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('profile.tabs.productsEmptyTitle')}</h2>
           <p className="max-w-sm text-sm text-mynted-gray">{t('profile.tabs.productsEmptySubtitle')}</p>
-          <button
+          <Button
             type="button"
             onClick={onCreateProduct}
-            className="mt-3 flex cursor-pointer items-center gap-1.5 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+            variant="primary"
+            size="md"
+            className="mt-3"
           >
             <Plus className="size-4" aria-hidden="true" />
             {t('products.create.firstCta')}
-          </button>
+          </Button>
         </div>
       }
     />

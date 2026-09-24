@@ -11,6 +11,7 @@ import { Avatar, ConfirmDialog, StatusPill, type PillTone } from './AdminUi'
 import { SellerRequestDialog } from './SellerRequestDialog'
 import { useAdminUsers, useSetUserActiveMutation } from '../hooks/useAdminQueries'
 import type { AdminUser } from '../models/admin'
+import { Button } from '@/components/ui/Button'
 
 const ROLE_LABEL: Record<UserRole, TranslationKey> = {
   user: 'admin.users.role.user',
@@ -320,7 +321,7 @@ function CopyableId({ id }: { id: string }) {
   return (
     <span className="flex items-center gap-2">
       <code className="truncate rounded bg-mynted-bg px-1.5 py-0.5 text-xs text-mynted-ink">{id}</code>
-      <button
+      <Button
         type="button"
         onClick={() => {
           void navigator.clipboard?.writeText(id).then(() => {
@@ -330,10 +331,11 @@ function CopyableId({ id }: { id: string }) {
         }}
         aria-label={copied ? t('admin.review.copied') : t('admin.review.copyId')}
         title={copied ? t('admin.review.copied') : t('admin.review.copyId')}
-        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-mynted-gray hover:bg-mynted-bg hover:text-mynted-ink"
+        variant="ghost"
+        size="icon-sm"
       >
         {copied ? <Check className="size-3.5 text-teal-600" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
-      </button>
+      </Button>
     </span>
   )
 }
@@ -353,23 +355,11 @@ function ActionButton({
   disabled?: boolean
   title?: string
 }) {
-  const styles = {
-    primary: 'bg-mynted-orange text-white hover:bg-mynted-orange-hover',
-    outline: 'border border-mynted-border bg-white text-mynted-ink hover:bg-mynted-bg',
-    danger: 'border border-red-200 bg-white text-red-600 hover:bg-red-50',
-  }[variant]
+  const buttonVariant = ({ primary: 'primary', outline: 'secondary', danger: 'destructive-secondary' } as const)[variant]
   return (
-    <button
-      type="button"
-      onClick={onPress}
-      disabled={disabled}
-      title={title}
-      className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid disabled:cursor-not-allowed disabled:opacity-50 ${
-        disabled ? '' : 'cursor-pointer'
-      } ${styles}`}
-    >
+    <Button onClick={onPress} disabled={disabled} title={title} variant={buttonVariant} size="md">
       <Icon className="size-4" aria-hidden="true" />
       {label}
-    </button>
+    </Button>
   )
 }

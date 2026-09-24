@@ -91,7 +91,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (
-          <Button type="submit" className="hover:cursor-pointer" disabled={!canSubmit || loginMutation.isPending}>
+          <Button type="submit" size="lg" fullWidth disabled={!canSubmit || loginMutation.isPending}>
             {isSubmitting || loginMutation.isPending ? t('auth.signingIn') : t('auth.login.submit')}
           </Button>
         )}

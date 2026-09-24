@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { Info, LoaderCircle } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { GooseIcon } from '@/components/ui/GooseIcon'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { Button } from '@/components/ui/Button'
 
 /**
  * Piezas visuales compartidas por las secciones del panel de superadmin
@@ -218,18 +219,17 @@ export function IconAction({
         : 'hover:bg-mynted-bg hover:text-mynted-ink'
 
   return (
-    <button
-      type="button"
+    <Button
       onClick={onPress}
       disabled={disabled}
       title={hint}
       aria-label={hint}
-      className={`flex size-8 items-center justify-center rounded-lg text-mynted-gray transition-colors outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-mynted-gray ${
-        disabled ? '' : `cursor-pointer ${toneClass}`
-      }`}
+      variant="ghost"
+      size="icon-sm"
+      className={disabled ? 'disabled:opacity-40 hover:bg-transparent hover:text-mynted-gray' : toneClass}
     >
       <Icon className="size-4" aria-hidden="true" />
-    </button>
+    </Button>
   )
 }
 
@@ -273,13 +273,15 @@ export function LoadErrorPanel({ error, onRetry }: { error: unknown; onRetry: ()
     <div className="rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
       <p className="text-sm font-semibold text-mynted-ink">{t('admin.table.loadError')}</p>
       <p className="mt-1 text-sm text-mynted-gray">{getApiErrorMessage(error)}</p>
-      <button
+      <Button
         type="button"
         onClick={onRetry}
-        className="mt-4 rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+        variant="secondary"
+        size="sm"
+        className="mt-4"
       >
         {t('communities.list.retry')}
-      </button>
+      </Button>
     </div>
   )
 }
@@ -319,8 +321,6 @@ export function ConfirmDialog({
   onClose: () => void
 }) {
   const { t } = useLanguage()
-  const confirmClass =
-    tone === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-mynted-orange hover:bg-mynted-orange-hover'
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && !isPending && onClose()}>
@@ -331,23 +331,23 @@ export function ConfirmDialog({
         </DialogHeader>
 
         <DialogFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg disabled:cursor-not-allowed disabled:opacity-60"
+            variant="secondary"
+            size="md"
           >
             {t('profile.edit.cancel')}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={onConfirm}
-            disabled={isPending}
-            className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${confirmClass}`}
+            variant={tone === 'danger' ? 'destructive' : 'primary'}
+            size="md"
+            isLoading={isPending}
           >
-            {isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
             {confirmLabel}
-          </button>
+          </Button>
         </DialogFooter>
 
         {Boolean(error) && (

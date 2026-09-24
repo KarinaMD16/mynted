@@ -9,6 +9,7 @@ import { formatShortDate } from '@/utils/relativeTime'
 import { Avatar, StatusPill } from './AdminUi'
 import { useSellerDecisionMutation, useSellerRequest } from '../hooks/useAdminQueries'
 import type { SellerDecision, SellerPaymentInfo, SellerRequestDetail } from '../models/admin'
+import { Button } from '@/components/ui/Button'
 
 /**
  * Diálogo con los datos de una solicitud de vendedor pendiente
@@ -68,13 +69,15 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
             {!isNotPending && (
               <>
                 <p className="mt-1 text-sm text-mynted-gray">{getApiErrorMessage(requestQuery.error)}</p>
-                <button
+                <Button
                   type="button"
                   onClick={() => void requestQuery.refetch()}
-                  className="mt-4 rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4"
                 >
                   {t('communities.list.retry')}
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -90,19 +93,21 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
               </p>
             )}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button
+              <Button
                 type="button"
                 onClick={close}
                 disabled={decision.isPending}
-                className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg disabled:cursor-not-allowed disabled:opacity-60"
+                variant="secondary"
+                size="md"
               >
                 {t('profile.edit.close')}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => decide('rejected')}
                 disabled={decision.isPending}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:cursor-pointer hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                variant="destructive-secondary"
+                size="md"
               >
                 {pendingDecision === 'rejected' ? (
                   <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
@@ -110,12 +115,13 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
                   <X className="size-4" aria-hidden="true" />
                 )}
                 {t('admin.sellers.reject')}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => decide('approved')}
                 disabled={decision.isPending}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+                variant="primary"
+                size="md"
               >
                 {pendingDecision === 'approved' ? (
                   <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
@@ -123,7 +129,7 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
                   <Check className="size-4" aria-hidden="true" />
                 )}
                 {t('admin.sellerRequest.approve')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -226,15 +232,16 @@ function MaskedValue({ value }: { value: string }) {
       <code className="rounded bg-mynted-bg px-1.5 py-0.5 text-xs break-all text-mynted-ink">
         {visible ? value : masked}
       </code>
-      <button
+      <Button
         type="button"
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? t('admin.sellerRequest.hideNumber') : t('admin.sellerRequest.showNumber')}
         title={visible ? t('admin.sellerRequest.hideNumber') : t('admin.sellerRequest.showNumber')}
-        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-mynted-gray hover:bg-mynted-bg hover:text-mynted-ink"
+        variant="ghost"
+        size="icon-sm"
       >
         {visible ? <EyeOff className="size-3.5" aria-hidden="true" /> : <Eye className="size-3.5" aria-hidden="true" />}
-      </button>
+      </Button>
     </span>
   )
 }

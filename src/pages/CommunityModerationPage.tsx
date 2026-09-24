@@ -1,23 +1,27 @@
 import { useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
-import { ArrowLeft, Flag, ScrollText, Settings, Users } from 'lucide-react'
+import { ArrowLeft, Flag, ScrollText, Settings, UserPlus, Users } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
+import { ModerationJoinRequestsSection } from '@/features/community/components/moderation/ModerationJoinRequestsSection'
 import { ModerationRulesSection } from '@/features/community/components/moderation/ModerationRulesSection'
 import { ModerationSettingsSection } from '@/features/community/components/moderation/ModerationSettingsSection'
 import {
   useCommunityDetailBySlug,
+  useCommunityJoinRequests,
   useCommunityStats,
 } from '@/features/community/hooks/useCommunitiesQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
+import { Button } from '@/components/ui/Button'
 
-type ModerationTab = 'reports' | 'members' | 'rules' | 'settings'
+type ModerationTab = 'reports' | 'requests' | 'members' | 'rules' | 'settings'
 
 const TABS: { id: ModerationTab; labelKey: TranslationKey; icon: typeof Flag; available: boolean }[] = [
   { id: 'reports', labelKey: 'moderation.tabs.reports', icon: Flag, available: false },
+  { id: 'requests', labelKey: 'moderation.tabs.requests', icon: UserPlus, available: true },
   { id: 'members', labelKey: 'moderation.tabs.members', icon: Users, available: false },
   { id: 'rules', labelKey: 'moderation.tabs.rules', icon: ScrollText, available: true },
   { id: 'settings', labelKey: 'moderation.tabs.settings', icon: Settings, available: true },
@@ -30,12 +34,16 @@ export default function CommunityModerationPage() {
   const [activeTab, setActiveTab] = useState<ModerationTab>('rules')
 
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
-  // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
+
   const community = isLoggedIn ? communityQuery.data : undefined
 
   // El detalle no trae el total de publicaciones; eso viene de /communities/:id/stats
   const statsQuery = useCommunityStats(community?.id, isLoggedIn)
   const stats = isLoggedIn ? statsQuery.data : undefined
+
+  // Para el contador del menu lateral; la seccion vuelve a usar la misma query
+  const joinRequestsQuery = useCommunityJoinRequests(community?.id ?? 0, isLoggedIn)
+  const pendingRequestCount = isLoggedIn ? (joinRequestsQuery.data?.length ?? 0) : 0
 
   const isOwner = community?.membershipRole === 'owner'
   const canModerate = isOwner || community?.membershipRole === 'moderator'
@@ -82,13 +90,14 @@ export default function CommunityModerationPage() {
             title={t('community.detail.loadError')}
             description={getApiErrorMessage(communityQuery.error)}
           >
-            <button
+            <Button
               type="button"
               onClick={() => void communityQuery.refetch()}
-              className="rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+              variant="secondary"
+              size="sm"
             >
               {t('communities.list.retry')}
-            </button>
+            </Button>
           </CommunityNotice>
         )}
 
@@ -158,6 +167,15 @@ export default function CommunityModerationPage() {
                     >
                       <Icon className="size-4" aria-hidden="true" />
                       {t(tab.labelKey)}
+                      {tab.id === 'requests' && pendingRequestCount > 0 && (
+                        <span
+                          className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-mynted-orange text-white'
+                          }`}
+                        >
+                          {pendingRequestCount}
+                        </span>
+                      )}
                       {!tab.available && (
                         <span
                           className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
@@ -173,6 +191,7 @@ export default function CommunityModerationPage() {
               </nav>
 
               <div className="rounded-2xl border border-mynted-border bg-white p-5 sm:p-6">
+                {activeTab === 'requests' && <ModerationJoinRequestsSection community={community} />}
                 {activeTab === 'rules' && <ModerationRulesSection community={community} />}
                 {activeTab === 'settings' && (
                   <ModerationSettingsSection community={community} isOwner={isOwner} />

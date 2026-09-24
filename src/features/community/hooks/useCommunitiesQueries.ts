@@ -3,6 +3,7 @@ import {
   getCategories,
   getCommunities,
   getCommunityDetailBySlug,
+  getCommunityJoinRequests,
   getCommunityStats,
   getRecommendedCommunities,
   getMyCommunities,
@@ -17,6 +18,7 @@ export const communityKeys = {
   detailBySlug: (slug: string) => ['communities', 'detail', 'slug', slug] as const,
   recommended: (query: CommunitiesQuery) => ['communities', 'recommended', query] as const,
   stats: (communityId: number) => ['communities', 'stats', communityId] as const,
+  joinRequests: (communityId: number) => ['communities', 'join-requests', communityId] as const,
 }
 
 export const useCategories = () => {
@@ -72,5 +74,13 @@ export const useCommunityStats = (communityId: number | undefined, enabled = tru
     queryKey: communityKeys.stats(communityId ?? 0),
     queryFn: () => getCommunityStats(communityId as number),
     enabled: enabled && typeof communityId === 'number' && communityId > 0,
+  })
+}
+
+export const useCommunityJoinRequests = (communityId: number, enabled = true) => {
+  return useQuery({
+    queryKey: communityKeys.joinRequests(communityId),
+    queryFn: () => getCommunityJoinRequests(communityId),
+    enabled: enabled && communityId > 0,
   })
 }

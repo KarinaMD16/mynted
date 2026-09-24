@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, LoaderCircle, Plus } from 'lucide-react'
+import { Check, Plus } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog'
 import {
@@ -14,6 +14,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { useJoinCommunity, useLeaveCommunity } from '@/features/community/hooks/useCommunitiesMutations'
 import type { CommunityDetail } from '@/features/community/models/communityDTOs'
 import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
+import { Button } from '@/components/ui/Button'
 
 type PreviewTarget = 'banner' | 'image'
 
@@ -30,13 +31,27 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
   const bannerAlt = t('communities.card.bannerAlt', { name: community.name })
   const imageAlt = t('communities.card.imageAlt', { name: community.name })
 
+  // En una comunidad privada el backend no une: deja una solicitud pendiente.
+  // El detalle todavia no dice si ya hay una, asi que se sabe al responder.
+  const joinResult = joinMutation.data?.result
+  const hasPendingRequest = joinResult === 'requested' || joinResult === 'already_requested'
+
   const handleMembershipClick = () => {
     if (community.isMember) {
       setIsLeaveDialogOpen(true)
       return
     }
+    if (hasPendingRequest) return
     joinMutation.mutate()
   }
+
+  const membershipLabel = community.isMember
+    ? t('community.detail.joined')
+    : hasPendingRequest
+      ? t('community.detail.requestSent')
+      : community.isPrivate
+        ? t('community.detail.requestJoin')
+        : t('community.detail.join')
 
   const handleLeaveConfirm = () => {
     leaveMutation.mutate(undefined, {
@@ -85,26 +100,26 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
       </p>
 
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
+        <Button
           onClick={handleMembershipClick}
-          disabled={isPending}
-          className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
-            community.isMember
-              ? 'border border-mynted-border bg-white text-mynted-ink hover:bg-mynted-bg'
-              : 'bg-mynted-orange text-white hover:bg-mynted-orange-hover'
-          }`}
+          disabled={hasPendingRequest}
+          variant={community.isMember ? 'secondary' : 'primary'}
+          size="md"
+          isLoading={isPending}
         >
-          {isPending ? (
-            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-          ) : community.isMember ? (
-            <Check className="size-4" aria-hidden="true" />
-          ) : (
-            <Plus className="size-4" aria-hidden="true" />
-          )}
-          {community.isMember ? t('community.detail.joined') : t('community.detail.join')}
-        </button>
+          {!isPending &&
+            (community.isMember ? (
+              <Check className="size-4" aria-hidden="true" />
+            ) : (
+              <Plus className="size-4" aria-hidden="true" />
+            ))}
+          {membershipLabel}
+        </Button>
       </div>
+
+      {hasPendingRequest && (
+        <p className="mt-2 text-xs text-mynted-gray">{t('community.detail.requestPendingHint')}</p>
+      )}
 
       {error && (
         <p className="mt-2 text-sm text-red-500" role="alert">
@@ -135,23 +150,25 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
           </DialogHeader>
 
           <DialogFooter>
-            <button
+            <Button
               type="button"
               onClick={() => setIsLeaveDialogOpen(false)}
-              className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+              variant="secondary"
+              size="md"
             >
               {t('community.detail.leaveCancel')}
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={handleLeaveConfirm}
               disabled={leaveMutation.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+              variant="destructive"
+              size="md"
+              isLoading={leaveMutation.isPending}
             >
-              {leaveMutation.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
               {leaveMutation.isPending ? t('community.detail.leaving') : t('community.detail.leaveConfirm')}
-            </button>
+            </Button>
           </DialogFooter>
 
           {leaveMutation.isError && (

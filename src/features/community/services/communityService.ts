@@ -5,7 +5,9 @@ import type {
     CommunitiesQuery,
     CommunityDetail,
     CommunityListItem,
+    CommunityJoinRequest,
     CommunityStats,
+    JoinCommunityResult,
     RecommendedCommunityListItem,
     PaginatedResponse,
     TagOption,
@@ -48,8 +50,18 @@ export const getMyCommunities = async (
     return data;
 };
 
-export const joinCommunity = async (communityId: number) => {
-    const { data } = await myntedAPI.post(`/communities/${communityId}/join`);
+export const getRecommendedCommunities = async (
+    query: CommunitiesQuery = {},
+): Promise<PaginatedResponse<RecommendedCommunityListItem>> => {
+    const { data } = await myntedAPI.get<PaginatedResponse<RecommendedCommunityListItem>>(
+        '/users/me/recommended-communities',
+        { params: query },
+    );
+    return data;
+};
+
+export const joinCommunity = async (communityId: number): Promise<JoinCommunityResult> => {
+    const { data } = await myntedAPI.post<JoinCommunityResult>(`/communities/${communityId}/join`);
     return data;
 };
 
@@ -106,23 +118,22 @@ export const deactivateCommunity = async (communityId: number) => {
     return data;
 };
 
-/**
- * Comunidades recomendadas para el usuario
- * El backend las ordena por intereses, luego por las categorias de sus
- * comunidades y al final por popularidad, y ya deja fuera las propias y las
- * privadas.
- */
-export const getRecommendedCommunities = async (
-    query: CommunitiesQuery = {},
-): Promise<PaginatedResponse<RecommendedCommunityListItem>> => {
-    const { data } = await myntedAPI.get<PaginatedResponse<RecommendedCommunityListItem>>(
-        '/users/me/recommended-communities',
-        { params: query },
-    );
+export const getCommunityStats = async (communityId: number): Promise<CommunityStats> => {
+    const { data } = await myntedAPI.get<CommunityStats>(`/communities/${communityId}/stats`);
     return data;
 };
 
-export const getCommunityStats = async (communityId: number): Promise<CommunityStats> => {
-    const { data } = await myntedAPI.get<CommunityStats>(`/communities/${communityId}/stats`);
+export const getCommunityJoinRequests = async (communityId: number): Promise<CommunityJoinRequest[]> => {
+    const { data } = await myntedAPI.get<CommunityJoinRequest[]>(`/communities/${communityId}/join-requests`);
+    return data;
+};
+
+export const acceptCommunityJoinRequest = async (communityId: number, requestId: number) => {
+    const { data } = await myntedAPI.patch(`/communities/${communityId}/join-requests/${requestId}/accept`);
+    return data;
+};
+
+export const rejectCommunityJoinRequest = async (communityId: number, requestId: number) => {
+    const { data } = await myntedAPI.patch(`/communities/${communityId}/join-requests/${requestId}/reject`);
     return data;
 };

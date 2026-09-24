@@ -13,6 +13,7 @@ import {
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
 import { MyCommunityCard } from '@/features/community/components/cards/MyCommunityCard'
+import { Button } from '@/components/ui/Button'
 
 export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity: () => void }) {
   const { t } = useLanguage()
@@ -48,13 +49,14 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
           )}
 
           {showHeaderCreateButton && (
-            <button
+            <Button
               type="button"
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:cursor-pointer hover:bg-mynted-orange/80"
+              variant="primary"
+              size="md"
               onClick={onCreateCommunity}
             >
               {t('communities.createCommunity')}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -87,13 +89,14 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
             title={t('communities.list.loadError')}
             description={getApiErrorMessage(myCommunitiesQuery.error)}
           >
-            <button
+            <Button
               type="button"
               onClick={() => void myCommunitiesQuery.refetch()}
-              className="rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+              variant="secondary"
+              size="sm"
             >
               {t('communities.list.retry')}
-            </button>
+            </Button>
           </CommunityNotice>
         )}
 
@@ -102,13 +105,14 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
             title={t('communities.list.emptyTitle')}
             description={t('communities.list.emptyDescription')}
           >
-            <button
+            <Button
               type="button"
               onClick={onCreateCommunity}
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:cursor-pointer hover:bg-mynted-orange/80"
+              variant="primary"
+              size="md"
             >
               {t('communities.createCommunity')}
-            </button>
+            </Button>
           </CommunityNotice>
         )}
 

@@ -14,6 +14,7 @@ import {
 import { useAdminCommunities } from '../hooks/useAdminQueries'
 import type { AdminTab } from '../models/admin'
 import { ManageLink, OverviewSkeleton } from './UsersSection'
+import { Button } from '@/components/ui/Button'
 
 interface CategoryRow {
   categoryId: number
@@ -132,15 +133,16 @@ function CategoriesManage({ rows, isLoading, error, refetch }: ReturnType<typeof
         onRetry={refetch}
         initialSort={{ id: 'name', direction: 'asc' }}
         primaryAction={
-          <button
+          <Button
             type="button"
             disabled
             title={`${t('admin.categories.add')} · ${unavailable}`}
-            className="inline-flex h-9 shrink-0 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg bg-mynted-orange px-3.5 text-sm font-semibold text-white opacity-50"
+            variant="primary"
+            size="md"
           >
             <Plus className="size-4" aria-hidden="true" />
             {t('admin.categories.add')}
-          </button>
+          </Button>
         }
         renderActions={() => (
           <>

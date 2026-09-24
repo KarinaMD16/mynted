@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { Camera, Crop, Globe, ImagePlus, LoaderCircle, Lock, Undo2 } from 'lucide-react'
+import { Camera, Crop, Globe, ImagePlus, Lock, Undo2 } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import {
   Dialog,
@@ -23,6 +23,7 @@ import { useLastDefined } from '@/hooks/useLastDefined'
 import type { CropSource } from '@/features/community/components/ui/ImageCropDialog'
 import { PrivacyOption } from '@/features/community/components/ui/PrivacyOption'
 import { TagPicker } from '@/features/community/components/ui/TagPicker'
+import { Button } from '@/components/ui/Button'
 
 
 export function ModerationSettingsSection({
@@ -128,22 +129,26 @@ export function ModerationSettingsSection({
 
           {banner && (
             <>
-              <button
+              <Button
                 type="button"
                 onClick={() => openCropper('banner', banner.original)}
                 aria-label={t('communities.create.editBanner')}
-                className="rounded-full bg-black/60 p-1.5 text-white backdrop-blur-sm hover:cursor-pointer hover:bg-black/80"
+                variant="overlay"
+                size="icon-sm"
+                shape="pill"
               >
                 <Crop className="size-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setBanner(null)}
                 aria-label={t('moderation.settings.undoImage')}
-                className="rounded-full bg-black/60 p-1.5 text-white backdrop-blur-sm hover:cursor-pointer hover:bg-black/80"
+                variant="overlay"
+                size="icon-sm"
+                shape="pill"
               >
                 <Undo2 className="size-4" />
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -178,22 +183,28 @@ export function ModerationSettingsSection({
 
         {image && (
           <div className="absolute -bottom-10 left-28 flex gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => openCropper('image', image.original)}
               aria-label={t('communities.create.editImage')}
-              className="rounded-full bg-white p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-mynted-bg"
+              variant="secondary"
+              size="icon-sm"
+              shape="pill"
+              className="border-0 shadow"
             >
               <Crop className="size-4" />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setImage(null)}
               aria-label={t('moderation.settings.undoImage')}
-              className="rounded-full bg-white p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-mynted-bg"
+              variant="secondary"
+              size="icon-sm"
+              shape="pill"
+              className="border-0 shadow"
             >
               <Undo2 className="size-4" />
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -274,15 +285,16 @@ export function ModerationSettingsSection({
       )}
 
       <div className="flex flex-col items-start gap-2">
-        <button
+        <Button
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="inline-flex items-center gap-2 rounded-xl bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+          variant="primary"
+          size="md"
+          isLoading={saveSettings.isPending}
         >
-          {saveSettings.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
           {saveSettings.isPending ? t('moderation.settings.saving') : t('moderation.settings.save')}
-        </button>
+        </Button>
 
         {saveSettings.isSuccess && !saveSettings.isPending && (
           <p className="text-xs text-emerald-600">{t('moderation.settings.saved')}</p>
@@ -324,13 +336,15 @@ export function ModerationSettingsSection({
           <div className="flex flex-col gap-1.5 border-t border-mynted-border pt-6">
             <span className={labelClasses}>{t('moderation.settings.dangerTitle')}</span>
             <p className={hintClasses}>{t('moderation.settings.deactivateHint')}</p>
-            <button
+            <Button
               type="button"
               onClick={() => setIsDeactivateOpen(true)}
-              className="mt-2 w-fit rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:cursor-pointer hover:bg-red-50"
+              variant="destructive-secondary"
+              size="md"
+              className="mt-2 w-fit"
             >
               {t('moderation.settings.deactivate')}
-            </button>
+            </Button>
           </div>
 
           <Dialog open={isDeactivateOpen} onOpenChange={(open) => { if (!open) setIsDeactivateOpen(false) }}>
@@ -343,22 +357,24 @@ export function ModerationSettingsSection({
               </DialogHeader>
 
               <DialogFooter>
-                <button
+                <Button
                   type="button"
                   onClick={() => setIsDeactivateOpen(false)}
-                  className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+                  variant="secondary"
+                  size="md"
                 >
                   {t('community.detail.leaveCancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => deactivate.mutate(undefined, { onSuccess: () => setIsDeactivateOpen(false) })}
                   disabled={deactivate.isPending}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  variant="destructive"
+                  size="md"
+                  isLoading={deactivate.isPending}
                 >
-                  {deactivate.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
                   {t('moderation.settings.deactivate')}
-                </button>
+                </Button>
               </DialogFooter>
 
               {deactivate.isError && (
