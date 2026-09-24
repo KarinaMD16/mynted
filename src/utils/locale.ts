@@ -37,6 +37,12 @@ const REGION_CURRENCY: Record<string, string> = {
 }
 
 /**
+ * Monedas que se pueden elegir en /settings (pestaña Perfil, vendedores):
+ * las mismas de REGION_CURRENCY, sin repetir y en orden alfabético.
+ */
+export const SUPPORTED_CURRENCIES: string[] = [...new Set(Object.values(REGION_CURRENCY))].sort()
+
+/**
  * Idiomas soportados por la app. El orden es el que se muestra en el
  * selector de idioma (ver LanguageSwitcher).
  */

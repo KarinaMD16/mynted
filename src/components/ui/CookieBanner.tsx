@@ -5,23 +5,23 @@ import { cn } from '@/cuicui/utils/cn'
 import { useCookie } from '@/cuicui/hooks/use-cookies'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { Button } from './Button'
+import {
+  COOKIE_CONSENT_NAME,
+  COOKIE_CONSENT_OPTIONS,
+  COOKIES_POLICY_PATH,
+  DEFAULT_COOKIE_CONSENT,
+  type CookieConsent,
+} from '@/utils/cookieConsent'
 import { CookieIcon } from './CookieIcon'
-
-interface CookieConsent {
-  consent: boolean
-  marketing: boolean
-}
-
-const DEFAULT_CONSENT: CookieConsent = { consent: false, marketing: false }
-const COOKIES_POLICY_PATH = '/legal/cookies'
 
 export function CookieBanner() {
   const { t } = useLanguage()
-  const [consent, setConsent] = useCookie<CookieConsent>('mynted_cookie_consent', DEFAULT_CONSENT, {
-    days: 365,
-    sameSite: 'lax',
-    secure: true,
-  })
+  // Misma cookie que edita la pestaña Privacidad de /settings.
+  const [consent, setConsent] = useCookie<CookieConsent>(
+    COOKIE_CONSENT_NAME,
+    DEFAULT_COOKIE_CONSENT,
+    COOKIE_CONSENT_OPTIONS,
+  )
   const [showPreferences, setShowPreferences] = useState(false)
   const [marketingDraft, setMarketingDraft] = useState(consent.marketing)
 

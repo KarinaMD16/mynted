@@ -51,6 +51,13 @@ export function makeForgotPasswordSchema(t: TranslateFn) {
   })
 }
 
+/** Cambio de correo desde /settings (ver AccountSettingsSection). */
+export function makeEmailChangeSchema(t: TranslateFn) {
+  return z.object({
+    newEmail: buildEmailSchema(t),
+  })
+}
+
 export function makeResetPasswordSchema(t: TranslateFn) {
   return z.object({
     newPassword: buildPasswordSchema(t),

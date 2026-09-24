@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Calendar, Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
 import { Clock, Info, LayoutGrid, type LucideIcon, Link2, MapPin, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
-import { EditProfileForm } from '@/features/auth/components/EditProfileForm'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useMyInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
@@ -36,7 +35,7 @@ export default function ProfilePage() {
   const { isLoggedIn, data: user, isLoading, isError } = useCurrentUser()
   const interestsQuery = useMyInterestsQuery(isLoggedIn)
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
-  const [isEditOpen, setIsEditOpen] = useState(false)
+  const navigate = useNavigate()
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
   const [isCreateProductOpen, setIsCreateProductOpen] = useState(false)
 
@@ -64,7 +63,8 @@ export default function ProfilePage() {
             <ProfileHeader
               user={user}
               language={language}
-              onEditProfile={() => setIsEditOpen(true)}
+              // Los formularios de edición viven en /settings (pestaña Perfil).
+              onEditProfile={() => void navigate({ to: '/settings', search: { tab: 'profile' } })}
               onBecomeSeller={() => setIsBecomeSellerOpen(true)}
               onCreateProduct={() => setIsCreateProductOpen(true)}
             />
@@ -92,7 +92,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <EditProfileForm isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} user={user} />
             <BecomeSellerForm isOpen={isBecomeSellerOpen} onClose={() => setIsBecomeSellerOpen(false)} />
             {/* Solo los vendedores pueden publicar (el backend lo exige con SellerGuard). */}
             {isSeller && (
