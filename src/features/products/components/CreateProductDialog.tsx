@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { Link } from '@tanstack/react-router'
-import { CircleCheck, ImagePlus, LoaderCircle, Repeat, Tag, Trash2, X } from 'lucide-react'
+import { CircleCheck, ImagePlus, Repeat, Tag, Trash2, X } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { TextField } from '@/components/ui/TextField'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -20,6 +20,7 @@ import {
   type ProductType,
 } from '../models/product'
 import { makeCreateProductSchema } from '../schema/createProductSchema'
+import { Button } from '@/components/ui/Button'
 
 /** Comunidad ya elegida (cuando se abre desde la tienda de una comunidad). */
 export interface ProductTargetCommunity {
@@ -144,7 +145,7 @@ function CreateProductBody({ onClose, community }: { onClose: () => void; commun
           {t('products.create.successBody', { title: published.title, community: published.communityName })}
         </DialogDescription>
         <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row">
-          <button
+          <Button
             type="button"
             onClick={() => {
               form.reset()
@@ -155,17 +156,19 @@ function CreateProductBody({ onClose, community }: { onClose: () => void; commun
               mutation.reset()
               setPublished(null)
             }}
-            className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+            variant="secondary"
+            size="md"
           >
             {t('products.create.publishAnother')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-mynted-orange px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover"
+            variant="primary"
+            size="md"
           >
             {t('profile.becomeSeller.done')}
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -415,22 +418,24 @@ function CreateProductBody({ onClose, community }: { onClose: () => void; commun
           )}
 
           <DialogFooter>
-            <button
+            <Button
               type="button"
               onClick={onClose}
               disabled={mutation.isPending}
-              className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg disabled:cursor-not-allowed disabled:opacity-60"
+              variant="secondary"
+              size="md"
             >
               {t('profile.edit.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={mutation.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+              variant="primary"
+              size="md"
+              isLoading={mutation.isPending}
             >
-              {mutation.isPending && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
               {mutation.isPending ? t('products.create.publishing') : t('products.create.submit')}
-            </button>
+            </Button>
           </DialogFooter>
         </form>
       )}
@@ -459,7 +464,7 @@ function ChoiceChip({
       role="radio"
       aria-checked={selected}
       onClick={onSelect}
-      className={`flex items-center justify-center gap-2 rounded-[10px] border px-3 py-2.5 text-center text-sm font-medium transition-colors hover:cursor-pointer ${
+      className={`flex items-center justify-center gap-2 h-10 rounded-xl border px-3 text-center text-sm font-medium transition-colors hover:cursor-pointer ${
         selected
           ? 'border-mynted-orange bg-mynted-orange/10 text-mynted-orange'
           : 'border-mynted-border text-mynted-ink hover:border-mynted-orange/60'
@@ -519,21 +524,25 @@ function CoverPicker({ file, error, onChange }: { file: File | null; error?: str
         <div className="relative overflow-hidden rounded-xl border border-mynted-border">
           <img src={preview} alt={t('products.create.coverPreviewAlt')} className="h-52 w-full object-cover" />
           <div className="absolute right-3 bottom-3 flex gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="rounded-lg bg-white/95 px-3 py-1.5 text-xs font-semibold text-mynted-ink shadow hover:cursor-pointer hover:bg-white"
+              variant="secondary"
+              size="sm"
+              className="border-0 bg-white/95 shadow hover:bg-white"
             >
               {t('products.create.changeImage')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => onChange(null)}
               aria-label={t('products.create.removeImage')}
-              className="grid size-8 place-items-center rounded-lg bg-white/95 text-red-600 shadow hover:cursor-pointer hover:bg-white"
+              variant="secondary"
+              size="icon-sm"
+              className="border-0 bg-white/95 text-red-600 shadow hover:bg-white"
             >
               <Trash2 className="size-4" aria-hidden="true" />
-            </button>
+            </Button>
           </div>
         </div>
       ) : (

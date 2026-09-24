@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { LoaderCircle, Repeat, Tag, UsersRound } from 'lucide-react'
+import { Repeat, Tag, UsersRound } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
 import type { ProductCondition, ProductListItem, ProductPage, ProductStatus } from '../models/product'
+import { Button } from '@/components/ui/Button'
 
 const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
   new: 'products.condition.new',
@@ -61,13 +62,15 @@ export function ProductGrid({
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
         <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
         <p className="text-sm text-mynted-gray">{getApiErrorMessage(query.error)}</p>
-        <button
+        <Button
           type="button"
           onClick={() => void query.refetch()}
-          className="mt-2 rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+          variant="secondary"
+          size="sm"
+          className="mt-2"
         >
           {t('communities.list.retry')}
-        </button>
+        </Button>
       </div>
     )
   }
@@ -85,15 +88,17 @@ export function ProductGrid({
         ))}
       </ul>
       {query.hasNextPage && (
-        <button
+        <Button
           type="button"
           onClick={() => void query.fetchNextPage()}
           disabled={query.isFetchingNextPage}
-          className="mx-auto flex items-center gap-2 rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg disabled:cursor-not-allowed disabled:opacity-60"
+          variant="secondary"
+          size="md"
+          isLoading={query.isFetchingNextPage}
+          className="mx-auto"
         >
-          {query.isFetchingNextPage && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
           {t('products.list.loadMore')}
-        </button>
+        </Button>
       )}
     </div>
   )

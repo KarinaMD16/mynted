@@ -5,6 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { useCommunityModeration } from '@/features/community/hooks/useCommunitiesMutations'
 import type { CommunityDetail } from '@/features/community/models/communityDTOs'
 import { errorClasses, hintClasses, inputClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
+import { Button } from '@/components/ui/Button'
 
 
 export function ModerationRulesSection({ community }: { community: CommunityDetail }) {
@@ -58,47 +59,57 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
                     value={editingText}
                     onChange={(event) => setEditingText(event.target.value)}
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={handleSaveEdit}
                     disabled={editRule.isPending || editingText.trim().length === 0}
                     aria-label={t('moderation.rules.save')}
-                    className="rounded-full p-1.5 text-emerald-600 transition-colors hover:cursor-pointer hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    variant="ghost"
+                    size="icon-sm"
+                    shape="pill"
+                    className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-600"
                   >
                     {editRule.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setEditingId(null)}
                     aria-label={t('moderation.rules.cancel')}
-                    className="rounded-full p-1.5 text-mynted-gray transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+                    variant="ghost"
+                    size="icon-sm"
+                    shape="pill"
                   >
                     <X className="size-4" />
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
                   <p className="min-w-0 flex-1 text-sm text-mynted-ink">{rule.description}</p>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setEditingId(rule.communityRuleId)
                       setEditingText(rule.description)
                     }}
                     aria-label={t('moderation.rules.editAriaLabel', { number: index + 1 })}
-                    className="rounded-full p-1.5 text-mynted-gray transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+                    variant="ghost"
+                    size="icon-sm"
+                    shape="pill"
                   >
                     <Pencil className="size-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => removeRule.mutate(rule.communityRuleId)}
                     disabled={removeRule.isPending}
                     aria-label={t('moderation.rules.deleteAriaLabel', { number: index + 1 })}
-                    className="rounded-full p-1.5 text-mynted-gray transition-colors hover:cursor-pointer hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    variant="ghost"
+                    size="icon-sm"
+                    shape="pill"
+                    className="hover:bg-red-50 hover:text-red-500"
                   >
                     <Trash2 className="size-4" />
-                  </button>
+                  </Button>
                 </>
               )}
             </li>
@@ -127,11 +138,12 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
               }
             }}
           />
-          <button
+          <Button
             type="button"
             onClick={handleAdd}
             disabled={addRules.isPending || newRule.trim().length === 0}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-mynted-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+            variant="primary"
+            size="md"
           >
             {addRules.isPending ? (
               <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
@@ -139,7 +151,7 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
               <Plus className="size-4" aria-hidden="true" />
             )}
             {t('moderation.rules.add')}
-          </button>
+          </Button>
         </div>
       </div>
 

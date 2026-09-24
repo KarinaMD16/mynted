@@ -13,6 +13,7 @@ import { CreateProductDialog } from '@/features/products/components/CreateProduc
 import { ProductGrid } from '@/features/products/components/ProductGrid'
 import { useCommunityProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { Button } from '@/components/ui/Button'
 
 type CommunityTab = 'talk' | 'shop'
 
@@ -105,13 +106,14 @@ export default function CommunityDetailPage() {
             title={t('community.detail.loadError')}
             description={getApiErrorMessage(communityQuery.error)}
           >
-            <button
+            <Button
               type="button"
               onClick={() => void communityQuery.refetch()}
-              className="rounded-lg border border-mynted-border bg-white px-4 py-2 text-sm font-semibold text-mynted-ink hover:cursor-pointer hover:bg-mynted-bg"
+              variant="secondary"
+              size="sm"
             >
               {t('communities.list.retry')}
-            </button>
+            </Button>
           </CommunityNotice>
         )}
 
@@ -138,14 +140,16 @@ export default function CommunityDetailPage() {
             ) : (
               <div className="flex flex-col gap-4">
                 {isSeller && (productsQuery.data?.pages[0]?.data.length ?? 0) > 0 && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setIsCreateProductOpen(true)}
-                    className="flex w-fit cursor-pointer items-center gap-1.5 self-end rounded-[10px] bg-mynted-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+                    variant="primary"
+                    size="md"
+                    className="w-fit self-end"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     {t('products.create.inCommunityCta')}
-                  </button>
+                  </Button>
                 )}
                 <ProductGrid
                   query={productsQuery}
@@ -155,14 +159,16 @@ export default function CommunityDetailPage() {
                       <p className="font-heading text-base font-semibold text-mynted-ink">{t('products.shop.emptyTitle')}</p>
                       <p className="max-w-md text-sm text-mynted-gray">{t('products.shop.emptySubtitle')}</p>
                       {isSeller && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setIsCreateProductOpen(true)}
-                          className="mt-1 flex cursor-pointer items-center gap-1.5 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+                          variant="primary"
+                          size="md"
+                          className="mt-1"
                         >
                           <Plus className="size-4" aria-hidden="true" />
                           {t('products.create.inCommunityCta')}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   }

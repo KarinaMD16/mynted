@@ -25,7 +25,8 @@ import { ImageCropDialog } from '@/features/community/components/ui/ImageCropDia
 import { useLastDefined } from '@/hooks/useLastDefined';
 import type { CropSource } from '@/features/community/components/ui/ImageCropDialog';
 import { PrivacyOption } from '@/features/community/components/ui/PrivacyOption';
-import { TagPicker } from '@/features/community/components/ui/TagPicker';
+import { TagPicker } from '@/features/community/components/ui/TagPicker'
+import { Button } from '@/components/ui/Button';
 
 const slugify = (value: string) =>
     value
@@ -192,32 +193,38 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
 
                                 {banner && (
                                     <div className="absolute top-3 right-3 z-10 flex gap-2">
-                                        <button
+                                        <Button
                                             type="button"
                                             onClick={() => openCropper('banner', banner.original)}
                                             aria-label={t('communities.create.editBanner')}
-                                            className="rounded-full bg-black/60 p-1.5 text-white shadow backdrop-blur-sm hover:cursor-pointer hover:bg-black/80"
+                                          variant="overlay"
+                                          size="icon-sm"
+                                          shape="pill"
                                         >
                                             <Crop className="size-4" />
-                                        </button>
+                                        </Button>
 
-                                        <button
+                                        <Button
                                             type="button"
                                             onClick={() => setPreview('banner')}
                                             aria-label={t('communities.create.previewBanner')}
-                                            className="rounded-full bg-black/60 p-1.5 text-white shadow backdrop-blur-sm hover:cursor-pointer hover:bg-black/80"
+                                          variant="overlay"
+                                          size="icon-sm"
+                                          shape="pill"
                                         >
                                             <Eye className="size-4" />
-                                        </button>
+                                        </Button>
 
-                                        <button
+                                        <Button
                                             type="button"
                                             onClick={() => setBanner(null)}
                                             aria-label={t('communities.create.removeBanner')}
-                                            className="rounded-full bg-black/60 p-1.5 text-white shadow backdrop-blur-sm hover:cursor-pointer hover:bg-black/80"
+                                          variant="overlay"
+                                          size="icon-sm"
+                                          shape="pill"
                                         >
                                             <X className="size-4" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
 
@@ -236,22 +243,28 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
 
                                 {image && (
                                     <div className="absolute -bottom-11 left-24 flex gap-2 sm:left-29">
-                                        <button
+                                        <Button
                                             type="button"
                                             onClick={() => openCropper('image', image.original)}
                                             aria-label={t('communities.create.editImage')}
-                                            className="rounded-full bg-white p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-mynted-bg"
+                                          variant="secondary"
+                                          size="icon-sm"
+                                          shape="pill"
+                                          className="border-0 shadow"
                                         >
                                             <Crop className="size-4" />
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                             type="button"
                                             onClick={() => setPreview('image')}
                                             aria-label={t('communities.create.previewImage')}
-                                            className="rounded-full bg-white p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-mynted-bg"
+                                          variant="secondary"
+                                          size="icon-sm"
+                                          shape="pill"
+                                          className="border-0 shadow"
                                         >
                                             <Eye className="size-4" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                             </div>
@@ -459,14 +472,17 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                                             onChange={(event) => ruleField.handleChange(event.target.value)}
                                                                         />
                                                                         {rulesField.state.value.length > 1 && (
-                                                                            <button
+                                                                            <Button
                                                                                 type="button"
                                                                                 onClick={() => rulesField.removeValue(index)}
                                                                                 aria-label={t('communities.create.removeRuleAriaLabel', { number: index + 1 })}
-                                                                                className="rounded-full p-1 text-mynted-gray-light transition-colors hover:cursor-pointer hover:bg-white hover:text-red-500"
+                                                                              variant="ghost"
+                                                                              size="icon-sm"
+                                                                              shape="pill"
+                                                                              className="text-mynted-gray-light hover:bg-white hover:text-red-500"
                                                                             >
                                                                                 <X className="size-4" />
-                                                                            </button>
+                                                                            </Button>
                                                                         )}
                                                                     </div>
                                                                     {error && <span className={`${errorClasses} pl-1`}>{error}</span>}
@@ -479,14 +495,16 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
 
                                             {listError && <span className={errorClasses}>{listError}</span>}
 
-                                            <button
+                                            <Button
                                                 type="button"
                                                 onClick={() => rulesField.pushValue('')}
-                                                className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg border border-dashed border-mynted-border px-3 py-1.5 text-[13px] text-mynted-gray transition-colors hover:cursor-pointer hover:border-mynted-orange hover:text-mynted-orange"
+                                              variant="secondary"
+                                              size="sm"
+                                              className="mt-1 w-fit border-dashed bg-transparent text-mynted-gray hover:border-mynted-orange hover:bg-transparent hover:text-mynted-orange"
                                             >
                                                 <Plus className="size-4" aria-hidden="true" />
                                                 {t('communities.create.addRule')}
-                                            </button>
+                                            </Button>
                                         </div>
                                     );
                                 }}
@@ -522,20 +540,22 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                         )}
 
                         <DialogFooter>
-                            <button
+                            <Button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-xl border border-mynted-border bg-white px-7 py-3 font-heading text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+                              variant="secondary"
+                              size="md"
                             >
                                 {t('communities.create.cancel')}
-                            </button>
+                            </Button>
 
                             <form.Subscribe selector={(state) => state.isSubmitting}>
                                 {(isSubmitting) => (
-                                    <button
+                                    <Button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-7 py-3 font-heading text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+                                      variant="primary"
+                                      size="md"
                                     >
                                         {isSubmitting ? (
                                             <>
@@ -547,7 +567,7 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                 {t('communities.create.submit')}
                                             </>
                                         )}
-                                    </button>
+                                    </Button>
                                 )}
                             </form.Subscribe>
                         </DialogFooter>

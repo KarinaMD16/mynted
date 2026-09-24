@@ -4,6 +4,7 @@ import type { Product } from '@/features/users/types/appTypes'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { AdvancedColorfulBadges } from './Badge'
 import { Rating } from './Rating'
+import { Button } from '@/components/ui/Button'
 
 /** Tarjeta de publicación del marketplace (foto, título, rating, hashtags, verificación, precio y botón de contacto). */
 export function ProductCard({ product }: { product: Product }) {
@@ -42,12 +43,14 @@ export function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-1 flex items-center justify-between">
           <span className="text-2xl font-bold text-mynted-ink">${product.price.toFixed(2)}</span>
-          <button
+          <Button
             type="button"
-            className="rounded-full bg-mynted-blue-mid px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            variant="accent"
+            size="md"
+            shape="pill"
           >
             {t('product.contact')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

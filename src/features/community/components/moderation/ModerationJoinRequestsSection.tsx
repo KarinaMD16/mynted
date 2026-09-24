@@ -6,6 +6,7 @@ import { useCommunityJoinRequests } from '@/features/community/hooks/useCommunit
 import type { CommunityDetail } from '@/features/community/models/communityDTOs'
 import { errorClasses, hintClasses } from '@/features/community/types/DEFAULT_VALUES'
 import { formatRelativeTime } from '@/utils/relativeTime'
+import { Button } from '@/components/ui/Button'
 
 /**
  * Solicitudes pendientes para entrar a una comunidad privada. El backend las
@@ -74,11 +75,12 @@ export function ModerationJoinRequestsSection({ community }: { community: Commun
                   </time>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => acceptJoinRequest.mutate(request.id)}
                   disabled={isBusy}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:cursor-pointer hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  variant="success"
+                  size="sm"
                 >
                   {isBusy && acceptJoinRequest.isPending ? (
                     <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
@@ -86,13 +88,14 @@ export function ModerationJoinRequestsSection({ community }: { community: Commun
                     <Check className="size-3.5" aria-hidden="true" />
                   )}
                   {t('moderation.requests.accept')}
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => rejectJoinRequest.mutate(request.id)}
                   disabled={isBusy}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-mynted-border px-3 py-1.5 text-xs font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg disabled:cursor-not-allowed disabled:opacity-60"
+                  variant="secondary"
+                  size="sm"
                 >
                   {isBusy && rejectJoinRequest.isPending ? (
                     <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
@@ -100,7 +103,7 @@ export function ModerationJoinRequestsSection({ community }: { community: Commun
                     <X className="size-3.5" aria-hidden="true" />
                   )}
                   {t('moderation.requests.reject')}
-                </button>
+                </Button>
               </li>
             )
           })}

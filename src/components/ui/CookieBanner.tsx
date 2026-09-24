@@ -105,7 +105,7 @@ export function CookieBanner() {
               <Button
                 type="button"
                 variant="primary"
-                className="!w-auto self-start px-5 hover:cursor-pointer"
+                className="self-start"
                 onClick={handleSavePreferences}
               >
                 {t('cookieBanner.savePreferences')}
@@ -114,13 +114,12 @@ export function CookieBanner() {
           )}
 
           <div className="flex flex-wrap gap-3">
-            <Button type="button" variant="primary" className="!w-auto px-5 hover:cursor-pointer" onClick={handleAllowAll}>
+            <Button type="button" variant="primary" onClick={handleAllowAll}>
               {t('cookieBanner.allowAll')}
             </Button>
             <Button
               type="button"
               variant="secondary"
-              className="!w-auto px-5 hover:cursor-pointer"
               onClick={() => setShowPreferences((prev) => !prev)}
             >
               {showPreferences ? t('cookieBanner.hideOptions') : t('cookieBanner.manageCookies')}

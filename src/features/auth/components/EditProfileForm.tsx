@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import type { AuthUser } from '../models/auth'
 import { useUpdateProfileMutation } from '../hooks/useAuthMutations'
 import { makeEditProfileSchema } from '../schema/editProfileSchema'
+import { Button } from '@/components/ui/Button'
 
 interface EditProfileFormProps {
   isOpen: boolean
@@ -194,20 +195,22 @@ function EditProfileDialogBody({ onClose, user }: { onClose: () => void; user: A
         )}
 
         <DialogFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-mynted-border bg-white px-6 py-2.5 font-heading text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+            variant="secondary"
+            size="md"
           >
             {t('profile.edit.cancel')}
-          </button>
+          </Button>
 
           <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
             {([canSubmit, isSubmitting]) => (
-              <button
+              <Button
                 type="submit"
                 disabled={!canSubmit || updateProfileMutation.isPending}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-6 py-2.5 font-heading text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+                variant="primary"
+                size="md"
               >
                 {isSubmitting || updateProfileMutation.isPending ? (
                   <>
@@ -217,7 +220,7 @@ function EditProfileDialogBody({ onClose, user }: { onClose: () => void; user: A
                 ) : (
                   t('profile.edit.submit')
                 )}
-              </button>
+              </Button>
             )}
           </form.Subscribe>
         </DialogFooter>

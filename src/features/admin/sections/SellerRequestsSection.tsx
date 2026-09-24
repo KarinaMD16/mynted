@@ -22,6 +22,7 @@ import { UserReviewDrawer } from '../components/UserReviewDrawer'
 import { useAdminUsers } from '../hooks/useAdminQueries'
 import type { AdminTab, AdminUser } from '../models/admin'
 import { ManageLink, OverviewSkeleton } from './UsersSection'
+import { Button } from '@/components/ui/Button'
 
 type RequestStatus = Exclude<SellerRequestStatus, 'none'>
 
@@ -120,14 +121,15 @@ function SellerRequestsOverview({
                   <span className="hidden text-sm text-mynted-gray sm:inline">
                     {formatShortDate(user.sellerRequestedAt ?? user.updatedAt, language)}
                   </span>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setRequestUserId(user.id)}
-                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-mynted-border bg-white px-3 py-1.5 text-sm font-semibold text-mynted-ink transition-colors hover:bg-mynted-bg"
+                    variant="secondary"
+                    size="sm"
                   >
                     <FileText className="size-4" aria-hidden="true" />
                     {t('admin.sellerRequest.open')}
-                  </button>
+                  </Button>
                 </div>
               </li>
             ))}

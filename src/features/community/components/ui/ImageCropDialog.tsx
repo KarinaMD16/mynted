@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { LoaderCircle, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { Button } from '@/components/ui/Button'
 
 export interface CropSource {
   file: File
@@ -327,14 +328,16 @@ export function ImageCropDialog({ source, isOpen, aspect, shape, outputWidth, ti
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <button
+          <Button
             type="button"
             onClick={() => applyZoom((current) => current / 1.2)}
             aria-label={t('communities.crop.zoomOut')}
-            className="rounded-full p-1.5 text-mynted-gray hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+            variant="ghost"
+            size="icon-sm"
+            shape="pill"
           >
             <ZoomOut className="size-4" />
-          </button>
+          </Button>
           <input
             type="range"
             min={minZoom}
@@ -348,22 +351,25 @@ export function ImageCropDialog({ source, isOpen, aspect, shape, outputWidth, ti
             aria-label={t('communities.crop.zoom')}
             className="flex-1 accent-mynted-orange"
           />
-          <button
+          <Button
             type="button"
             onClick={() => applyZoom((current) => current * 1.2)}
             aria-label={t('communities.crop.zoomIn')}
-            className="rounded-full p-1.5 text-mynted-gray hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+            variant="ghost"
+            size="icon-sm"
+            shape="pill"
           >
             <ZoomIn className="size-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-mynted-gray hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+            variant="ghost"
+            size="sm"
           >
             <RotateCcw className="size-3.5" aria-hidden="true" />
             {t('communities.crop.reset')}
-          </button>
+          </Button>
         </div>
 
         {isReady && (
@@ -384,22 +390,24 @@ export function ImageCropDialog({ source, isOpen, aspect, shape, outputWidth, ti
         )}
 
         <DialogFooter>
-          <button
+          <Button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-mynted-border bg-white px-5 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+            variant="secondary"
+            size="md"
           >
             {t('communities.crop.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleConfirm}
             disabled={!isReady || isExporting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+            variant="primary"
+            size="md"
+            isLoading={isExporting}
           >
-            {isExporting && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
             {isExporting ? t('communities.crop.applying') : t('communities.crop.apply')}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -102,7 +102,7 @@ export function RegisterForm({ onSwitchToLogin, onRegistered }: RegisterFormProp
         {([canSubmit, isSubmitting]) => (
           <Button
             type="submit"
-            className="hover:cursor-pointer"
+            size="lg" fullWidth
             disabled={!canSubmit || registerMutation.isPending || loginMutation.isPending}
           >
             {isSubmitting || registerMutation.isPending || loginMutation.isPending

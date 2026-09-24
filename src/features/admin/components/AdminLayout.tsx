@@ -8,6 +8,7 @@ import { useAccountActions } from '@/components/layout/useAccountActions'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { ADMIN_TABS, type AdminSection, type AdminTab } from '../models/admin'
+import { Button } from '@/components/ui/Button'
 
 const SECTION_META: Record<
   AdminSection,
@@ -125,15 +126,17 @@ export function AdminLayout({
             </Link>
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
-              <button
+              <Button
                 type="button"
                 onClick={() => void logout()}
                 disabled={isLoggingOut}
                 aria-label={t('header.logout')}
-                className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-mynted-border text-mynted-ink hover:bg-mynted-bg"
+                variant="secondary"
+                size="icon-md"
+                shape="pill"
               >
                 <LogOut className="size-4" aria-hidden="true" />
-              </button>
+              </Button>
             </div>
           </div>
 
