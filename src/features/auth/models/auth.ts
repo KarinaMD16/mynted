@@ -40,6 +40,8 @@ export interface AuthUser {
   bio?: string | null
   location?: string | null
   sellerRequestStatus?: SellerRequestStatus
+  /** Moneda en la que el usuario publica sus precios (ISO 4217, p. ej. CRC). */
+  currency?: string | null
 }
 
 export interface LogoutResponse {

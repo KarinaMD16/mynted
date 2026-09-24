@@ -2,14 +2,17 @@ import { useState } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Calendar, Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
-import { Clock, Info, LayoutGrid, type LucideIcon, Link2, MapPin, MessageCircle, ShoppingBag, TrendingUp } from 'lucide-react'
+import { Clock, Info, LayoutGrid, type LucideIcon, Link2, MapPin, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
 import { EditProfileForm } from '@/features/auth/components/EditProfileForm'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useMyInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
+import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
+import { ProductGrid } from '@/features/products/components/ProductGrid'
+import { useMyProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import type { AppLanguage } from '@/utils/locale'
+import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
 import type { Interest } from '@/features/auth/models/interests'
 import { SiteHeader } from '../components/layout/SiteHeader'
@@ -24,8 +27,7 @@ function getInitials(username: string): string {
 function formatMemberSince(createdAt: string, language: AppLanguage): string {
   const date = new Date(createdAt)
   if (Number.isNaN(date.getTime())) return '—'
-  const locale = language === 'es' ? 'es-CR' : 'en-US'
-  return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+  return date.toLocaleDateString(INTL_LOCALES[language], { month: 'long', year: 'numeric' })
 }
 
 export default function ProfilePage() {
@@ -35,6 +37,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
+  const [isCreateProductOpen, setIsCreateProductOpen] = useState(false)
 
   const isSeller = user?.role === 'seller'
 
@@ -62,6 +65,7 @@ export default function ProfilePage() {
               language={language}
               onEditProfile={() => setIsEditOpen(true)}
               onBecomeSeller={() => setIsBecomeSellerOpen(true)}
+              onCreateProduct={() => setIsCreateProductOpen(true)}
             />
 
             <ProfileTabsBar activeTab={activeTab} onChange={setActiveTab} isSeller={isSeller} />
@@ -79,12 +83,20 @@ export default function ProfilePage() {
               </div>
 
               <div className={`${activeTab === 'info' ? 'hidden' : ''} lg:order-2 lg:block`}>
-                <TabContent activeTab={activeTab} />
+                {activeTab === 'products' && isSeller ? (
+                  <MyProductsTab onCreateProduct={() => setIsCreateProductOpen(true)} />
+                ) : (
+                  <TabContent activeTab={activeTab} />
+                )}
               </div>
             </div>
 
             <EditProfileForm isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} user={user} />
             <BecomeSellerForm isOpen={isBecomeSellerOpen} onClose={() => setIsBecomeSellerOpen(false)} />
+            {/* Solo los vendedores pueden publicar (el backend lo exige con SellerGuard). */}
+            {isSeller && (
+              <CreateProductDialog isOpen={isCreateProductOpen} onClose={() => setIsCreateProductOpen(false)} />
+            )}
           </>
         )}
       </main>
@@ -136,11 +148,13 @@ function ProfileHeader({
   language,
   onEditProfile,
   onBecomeSeller,
+  onCreateProduct,
 }: {
   user: AuthUser
   language: AppLanguage
   onEditProfile: () => void
   onBecomeSeller: () => void
+  onCreateProduct: () => void
 }) {
   const { t } = useLanguage()
   const isSeller = user.role === 'seller'
@@ -169,6 +183,18 @@ function ProfileHeader({
                 <span className="hidden sm:inline">{t('profile.becomeSeller.cta')}</span>
               </button>
             ))}
+
+          {isSeller && (
+            <button
+              type="button"
+              onClick={onCreateProduct}
+              aria-label={t('products.create.cta')}
+              className="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-mynted-orange bg-mynted-orange px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-mynted-orange-hover sm:px-4"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">{t('products.create.cta')}</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -391,5 +417,32 @@ function InterestsCard({ interestsQuery }: { interestsQuery: UseQueryResult<Inte
         </div>
       )}
     </div>
+  )
+}
+
+/** Pestaña "Productos en venta" del vendedor: GET /users/me/products. */
+function MyProductsTab({ onCreateProduct }: { onCreateProduct: () => void }) {
+  const { t } = useLanguage()
+  const productsQuery = useMyProducts()
+
+  return (
+    <ProductGrid
+      query={productsQuery}
+      showCommunity
+      emptyState={
+        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
+          <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('profile.tabs.productsEmptyTitle')}</h2>
+          <p className="max-w-sm text-sm text-mynted-gray">{t('profile.tabs.productsEmptySubtitle')}</p>
+          <button
+            type="button"
+            onClick={onCreateProduct}
+            className="mt-3 flex cursor-pointer items-center gap-1.5 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {t('products.create.firstCta')}
+          </button>
+        </div>
+      }
+    />
   )
 }

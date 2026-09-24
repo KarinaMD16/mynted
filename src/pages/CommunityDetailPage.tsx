@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
-import { ArrowLeft, Shield } from 'lucide-react'
+import { ArrowLeft, Plus, Shield, ShoppingBag } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityDetailHeader } from '@/features/community/components/detail/CommunityDetailHeader'
@@ -9,6 +9,9 @@ import { CommunitySidebar } from '@/features/community/components/detail/Communi
 import { ForumPostCard } from '@/features/community/components/cards/ForumPostCard'
 import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
+import { ProductGrid } from '@/features/products/components/ProductGrid'
+import { useCommunityProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 type CommunityTab = 'talk' | 'shop'
@@ -16,12 +19,16 @@ type CommunityTab = 'talk' | 'shop'
 export default function CommunityDetailPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug' })
-  const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
+  const { isLoggedIn, isLoading: isLoadingSession, data: currentUser } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
+  const [isCreateProductOpen, setIsCreateProductOpen] = useState(false)
+  // Publicar productos es exclusivo de vendedores (el backend lo exige con SellerGuard).
+  const isSeller = currentUser?.role === 'seller'
 
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
   // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
   const community = isLoggedIn ? communityQuery.data : undefined
+  const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -129,9 +136,50 @@ export default function CommunityDetailPage() {
                 <CommunitySidebar community={community} />
               </div>
             ) : (
-              <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                {t('community.detail.shopComingSoon')}
-              </p>
+              <div className="flex flex-col gap-4">
+                {isSeller && (productsQuery.data?.pages[0]?.data.length ?? 0) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateProductOpen(true)}
+                    className="flex w-fit cursor-pointer items-center gap-1.5 self-end rounded-[10px] bg-mynted-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                    {t('products.create.inCommunityCta')}
+                  </button>
+                )}
+                <ProductGrid
+                  query={productsQuery}
+                  emptyState={
+                    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center">
+                      <ShoppingBag className="size-6 text-mynted-orange" aria-hidden="true" />
+                      <p className="font-heading text-base font-semibold text-mynted-ink">{t('products.shop.emptyTitle')}</p>
+                      <p className="max-w-md text-sm text-mynted-gray">{t('products.shop.emptySubtitle')}</p>
+                      {isSeller && (
+                        <button
+                          type="button"
+                          onClick={() => setIsCreateProductOpen(true)}
+                          className="mt-1 flex cursor-pointer items-center gap-1.5 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+                        >
+                          <Plus className="size-4" aria-hidden="true" />
+                          {t('products.create.inCommunityCta')}
+                        </button>
+                      )}
+                    </div>
+                  }
+                />
+              </div>
+            )}
+
+            {isSeller && (
+              <CreateProductDialog
+                isOpen={isCreateProductOpen}
+                onClose={() => setIsCreateProductOpen(false)}
+                community={{
+                  id: community.id,
+                  name: community.name,
+                  categoryId: community.category?.categoryId ?? null,
+                }}
+              />
             )}
           </>
         )}

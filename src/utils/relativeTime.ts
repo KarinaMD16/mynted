@@ -1,4 +1,4 @@
-import type { AppLanguage } from './locale'
+import { INTL_LOCALES, type AppLanguage } from './locale'
 
 const UNITS: { unit: Intl.RelativeTimeFormatUnit; ms: number }[] = [
   { unit: 'year', ms: 1000 * 60 * 60 * 24 * 365 },
@@ -8,12 +8,10 @@ const UNITS: { unit: Intl.RelativeTimeFormatUnit; ms: number }[] = [
   { unit: 'minute', ms: 1000 * 60 },
 ]
 
-const LOCALES: Record<AppLanguage, string> = { es: 'es-CR', en: 'en-US' }
-
-/** "Hace 5 minutos" / "5 minutes ago" a partir de una fecha ISO del backend. */
+/** "Hace 5 minutos" / "5 minutes ago" / "vor 5 Minuten" / "5분 전"... a partir de una fecha ISO del backend. */
 export function formatRelativeTime(isoDate: string, language: AppLanguage): string {
   const elapsed = Date.now() - new Date(isoDate).getTime()
-  const formatter = new Intl.RelativeTimeFormat(LOCALES[language], { numeric: 'auto' })
+  const formatter = new Intl.RelativeTimeFormat(INTL_LOCALES[language], { numeric: 'auto' })
 
   for (const { unit, ms } of UNITS) {
     if (elapsed >= ms) {
@@ -26,7 +24,7 @@ export function formatRelativeTime(isoDate: string, language: AppLanguage): stri
 
 /** Fecha corta para "Creada el ..." (ver CommunityAboutCard). */
 export function formatShortDate(isoDate: string, language: AppLanguage): string {
-  return new Intl.DateTimeFormat(LOCALES[language], {
+  return new Intl.DateTimeFormat(INTL_LOCALES[language], {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

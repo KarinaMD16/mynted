@@ -1,7 +1,9 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from './App'
+import { ADMIN_SECTIONS, ADMIN_TABS, type AdminSection, type AdminTab } from './features/admin/models/admin'
 import { Loader } from './components/ui/Loader'
 import { useLanguage } from './i18n/LanguageContext'
+import AdminPage from './pages/AdminPage'
 import CommunitiesPage from './pages/CommunitiesPage'
 import CommunityDetailPage from './pages/CommunityDetailPage'
 import CommunityModerationPage from './pages/CommunityModerationPage'
@@ -9,6 +11,7 @@ import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
+import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import CookiesPolicyPage from './pages/CookiesPolicyPage'
 import MessagesPage from './pages/MessagesPage'
@@ -42,7 +45,8 @@ const homeRoute = createRoute({
 })
 
 interface LoginSearch {
-  mode?: 'interests'
+  /** "register" abre directo el formulario de crear cuenta (lo usa la landing /descubre). */
+  mode?: 'interests' | 'register'
 }
 
 const loginRoute = createRoute({
@@ -50,7 +54,7 @@ const loginRoute = createRoute({
   path: '/login',
   component: LoginPage,
   validateSearch: (search: Record<string, unknown>): LoginSearch => ({
-    mode: search.mode === 'interests' ? 'interests' : undefined,
+    mode: search.mode === 'interests' || search.mode === 'register' ? search.mode : undefined,
   }),
 })
 
@@ -126,6 +130,38 @@ const cookiesPolicyRoute = createRoute({
   component: CookiesPolicyPage,
 })
 
+interface AdminSearch {
+  section: AdminSection
+  tab: AdminTab
+}
+
+/**
+ * Panel de superadmin. La sección (?section=) y la pestaña (?tab=) van en la
+ * URL; un valor desconocido cae en Comunidades / Resumen.
+ */
+const adminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin',
+  component: AdminPage,
+  validateSearch: (search: Record<string, unknown>): AdminSearch => ({
+    section: (ADMIN_SECTIONS as readonly unknown[]).includes(search.section)
+      ? (search.section as AdminSection)
+      : 'communities',
+    tab: (ADMIN_TABS as readonly unknown[]).includes(search.tab) ? (search.tab as AdminTab) : 'overview',
+  }),
+})
+
+/**
+ * Landing promocional ("anuncio") para compartir en campañas y links
+ * externos. Usa el mismo header que el resto del sitio y lleva a "/" (los
+ * productos destacados) o a crear una cuenta. Ver pages/LandingPage.tsx.
+ */
+const landingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/mynted',
+  component: LandingPage,
+})
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
@@ -140,6 +176,8 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   privacyPolicyRoute,
   cookiesPolicyRoute,
+  adminRoute,
+  landingRoute,
 ])
 
 /**

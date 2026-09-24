@@ -30,7 +30,9 @@ export function EditProfileForm({ isOpen, onClose, user }: EditProfileFormProps)
         if (!open) onClose()
       }}
     >
-      <DialogContent className="max-w-lg">{isOpen && <EditProfileDialogBody onClose={onClose} user={user} />}</DialogContent>
+      <DialogContent className="max-w-lg">
+        <EditProfileDialogBody onClose={onClose} user={user} />
+      </DialogContent>
     </Dialog>
   )
 }
