@@ -113,3 +113,24 @@ export interface CommunityStats {
   postCount: number
   recentPostCount: number
 }
+
+
+export type JoinCommunityResultType = 'joined' | 'requested' | 'already_member' | 'already_requested'
+
+export interface JoinCommunityResult {
+  communityId: number
+  result: JoinCommunityResultType
+}
+
+export interface CommunityJoinRequest {
+  id: number
+  userId: string
+  communityId: number
+  status: 'pending' | 'accepted' | 'rejected'
+  createdAt: string
+  user: {
+    id: string
+    username: string
+    photoUrl: string | null
+  }
+}

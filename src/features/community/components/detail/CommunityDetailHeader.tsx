@@ -30,13 +30,27 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
   const bannerAlt = t('communities.card.bannerAlt', { name: community.name })
   const imageAlt = t('communities.card.imageAlt', { name: community.name })
 
+  // En una comunidad privada el backend no une: deja una solicitud pendiente.
+  // El detalle todavia no dice si ya hay una, asi que se sabe al responder.
+  const joinResult = joinMutation.data?.result
+  const hasPendingRequest = joinResult === 'requested' || joinResult === 'already_requested'
+
   const handleMembershipClick = () => {
     if (community.isMember) {
       setIsLeaveDialogOpen(true)
       return
     }
+    if (hasPendingRequest) return
     joinMutation.mutate()
   }
+
+  const membershipLabel = community.isMember
+    ? t('community.detail.joined')
+    : hasPendingRequest
+      ? t('community.detail.requestSent')
+      : community.isPrivate
+        ? t('community.detail.requestJoin')
+        : t('community.detail.join')
 
   const handleLeaveConfirm = () => {
     leaveMutation.mutate(undefined, {
@@ -88,7 +102,7 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
         <button
           type="button"
           onClick={handleMembershipClick}
-          disabled={isPending}
+          disabled={isPending || hasPendingRequest}
           className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
             community.isMember
               ? 'border border-mynted-border bg-white text-mynted-ink hover:bg-mynted-bg'
@@ -102,9 +116,13 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
           ) : (
             <Plus className="size-4" aria-hidden="true" />
           )}
-          {community.isMember ? t('community.detail.joined') : t('community.detail.join')}
+          {membershipLabel}
         </button>
       </div>
+
+      {hasPendingRequest && (
+        <p className="mt-2 text-xs text-mynted-gray">{t('community.detail.requestPendingHint')}</p>
+      )}
 
       {error && (
         <p className="mt-2 text-sm text-red-500" role="alert">

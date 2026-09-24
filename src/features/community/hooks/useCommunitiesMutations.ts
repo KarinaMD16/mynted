@@ -1,11 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
+  acceptCommunityJoinRequest,
   createCommunity,
   createCommunityRules,
   deactivateCommunity,
   deleteCommunityRule,
   joinCommunity,
   leaveCommunity,
+  rejectCommunityJoinRequest,
   setCommunityPrivacy,
   updateCommunity,
   updateCommunityRule,
@@ -83,10 +85,29 @@ export const useCommunityModeration = (communityId: number) => {
     onSuccess: refresh,
   })
 
+  const acceptJoinRequest = useMutation({
+    mutationFn: (requestId: number) => acceptCommunityJoinRequest(communityId, requestId),
+    onSuccess: refresh,
+  })
+
+  const rejectJoinRequest = useMutation({
+    mutationFn: (requestId: number) => rejectCommunityJoinRequest(communityId, requestId),
+    onSuccess: refresh,
+  })
+
   const deactivate = useMutation({
     mutationFn: () => deactivateCommunity(communityId),
     onSuccess: refresh,
   })
 
-  return { addRules, editRule, removeRule, saveSettings, changePrivacy, deactivate }
+  return {
+    addRules,
+    editRule,
+    removeRule,
+    saveSettings,
+    changePrivacy,
+    deactivate,
+    acceptJoinRequest,
+    rejectJoinRequest,
+  }
 }

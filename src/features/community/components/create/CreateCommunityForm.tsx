@@ -170,7 +170,7 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                             void form.handleSubmit();
                         }}
                     >
-                        <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8 overflow-y-auto max-h-[60vh]">
+                        <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8 overflow-y-auto max-h-[55vh]">
 
 
                             <div className="relative mb-10">
