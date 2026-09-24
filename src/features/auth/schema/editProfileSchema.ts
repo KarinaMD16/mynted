@@ -5,7 +5,7 @@ import type { TranslateFn } from '@/i18n/LanguageContext'
  * Espeja las reglas de UpdateProfileDto en el backend (username 3-20
  * caracteres alfanuméricos + guión bajo; bio ≤500; location ≤100). Es un
  * schema separado de authSchemas.ts porque estos campos solo existen en el
- * formulario de editar perfil (ver EditProfileForm).
+ * formulario de editar perfil (ver /settings: pestañas Cuenta y Perfil).
  */
 export function makeEditProfileSchema(t: TranslateFn) {
   return z.object({

@@ -18,6 +18,9 @@ import MessagesPage from './pages/MessagesPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import ConfirmEmailChangePage from './pages/ConfirmEmailChangePage'
+import SettingsPage from './pages/SettingsPage'
+import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
 
 /**
  * Configuración de rutas del frontend.
@@ -118,6 +121,32 @@ const profileRoute = createRoute({
   component: ProfilePage,
 })
 
+/**
+ * Ajustes de la cuenta. La pestaña va en ?tab= (account | profile | privacy
+ * | notifications); un valor desconocido cae en "account".
+ */
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  component: SettingsPage,
+  validateSearch: (search: Record<string, unknown>): { tab: SettingsTab } => ({
+    tab: isSettingsTab(search.tab) ? search.tab : 'account',
+  }),
+})
+
+/**
+ * Destino del enlace de cambio de correo: `${FRONTEND_URL}/confirm-email-change?token=...`
+ * (ver AuthService.requestEmailChange en el backend).
+ */
+const confirmEmailChangeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/confirm-email-change',
+  validateSearch: (search: Record<string, unknown>): { token: string | undefined } => ({
+    token: typeof search.token === 'string' ? search.token : undefined,
+  }),
+  component: ConfirmEmailChangePage,
+})
+
 const privacyPolicyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/legal/privacidad',
@@ -174,6 +203,8 @@ const routeTree = rootRoute.addChildren([
   favoritesRoute,
   messagesRoute,
   profileRoute,
+  settingsRoute,
+  confirmEmailChangeRoute,
   privacyPolicyRoute,
   cookiesPolicyRoute,
   adminRoute,

@@ -42,6 +42,13 @@ export interface AuthUser {
   sellerRequestStatus?: SellerRequestStatus
   /** Moneda en la que el usuario publica sus precios (ISO 4217, p. ej. CRC). */
   currency?: string | null
+  locale?: string | null
+  /** Preferencias de notificación (ver /settings, pestaña Notificaciones). */
+  emailNotifications?: boolean
+  pushNotifications?: boolean
+  /** Cuándo aceptó la Política de Privacidad y qué versión (ver /settings, pestaña Privacidad). */
+  acceptedPrivacyPolicyAt?: string | null
+  privacyPolicyVersion?: string
 }
 
 export interface LogoutResponse {
@@ -59,6 +66,16 @@ export interface ResetPasswordPayload {
 
 export interface MessageResponse {
   message: string
+}
+
+/** POST /auth/request-email-change (ver RequestEmailChangeDto en el backend). */
+export interface RequestEmailChangePayload {
+  newEmail: string
+}
+
+/** POST /auth/confirm-email-change: el token llega en el enlace enviado al correo nuevo. */
+export interface ConfirmEmailChangePayload {
+  token: string
 }
 
 /** POST /auth/change-password (ver ChangePasswordDto en el backend). */

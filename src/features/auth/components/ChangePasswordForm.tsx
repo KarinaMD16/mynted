@@ -1,39 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useForm } from '@tanstack/react-form'
-import { LoaderCircle } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { Link } from '@tanstack/react-router'
 import { getFieldErrorMessage } from '@/utils/form'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { TextField } from '@/components/ui/TextField'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/Button'
+import { SettingsFormFooter } from '@/features/settings/components/SettingsCard'
+import { useSavedFlash } from '@/features/settings/hooks/useSavedFlash'
 import { useChangePasswordMutation } from '../hooks/useAuthMutations'
 import { makeChangePasswordSchema } from '../schema/authSchemas'
-import { Button } from '@/components/ui/Button'
 
-interface ChangePasswordFormProps {
-  isOpen: boolean
-  onClose: () => void
-}
-
-/** Modal de cambiar contraseña, abierto desde "Configuración" en el menú de cuenta (ver AccountMenu / SiteHeader). */
-export function ChangePasswordForm({ isOpen, onClose }: ChangePasswordFormProps) {
-  return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent className="max-w-md">
-        <ChangePasswordDialogBody onClose={onClose} />
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function ChangePasswordDialogBody({ onClose }: { onClose: () => void }) {
+/**
+ * Formulario de cambiar contraseña (POST /auth/change-password). Vive en la
+ * pestaña Privacidad de /settings (ver PrivacySettingsSection); antes era un
+ * modal que se abría desde "Configuración" en el menú de cuenta.
+ */
+export function ChangePasswordForm() {
   const { t } = useLanguage()
-  const [isDone, setIsDone] = useState(false)
+  const saved = useSavedFlash(5000)
 
   const changePasswordSchema = useMemo(() => makeChangePasswordSchema(t), [t])
   const changePasswordMutation = useChangePasswordMutation()
@@ -50,66 +34,40 @@ function ChangePasswordDialogBody({ onClose }: { onClose: () => void }) {
           currentPassword: value.currentPassword,
           newPassword: value.newPassword,
         })
-        setIsDone(true)
+        form.reset()
+        saved.flash()
       } catch {
-        // el hook muestra el error abajo del form
+        // el error se muestra en el pie del formulario
       }
     },
   })
 
-  if (isDone) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>{t('auth.changePassword.successTitle')}</DialogTitle>
-          <DialogDescription>{t('auth.changePassword.successBody')}</DialogDescription>
-        </DialogHeader>
-
-        <div className="mt-6 flex justify-end">
-          <Button
-            type="button"
-            onClick={onClose}
-            variant="primary"
-            size="md"
-          >
-            {t('auth.changePassword.done')}
-          </Button>
-        </div>
-      </>
-    )
-  }
-
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>{t('auth.changePassword.title')}</DialogTitle>
-        <DialogDescription>{t('auth.changePassword.subtitle')}</DialogDescription>
-      </DialogHeader>
+    <form
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        void form.handleSubmit()
+      }}
+    >
+      <div className="flex flex-col gap-4">
+        <form.Field name="currentPassword" validators={{ onChange: changePasswordSchema.shape.currentPassword }}>
+          {(field) => (
+            <TextField
+              label={t('auth.changePassword.currentPasswordLabel')}
+              type="password"
+              autoComplete="current-password"
+              placeholder={t('auth.changePassword.currentPasswordPlaceholder')}
+              value={field.state.value}
+              onChange={(event) => field.handleChange(event.target.value)}
+              onBlur={field.handleBlur}
+              error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
+            />
+          )}
+        </form.Field>
 
-      <form
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault()
-          event.stopPropagation()
-          void form.handleSubmit()
-        }}
-      >
-        <div className="mt-6 flex flex-col gap-4">
-          <form.Field name="currentPassword" validators={{ onChange: changePasswordSchema.shape.currentPassword }}>
-            {(field) => (
-              <TextField
-                label={t('auth.changePassword.currentPasswordLabel')}
-                type="password"
-                autoComplete="current-password"
-                placeholder={t('auth.changePassword.currentPasswordPlaceholder')}
-                value={field.state.value}
-                onChange={(event) => field.handleChange(event.target.value)}
-                onBlur={field.handleBlur}
-                error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
-              />
-            )}
-          </form.Field>
-
+        <div className="grid gap-4 sm:grid-cols-2">
           <form.Field name="newPassword" validators={{ onChange: changePasswordSchema.shape.newPassword }}>
             {(field) => (
               <TextField
@@ -150,43 +108,35 @@ function ChangePasswordDialogBody({ onClose }: { onClose: () => void }) {
           </form.Field>
         </div>
 
-        {changePasswordMutation.isError && (
-          <p className="mt-4 text-right text-sm text-red-500" role="alert">
-            {getApiErrorMessage(changePasswordMutation.error)}
-          </p>
-        )}
+        {/* Las cuentas creadas con Google/Facebook no tienen contraseña: el
+            backend lo rechaza y sugiere crear una desde "Recuperar contraseña". */}
+        <p className="text-xs text-mynted-gray">
+          {t('settings.privacy.forgotPasswordHint')}{' '}
+          <Link to="/forgot-password" className="font-semibold text-mynted-orange hover:underline">
+            {t('settings.privacy.forgotPasswordLink')}
+          </Link>
+        </p>
+      </div>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            onClick={onClose}
-            variant="secondary"
-            size="md"
-          >
-            {t('auth.changePassword.cancel')}
-          </Button>
-
-          <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
-            {([canSubmit, isSubmitting]) => (
-              <Button
-                type="submit"
-                disabled={!canSubmit || changePasswordMutation.isPending}
-                variant="primary"
-                size="md"
-              >
-                {isSubmitting || changePasswordMutation.isPending ? (
-                  <>
-                    <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-                    {t('auth.changePassword.saving')}
-                  </>
-                ) : (
-                  t('auth.changePassword.submit')
-                )}
-              </Button>
-            )}
-          </form.Subscribe>
-        </DialogFooter>
-      </form>
-    </>
+      <SettingsFormFooter
+        error={changePasswordMutation.isError ? changePasswordMutation.error : undefined}
+        showSaved={saved.isVisible}
+        savedLabel={t('auth.changePassword.successBody')}
+      >
+        <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty] as const}>
+          {([canSubmit, isDirty]) => (
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={!canSubmit || !isDirty}
+              isLoading={changePasswordMutation.isPending}
+            >
+              {t('auth.changePassword.submit')}
+            </Button>
+          )}
+        </form.Subscribe>
+      </SettingsFormFooter>
+    </form>
   )
 }

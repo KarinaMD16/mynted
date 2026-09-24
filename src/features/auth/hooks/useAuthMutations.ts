@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import type { AuthUser } from '../models/auth'
 import {
   changePasswordRequest,
+  confirmEmailChangeRequest,
   forgotPasswordRequest,
   getCurrentUserRequest,
   getUserByIdRequest,
@@ -11,6 +12,7 @@ import {
   loginWithGoogleRequest,
   logoutRequest,
   registerRequest,
+  requestEmailChangeRequest,
   resetPasswordRequest,
   updateProfileRequest,
 } from '../services/authServices'
@@ -122,8 +124,28 @@ export function useChangePasswordMutation() {
   })
 }
 
+/** Pide el enlace para cambiar el correo (ver AccountSettingsSection). */
+export function useRequestEmailChangeMutation() {
+  return useMutation({
+    mutationFn: requestEmailChangeRequest,
+  })
+}
+
 /**
- * Actualiza el perfil (ver EditProfileForm). useCurrentUser/ProfilePage leen
+ * Confirma el cambio de correo con el token del enlace (ver
+ * ConfirmEmailChangePage). La respuesta es solo un mensaje, así que se
+ * invalida authKeys.me para que el header y /settings muestren el correo nuevo.
+ */
+export function useConfirmEmailChangeMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: confirmEmailChangeRequest,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: authKeys.me }),
+  })
+}
+
+/**
+ * Actualiza el perfil (ver /settings). useCurrentUser/ProfilePage leen
  * de useCurrentUserQuery (clave authKeys.me), así que ahí hay que refrescar
  * el cache — ya tenemos el usuario actualizado en la respuesta, así que se
  * puede hacer setQueryData directo sin esperar a un refetch.

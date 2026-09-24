@@ -25,9 +25,13 @@ export function useAccountActions() {
     void navigate({ to: '/profile' })
   }
 
+  function goToSettings() {
+    void navigate({ to: '/settings', search: { tab: 'account' } })
+  }
+
   function goToAdmin() {
     void navigate({ to: '/admin', search: { section: 'communities', tab: 'overview' } })
   }
 
-  return { logout, goToProfile, goToAdmin, isLoggingOut: logoutMutation.isPending }
+  return { logout, goToProfile, goToSettings, goToAdmin, isLoggingOut: logoutMutation.isPending }
 }
