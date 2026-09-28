@@ -19,9 +19,17 @@ export function makeCreateCommunitySchema(t: TranslateFn) {
 
         isPrivate: z.boolean({ message: t('validation.community.isPrivateType') }),
 
-        categoryId: z.number({ message: t('validation.community.categoryRequired') }).int().positive({ message: t('validation.community.categoryRequired') }),
+        categoryId: z
+            .number({ message: t('validation.community.categoryRequired') })
+            .int({ message: t('validation.community.categoryRequired') })
+            .positive({ message: t('validation.community.categoryRequired') }),
 
-        tagIds: z.array(z.number().int({ message: t('validation.community.tagIdInvalid') }).positive())
+        tagIds: z.array(
+            z
+                .number({ message: t('validation.community.tagIdInvalid') })
+                .int({ message: t('validation.community.tagIdInvalid') })
+                .positive({ message: t('validation.community.tagIdInvalid') }),
+        )
         .min(1, { message: t('validation.community.tagsMin') })
         .max(3, { message: t('validation.community.tagsMax') })
         .refine((tags) => new Set(tags).size === tags.length, {

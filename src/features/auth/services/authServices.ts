@@ -2,11 +2,13 @@ import myntedAPI from '@/api/apiConfig'
 import type {
   AuthUser,
   ChangePasswordPayload,
+  ConfirmEmailChangePayload,
   ForgotPasswordPayload,
   LoginPayload,
   LogoutResponse,
   MessageResponse,
   RegisterPayload,
+  RequestEmailChangePayload,
   ResetPasswordPayload,
 } from '../models/auth'
 
@@ -34,7 +36,7 @@ export async function getCurrentUserRequest(): Promise<AuthUser> {
 
 /**
  * PATCH /users/me — multipart porque puede llevar una foto nueva (ver
- * EditProfileForm). Mismo patrón que createCommunity: hay que forzar el
+ * /settings). Mismo patrón que createCommunity: hay que forzar el
  * Content-Type acá porque myntedAPI por defecto manda 'application/json'.
  */
 export async function updateProfileRequest(formData: FormData): Promise<AuthUser> {
@@ -83,5 +85,20 @@ export async function resetPasswordRequest(payload: ResetPasswordPayload): Promi
 /** POST /auth/change-password — requiere sesión activa (JwtAuthGuard), a diferencia de reset-password. */
 export async function changePasswordRequest(payload: ChangePasswordPayload): Promise<MessageResponse> {
   const { data } = await myntedAPI.post<MessageResponse>('/auth/change-password', payload)
+  return data
+}
+
+/**
+ * POST /auth/request-email-change — requiere sesión. Manda un enlace de
+ * confirmación al correo NUEVO; el correo de la cuenta no cambia todavía.
+ */
+export async function requestEmailChangeRequest(payload: RequestEmailChangePayload): Promise<MessageResponse> {
+  const { data } = await myntedAPI.post<MessageResponse>('/auth/request-email-change', payload)
+  return data
+}
+
+/** POST /auth/confirm-email-change — no requiere sesión: el token del enlace autoriza el cambio. */
+export async function confirmEmailChangeRequest(payload: ConfirmEmailChangePayload): Promise<MessageResponse> {
+  const { data } = await myntedAPI.post<MessageResponse>('/auth/confirm-email-change', payload)
   return data
 }

@@ -3,7 +3,7 @@ import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
 
 /**
  * Acciones compartidas del menú de cuenta (header de escritorio y drawer mobile):
- * cerrar sesión contra el backend y navegar al perfil.
+ * cerrar sesión contra el backend y navegar al perfil (o al panel, si es superadmin).
  */
 export function useAccountActions() {
   const navigate = useNavigate()
@@ -25,5 +25,13 @@ export function useAccountActions() {
     void navigate({ to: '/profile' })
   }
 
-  return { logout, goToProfile, isLoggingOut: logoutMutation.isPending }
+  function goToSettings() {
+    void navigate({ to: '/settings', search: { tab: 'account' } })
+  }
+
+  function goToAdmin() {
+    void navigate({ to: '/admin', search: { section: 'communities', tab: 'overview' } })
+  }
+
+  return { logout, goToProfile, goToSettings, goToAdmin, isLoggingOut: logoutMutation.isPending }
 }

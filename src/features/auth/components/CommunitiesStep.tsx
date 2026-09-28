@@ -103,7 +103,7 @@ export function CommunitiesStep({ onContinue }: CommunitiesStepProps) {
         </p>
       )}
 
-      <Button type="button" className="hover:cursor-pointer" disabled={!canContinue} onClick={handleContinue}>
+      <Button type="button" size="lg" fullWidth disabled={!canContinue} onClick={handleContinue}>
         {t('onboarding.continue')}
       </Button>
 

@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
           </p>
         </div>
 
-        <Button type="button" className="hover:cursor-pointer" onClick={() => void navigate({ to: '/login' })}>
+        <Button type="button" size="lg" fullWidth onClick={() => void navigate({ to: '/login' })}>
           {t('auth.forgotPassword.backToSignIn')}
         </Button>
       </div>
@@ -88,7 +88,7 @@ export function ForgotPasswordForm() {
         {([canSubmit, isSubmitting]) => (
           <Button
             type="submit"
-            className="hover:cursor-pointer"
+            size="lg" fullWidth
             disabled={!canSubmit || forgotPasswordMutation.isPending}
           >
             {isSubmitting || forgotPasswordMutation.isPending

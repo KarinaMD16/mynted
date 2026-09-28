@@ -1,16 +1,17 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { useForm } from '@tanstack/react-form';
-import { Camera, Globe, ImagePlus, LoaderCircle, Lock, Plus, X } from 'lucide-react';
+import { Camera, Crop, Eye, Globe, ImagePlus, LoaderCircle, Lock, Plus, X } from 'lucide-react';
 import { getApiErrorMessage } from '@/api/apiError';
 import { getFieldErrorMessage } from '@/utils/form';
+import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useCreateCommunity } from '../hooks/useCommunitiesMutations';
-import { useCategories } from '../hooks/useCommunitiesQueries';
-import { makeCreateCommunitySchema } from '../schemas/createCommunitySchema';
-import type { CreateCommunityValues } from '../schemas/createCommunitySchema';
-import type { CreateCommunityFormProps, SelectedImage } from '../types/CommunityTypes';
-import { DEFAULT_RULES, hintClasses, labelClasses, inputClasses, errorClasses } from '../types/DEFAULT_VALUES';
+import { useCreateCommunity } from '@/features/community/hooks/useCommunitiesMutations';
+import { useCategories } from '@/features/community/hooks/useCommunitiesQueries';
+import { makeCreateCommunitySchema } from '@/features/community/schemas/createCommunitySchema';
+import type { CreateCommunityValues } from '@/features/community/schemas/createCommunitySchema';
+import type { CreateCommunityFormProps, SelectedImage } from '@/features/community/types/CommunityTypes';
+import { BANNER_CROP, DEFAULT_RULES, IMAGE_CROP, hintClasses, labelClasses, inputClasses, errorClasses } from '@/features/community/types/DEFAULT_VALUES';
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { PrivacyOption } from './PrivacyOption';
-import { TagPicker } from './TagPicker';
+import { CommunityCardsPreview } from '@/features/community/components/create/CommunityCardsPreview';
+import { ImageCropDialog } from '@/features/community/components/ui/ImageCropDialog';
+import { useLastDefined } from '@/hooks/useLastDefined';
+import type { CropSource } from '@/features/community/components/ui/ImageCropDialog';
+import { PrivacyOption } from '@/features/community/components/ui/PrivacyOption';
+import { TagPicker } from '@/features/community/components/ui/TagPicker'
+import { Button } from '@/components/ui/Button';
 
 const slugify = (value: string) =>
     value
@@ -34,7 +40,7 @@ export const CreateCommunityForm = ({ isOpen, onClose }: CreateCommunityFormProp
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
             <DialogContent className="max-w-5xl">
-                {isOpen && <CreateCommunityDialogBody onClose={onClose} />}
+                <CreateCommunityDialogBody onClose={onClose} />
             </DialogContent>
         </Dialog>
     );
@@ -49,6 +55,13 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
     const [banner, setBanner] = useState<SelectedImage | null>(null);
     const [image, setImage] = useState<SelectedImage | null>(null);
     const slugEditedRef = useRef(false);
+    // Cual de las dos imagenes se esta viendo en grande (null = visor cerrado)
+    const [preview, setPreview] = useState<'banner' | 'image' | null>(null);
+    // Semilla del patron de la vista previa. La comunidad todavia no tiene id,
+    // asi que se elige una al abrir el formulario y queda fija mientras se escribe
+    const [previewSeed] = useState(() => Math.floor(Math.random() * 100000));
+    // Imagen que se esta recortando antes de guardarla (null = recortador cerrado)
+    const [cropTarget, setCropTarget] = useState<{ kind: 'banner' | 'image'; source: CropSource } | null>(null);
 
     const createCommunityMutation = useCreateCommunity();
     const categoriesQuery = useCategories();
@@ -91,16 +104,60 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
 
     useEffect(() => () => { if (banner) URL.revokeObjectURL(banner.previewUrl); }, [banner]);
     useEffect(() => () => { if (image) URL.revokeObjectURL(image.previewUrl); }, [image]);
+    useEffect(() => () => { if (cropTarget) URL.revokeObjectURL(cropTarget.source.url); }, [cropTarget]);
 
-    const handleImageChange = (setter: (value: SelectedImage | null) => void) => (event: ChangeEvent<HTMLInputElement>) => {
+    const openCropper = (kind: 'banner' | 'image', file: File) => {
+        setCropTarget({ kind, source: { file, url: URL.createObjectURL(file) } });
+    };
+
+    // Al elegir un archivo no se guarda directo: primero pasa por el recortador
+    const handleImageChange = (kind: 'banner' | 'image') => (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         event.target.value = '';
         if (!file) return;
-        setter({ file, previewUrl: URL.createObjectURL(file) });
+        openCropper(kind, file);
     };
+
+    const handleCropConfirm = (cropped: File) => {
+        if (!cropTarget) return;
+        const selected: SelectedImage = {
+            file: cropped,
+            previewUrl: URL.createObjectURL(cropped),
+            original: cropTarget.source.file,
+        };
+        if (cropTarget.kind === 'banner') setBanner(selected);
+        else setImage(selected);
+        setCropTarget(null);
+    };
+
+    // Se sigue mostrando la última imagen mientras el diálogo se cierra (animación de salida).
+    const shownCrop = useLastDefined(cropTarget);
+    const shownPreview = useLastDefined(preview);
+    const cropSettings = shownCrop?.kind === 'image' ? IMAGE_CROP : BANNER_CROP;
 
     return (
         <>
+            <ImagePreviewDialog
+                src={shownPreview === 'banner' ? (banner?.previewUrl ?? null) : (image?.previewUrl ?? null)}
+                alt={shownPreview === 'banner' ? t('communities.create.bannerPreviewAlt') : t('communities.create.imagePreviewAlt')}
+                title={shownPreview === 'banner' ? t('communities.create.previewBanner') : t('communities.create.previewImage')}
+                isOpen={preview !== null}
+                onClose={() => setPreview(null)}
+            />
+
+            <ImageCropDialog
+                // key: cada imagen nueva arranca con el zoom y la posicion en cero
+                key={shownCrop?.source.url ?? 'closed'}
+                source={shownCrop?.source ?? null}
+                isOpen={cropTarget !== null}
+                aspect={cropSettings.aspect}
+                outputWidth={cropSettings.outputWidth}
+                shape={shownCrop?.kind === 'image' ? 'round' : 'rect'}
+                title={shownCrop?.kind === 'image' ? t('communities.crop.imageTitle') : t('communities.crop.bannerTitle')}
+                onCancel={() => setCropTarget(null)}
+                onConfirm={handleCropConfirm}
+            />
+
             <DialogHeader>
                 <DialogTitle>{t('communities.create.title')}</DialogTitle>
                 <DialogDescription>{t('communities.create.subtitle')}</DialogDescription>
@@ -114,16 +171,16 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                             void form.handleSubmit();
                         }}
                     >
-                        <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8">
+                        <div className="mt-6 flex flex-col gap-7 rounded-2xl border border-mynted-border p-4 sm:p-8 overflow-y-auto max-h-[55vh]">
 
 
                             <div className="relative mb-10">
                                 <label
                                     htmlFor={bannerInputId}
-                                    className="flex h-40 cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-mynted-border bg-mynted-bg px-4 text-center transition-colors hover:border-mynted-orange/60 sm:h-50"
+                                    className="relative flex h-40 cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-mynted-border bg-mynted-bg px-4 text-center transition-colors hover:border-mynted-orange/60 sm:h-50"
                                 >
                                     {banner ? (
-                                        <img src={banner.previewUrl} alt={t('communities.create.bannerPreviewAlt')} className="h-full w-full object-cover" />
+                                        <img src={banner.previewUrl} alt={t('communities.create.bannerPreviewAlt')} className="absolute inset-0 h-full w-full object-cover" />
                                     ) : (
                                         <>
                                             <ImagePlus className="size-7 text-mynted-orange" aria-hidden="true" />
@@ -132,17 +189,43 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                         </>
                                     )}
                                 </label>
-                                <input id={bannerInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange(setBanner)} />
+                                <input id={bannerInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange('banner')} />
 
                                 {banner && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setBanner(null)}
-                                        aria-label={t('communities.create.removeBanner')}
-                                        className="absolute top-3 right-3 rounded-full bg-white/90 p-1.5 text-mynted-ink shadow hover:cursor-pointer hover:bg-white"
-                                    >
-                                        <X className="size-4" />
-                                    </button>
+                                    <div className="absolute top-3 right-3 z-10 flex gap-2">
+                                        <Button
+                                            type="button"
+                                            onClick={() => openCropper('banner', banner.original)}
+                                            aria-label={t('communities.create.editBanner')}
+                                          variant="overlay"
+                                          size="icon-sm"
+                                          shape="pill"
+                                        >
+                                            <Crop className="size-4" />
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            onClick={() => setPreview('banner')}
+                                            aria-label={t('communities.create.previewBanner')}
+                                          variant="overlay"
+                                          size="icon-sm"
+                                          shape="pill"
+                                        >
+                                            <Eye className="size-4" />
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            onClick={() => setBanner(null)}
+                                            aria-label={t('communities.create.removeBanner')}
+                                          variant="overlay"
+                                          size="icon-sm"
+                                          shape="pill"
+                                        >
+                                            <X className="size-4" />
+                                        </Button>
+                                    </div>
                                 )}
 
                                 <label
@@ -151,12 +234,39 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                     className="absolute -bottom-11 left-5 flex size-22 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-white bg-mynted-yellow shadow-sm transition-transform hover:scale-105 sm:left-10"
                                 >
                                     {image ? (
-                                        <img src={image.previewUrl} alt={t('communities.create.imagePreviewAlt')} className="h-full w-full object-cover" />
+                                        <img src={image.previewUrl} alt={t('communities.create.imagePreviewAlt')} className="absolute inset-0 h-full w-full object-cover" />
                                     ) : (
                                         <Camera className="size-6 text-mynted-ink" aria-hidden="true" />
                                     )}
                                 </label>
-                                <input id={imageInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange(setImage)} />
+                                <input id={imageInputId} type="file" accept="image/png,image/jpeg" className="sr-only" onChange={handleImageChange('image')} />
+
+                                {image && (
+                                    <div className="absolute -bottom-11 left-24 flex gap-2 sm:left-29">
+                                        <Button
+                                            type="button"
+                                            onClick={() => openCropper('image', image.original)}
+                                            aria-label={t('communities.create.editImage')}
+                                          variant="secondary"
+                                          size="icon-sm"
+                                          shape="pill"
+                                          className="border-0 shadow"
+                                        >
+                                            <Crop className="size-4" />
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={() => setPreview('image')}
+                                            aria-label={t('communities.create.previewImage')}
+                                          variant="secondary"
+                                          size="icon-sm"
+                                          shape="pill"
+                                          className="border-0 shadow"
+                                        >
+                                            <Eye className="size-4" />
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
 
@@ -362,14 +472,17 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                                             onChange={(event) => ruleField.handleChange(event.target.value)}
                                                                         />
                                                                         {rulesField.state.value.length > 1 && (
-                                                                            <button
+                                                                            <Button
                                                                                 type="button"
                                                                                 onClick={() => rulesField.removeValue(index)}
                                                                                 aria-label={t('communities.create.removeRuleAriaLabel', { number: index + 1 })}
-                                                                                className="rounded-full p-1 text-mynted-gray-light transition-colors hover:cursor-pointer hover:bg-white hover:text-red-500"
+                                                                              variant="ghost"
+                                                                              size="icon-sm"
+                                                                              shape="pill"
+                                                                              className="text-mynted-gray-light hover:bg-white hover:text-red-500"
                                                                             >
                                                                                 <X className="size-4" />
-                                                                            </button>
+                                                                            </Button>
                                                                         )}
                                                                     </div>
                                                                     {error && <span className={`${errorClasses} pl-1`}>{error}</span>}
@@ -382,18 +495,42 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
 
                                             {listError && <span className={errorClasses}>{listError}</span>}
 
-                                            <button
+                                            <Button
                                                 type="button"
                                                 onClick={() => rulesField.pushValue('')}
-                                                className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg border border-dashed border-mynted-border px-3 py-1.5 text-[13px] text-mynted-gray transition-colors hover:cursor-pointer hover:border-mynted-orange hover:text-mynted-orange"
+                                              variant="secondary"
+                                              size="sm"
+                                              className="mt-1 w-fit border-dashed bg-transparent text-mynted-gray hover:border-mynted-orange hover:bg-transparent hover:text-mynted-orange"
                                             >
                                                 <Plus className="size-4" aria-hidden="true" />
                                                 {t('communities.create.addRule')}
-                                            </button>
+                                            </Button>
                                         </div>
                                     );
                                 }}
                             </form.Field>
+
+                            <form.Subscribe selector={(state) => state.values}>
+                                {(values) => (
+                                    <CommunityCardsPreview
+                                        community={{
+                                            id: previewSeed,
+                                            name: values.name.trim() || t('communities.create.previewNamePlaceholder'),
+                                            description: values.description.trim() || t('communities.create.previewDescriptionPlaceholder'),
+                                            // La vista previa es un link: sin slug todavia, uno de relleno
+                                            slug: values.slug || 'preview',
+                                            isPrivate: values.isPrivate,
+                                            imageUrl: image?.previewUrl ?? null,
+                                            bannerUrl: banner?.previewUrl ?? null,
+                                            createdAt: new Date().toISOString(),
+                                            category: categoriesQuery.data?.find((category) => category.categoryId === values.categoryId) ?? null,
+                                            memberCount: 1,
+                                            recentPostCount: 0,
+                                            popularityScore: 0,
+                                        }}
+                                    />
+                                )}
+                            </form.Subscribe>
                         </div>
 
                         {createCommunityMutation.isError && (
@@ -403,20 +540,22 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                         )}
 
                         <DialogFooter>
-                            <button
+                            <Button
                                 type="button"
                                 onClick={onClose}
-                                className="rounded-xl border border-mynted-border bg-white px-7 py-3 font-heading text-sm font-semibold text-mynted-ink transition-colors hover:cursor-pointer hover:bg-mynted-bg"
+                              variant="secondary"
+                              size="md"
                             >
                                 {t('communities.create.cancel')}
-                            </button>
+                            </Button>
 
                             <form.Subscribe selector={(state) => state.isSubmitting}>
                                 {(isSubmitting) => (
-                                    <button
+                                    <Button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-mynted-orange px-7 py-3 font-heading text-sm font-semibold text-white transition-colors hover:cursor-pointer hover:bg-mynted-orange-hover disabled:cursor-not-allowed disabled:opacity-60"
+                                      variant="primary"
+                                      size="md"
                                     >
                                         {isSubmitting ? (
                                             <>
@@ -428,7 +567,7 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                 {t('communities.create.submit')}
                                             </>
                                         )}
-                                    </button>
+                                    </Button>
                                 )}
                             </form.Subscribe>
                         </DialogFooter>

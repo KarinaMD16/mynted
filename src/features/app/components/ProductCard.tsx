@@ -4,6 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { Rating } from '../../../components/ui/Rating'
 import { AdvancedColorfulBadges } from '../../../components/ui/Badge'
 import { CheckIcon } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 export function ProductCard({ product }: { product: Product }) {
   const { t } = useLanguage()
@@ -41,12 +42,14 @@ export function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-1 flex items-center justify-between">
           <span className="text-2xl font-bold text-mynted-ink">${product.price.toFixed(2)}</span>
-          <button
+          <Button
             type="button"
-            className="rounded-full bg-mynted-blue-mid px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            variant="accent"
+            size="md"
+            shape="pill"
           >
             {t('product.contact')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

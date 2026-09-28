@@ -112,11 +112,12 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
         <div className="h-px flex-1 bg-mynted-border" />
       </div>
 
-      <div className="flex w-full gap-3">
+      <div className="grid w-full grid-cols-2 gap-3">
         <Button
           type="button"
-          variant="facebook"
-          className="!w-auto flex-1 hover:cursor-pointer"
+          variant="accent"
+          size="lg"
+          fullWidth
           onClick={handleFacebook}
           disabled={isBusy || !isFacebookConfigured}
         >
@@ -124,11 +125,12 @@ export function SocialButtons({ onAuthenticated }: SocialButtonsProps) {
           {facebookLogin.isPending ? t('auth.signingIn') : 'Facebook'}
         </Button>
 
-        <div className="relative flex-1 rounded-md focus-within:ring-2 focus-within:ring-mynted-orange focus-within:ring-offset-2 focus-within:ring-offset-white">
+        <div className="relative rounded-xl focus-within:ring-2 focus-within:ring-mynted-orange focus-within:ring-offset-2 focus-within:ring-offset-white">
           <Button
             type="button"
-            variant="google"
-            className="hover:cursor-pointer"
+            variant="secondary"
+            size="lg"
+            fullWidth
             disabled={isBusy || !isGoogleConfigured}
             // El click real lo recibe el botón de Google que está encima.
             tabIndex={-1}

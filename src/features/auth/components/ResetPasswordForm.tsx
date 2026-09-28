@@ -45,7 +45,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
         <Button
           type="button"
-          className="hover:cursor-pointer"
+          size="lg" fullWidth
           onClick={() => void navigate({ to: '/forgot-password' })}
         >
           {t('auth.resetPassword.requestNewLink')}
@@ -64,7 +64,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           <p className="mt-1.5 text-sm text-mynted-gray">{t('auth.resetPassword.doneBody')}</p>
         </div>
 
-        <Button type="button" className="hover:cursor-pointer" onClick={() => void navigate({ to: '/login' })}>
+        <Button type="button" size="lg" fullWidth onClick={() => void navigate({ to: '/login' })}>
           {t('auth.resetPassword.goToSignIn')}
         </Button>
       </div>
@@ -127,7 +127,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         {([canSubmit, isSubmitting]) => (
           <Button
             type="submit"
-            className="hover:cursor-pointer"
+            size="lg" fullWidth
             disabled={!canSubmit || resetPasswordMutation.isPending}
           >
             {isSubmitting || resetPasswordMutation.isPending
