@@ -1,26 +1,27 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import ProductCard from '@/features/app/components/ProductCard'
+import { MessageCircle } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import { ScrollReveal } from '@/components/ui/ScrollReveal'
+import { ShopFeed } from '@/features/products/components/ShopFeed'
 import { useLanguage } from '@/i18n/LanguageContext'
+import type { TranslationKey } from '@/i18n/translations/es'
 import { SiteHeader } from '../components/layout/SiteHeader'
-import { Logo } from '../components/ui/Logo'
-import type { Product } from '@/features/app/types/appTypes'
 
-// TODO(backend): reemplazar por datos reales del marketplace cuando exista el endpoint.
-// Placeholder solo para poder ver la ProductCard renderizada mientras se arma esa pantalla
-// (la imagen es un placeholder genérico, no un asset final).
-const DEMO_PRODUCT: Product = {
-  id: 'demo-1',
-  name: 'Funko Rainbow Dash',
-  description: 'Fluttershy Funko Pop, My Little Pony edition.',
-  price: 18,
-  image: 'https://i.etsystatic.com/19343947/r/il/f741f9/7160011667/il_fullxfull.7160011667_tdi5.jpg',
-  tags: ['mylittlepony', 'fluttershy', 'funko'],
-  rating: 5,
-  verified: true,
-}
+type HomeTab = 'shop' | 'talk'
 
+const HOME_TABS: { id: HomeTab; labelKey: TranslationKey }[] = [
+  { id: 'shop', labelKey: 'shop.tab.shop' },
+  { id: 'talk', labelKey: 'shop.tab.talk' },
+]
+
+/**
+ * Home: pestaña "Shop" (productos agrupados por tag, con scroll infinito, visible
+ * también sin sesión) y pestaña "Talk" (conversaciones, todavía sin contenido).
+ */
 export default function HomePage() {
   const { t } = useLanguage()
+  const [activeTab, setActiveTab] = useState<HomeTab>('shop')
 
   return (
     <div className="min-h-svh bg-mynted-bg">
@@ -28,16 +29,64 @@ export default function HomePage() {
         <SiteHeader />
       </div>
 
-      <main className="flex flex-col items-center justify-center gap-4 px-4 py-24 text-center">
-        <Logo className="text-[40px]" />
-        <ProductCard product={DEMO_PRODUCT} />
-        <Link
-          to="/login"
-          className="mt-2 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-        >
-          {t('home.goToLogin')}
-        </Link>
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+        <ScrollReveal><div role="tablist" className="flex items-center gap-2">
+          {HOME_TABS.map(({ id, labelKey }) => {
+            const isActive = activeTab === id
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveTab(id)}
+                className={`cursor-pointer rounded-[10px] px-[18px] py-[9px] text-[15px] transition-colors ${
+                  isActive
+                    ? 'bg-[#ffdfd1] font-semibold text-mynted-orange'
+                    : 'bg-[#f3f3f2] font-medium text-mynted-gray hover:text-mynted-ink'
+                }`}
+              >
+                {t(labelKey)}
+              </button>
+            )
+          })}
+        </div></ScrollReveal>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            {activeTab === 'talk' ? (
+              <p className="rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
+                {t('shop.talk.soon')}
+              </p>
+            ) : (
+              <ShopFeed />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
+
+      <motion.div
+        className="fixed right-6 bottom-6"
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 22, delay: 0.4 }}
+      >
+        <Link
+          to="/messages"
+          aria-label={t('shop.chat')}
+          className="flex size-[60px] items-center justify-center rounded-full bg-mynted-blue text-white shadow-[0_6px_18px_-2px_rgba(47,95,255,0.35)]"
+        >
+          <MessageCircle className="size-[26px]" aria-hidden="true" />
+        </Link>
+      </motion.div>
     </div>
   )
 }

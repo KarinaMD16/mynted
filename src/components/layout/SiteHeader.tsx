@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Bell01, LayoutAlt01, Menu02, Settings01, User01, LogOut01, X as CloseIcon } from '@untitledui/icons'
+import { Bell01, LayoutAlt01, Menu02, Settings01, Package, ShoppingBag01, User01, LogOut01, X as CloseIcon } from '@untitledui/icons'
 import {
   Button as AriaButton,
   Dialog as AriaDialog,
@@ -16,7 +16,9 @@ import { Navigation } from '../ui/Navigation'
 import { NAV_ITEMS } from '../ui/navItems'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
+import { useState } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { AccountControl } from './AccountControl'
 import { MenuItem } from './menuPrimitives'
@@ -89,10 +91,15 @@ function MobileMenuTrigger({
   pathname: string
 }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToAdmin, isLoggingOut } = useAccountActions()
-  const isSuperAdmin = useCurrentUser().data?.role === 'superadmin'
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToAdmin, isLoggingOut } = useAccountActions()
+  const role = useCurrentUser().data?.role
+  const isSuperAdmin = role === 'superadmin'
+  const isSeller = role === 'seller'
+  // El diálogo vive fuera del drawer para que no se desmonte al cerrarlo.
+  const [isSellOpen, setIsSellOpen] = useState(false)
 
   return (
+    <>
     <AriaDialogTrigger>
       <AriaButton
         aria-label={t('header.openMenu')}
@@ -207,6 +214,26 @@ function MobileMenuTrigger({
                             goToSettings()
                           }}
                         />
+                        {isSeller && (
+                          <MenuItem
+                            icon={Package}
+                            label={t('header.myProducts')}
+                            onPress={() => {
+                              state.close()
+                              goToMyProducts()
+                            }}
+                          />
+                        )}
+                        {isSeller && (
+                          <MenuItem
+                            icon={ShoppingBag01}
+                            label={t('header.sell')}
+                            onPress={() => {
+                              state.close()
+                              setIsSellOpen(true)
+                            }}
+                          />
+                        )}
                       </>
                     )}
                     <div className="my-1 border-t border-mynted-border" />
@@ -236,5 +263,7 @@ function MobileMenuTrigger({
         )}
       </AriaModalOverlay>
     </AriaDialogTrigger>
+    {isSeller && <CreateProductDialog isOpen={isSellOpen} onClose={() => setIsSellOpen(false)} />}
+    </>
   )
 }
