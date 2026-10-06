@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -20,7 +20,6 @@ import { ExploreCommunityCard } from '@/features/community/components/cards/Expl
 export function ExploreCommunitiesSection() {
   const { t } = useLanguage()
   const { isLoggedIn } = useCurrentUser()
-  const [showAll, setShowAll] = useState(false)
 
   // Con sesion: recomendadas segun intereses y categorias, que ya vienen sin
   // las propias ni las privadas. Sin sesion: el catalogo publico por popularidad.
@@ -35,27 +34,22 @@ export function ExploreCommunitiesSection() {
   const otherCommunities = (exploreQuery.data?.data ?? []).filter(
     (community) => isLoggedIn || !myCommunityIds.has(community.id),
   )
-  const visibleCommunities = showAll ? otherCommunities : otherCommunities.slice(0, EXPLORE_LIMIT)
-  const canToggle = otherCommunities.length > EXPLORE_LIMIT
+  const visibleCommunities = otherCommunities.slice(0, EXPLORE_LIMIT)
+  const canSeeAll = otherCommunities.length > EXPLORE_LIMIT
 
   return (
     <section>
       <div className="flex items-center justify-between">
         <h2 className="font-heading text-2xl font-semibold text-mynted-ink">{t('communities.explore.title')}</h2>
 
-        {canToggle && (
-          <button
-            type="button"
-            onClick={() => setShowAll((current) => !current)}
-            className="flex items-center gap-1 text-sm font-semibold text-mynted-blue hover:cursor-pointer hover:underline"
+        {canSeeAll && (
+          <Link
+            to="/discover-communities"
+            className="flex items-center gap-1 text-sm font-semibold text-mynted-blue hover:underline"
           >
-            {showAll ? t('communities.explore.showLess') : t('communities.explore.showAll')}
-            {showAll ? (
-              <ChevronUp className="size-4" aria-hidden="true" />
-            ) : (
-              <ChevronDown className="size-4" aria-hidden="true" />
-            )}
-          </button>
+            {t('communities.explore.showAll')}
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
         )}
       </div>
 

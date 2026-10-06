@@ -7,6 +7,9 @@ import AdminPage from './pages/AdminPage'
 import CommunitiesPage from './pages/CommunitiesPage'
 import CommunityDetailPage from './pages/CommunityDetailPage'
 import CommunityModerationPage from './pages/CommunityModerationPage'
+import DiscoverCommunitiesPage from './pages/DiscoverCommunitiesPage'
+import MyCommunitiesPage from './pages/MyCommunitiesPage'
+import PostDetailPage from './pages/PostDetailPage'
 import ExplorePage from './pages/ExplorePage'
 import FavoritesPage from './pages/FavoritesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -121,6 +124,25 @@ const communityDetailRoute = createRoute({
   component: CommunityDetailPage,
 })
 
+// Rutas propias (no /communities/...) para no chocar con el slug de una comunidad
+const myCommunitiesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-communities',
+  component: MyCommunitiesPage,
+})
+
+const discoverCommunitiesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/discover-communities',
+  component: DiscoverCommunitiesPage,
+})
+
+const postDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/communities/$slug/posts/$postId',
+  component: PostDetailPage,
+})
+
 const communityModerationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/communities/$slug/moderacion',
@@ -227,6 +249,9 @@ const routeTree = rootRoute.addChildren([
   communitiesRoute,
   communityDetailRoute,
   communityModerationRoute,
+  postDetailRoute,
+  myCommunitiesRoute,
+  discoverCommunitiesRoute,
   favoritesRoute,
   messagesRoute,
   profileRoute,
