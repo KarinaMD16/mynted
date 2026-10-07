@@ -26,11 +26,11 @@ export function AccountMenu({ userName }: { userName: string }) {
     <>
     <AriaDialogTrigger>
       <AriaButton className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-mynted-border bg-mynted-orange py-1.5 pr-3.5 pl-1.5 outline-none transition-colors hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-orange-hover">
-        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/25">
-          <GooseIcon className="size-[22px] text-mynted-white" />
+        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/40">
+          <GooseIcon className="size-[22px] text-mynted-ink" />
         </span>
-        <span className="text-sm font-semibold whitespace-nowrap text-mynted-white">{userName}</span>
-        <ChevronDown className="size-3.5 shrink-0 text-mynted-white/80" aria-hidden="true" />
+        <span className="text-sm font-semibold whitespace-nowrap text-mynted-ink">{userName}</span>
+        <ChevronDown className="size-3.5 shrink-0 text-mynted-ink/70" aria-hidden="true" />
       </AriaButton>
 
       <AriaPopover placement="bottom right" offset={8} className={popoverAnimationClass}>

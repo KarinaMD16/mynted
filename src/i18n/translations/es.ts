@@ -538,6 +538,16 @@ export const es = {
   // SearchBar
   'search.placeholder': 'Buscar',
   'search.searchingToast': 'Buscando {{query}}',
+  'search.placeholderLong': 'Busca figuras, manga, comunidades…',
+  'home.hero.titleStart': 'Encuentra lo que tu colección está',
+  'home.hero.titleAccent': 'esperando.',
+  'home.hero.description': 'Compra, vende e intercambia piezas que te importan. Conecta con gente que entiende por qué esa figura tenía que ser tuya.',
+  'home.shop.eyebrow': 'La vitrina',
+  'home.shop.title': 'Destacados en la tienda',
+  'home.communities.title': 'Comunidades que te pueden gustar',
+  'home.sell.title': 'Dale una nueva vida a tu colección.',
+  'home.sell.body': 'Publica las piezas que ya no tienen lugar en tu vitrina y encuentra a su próximo coleccionista.',
+  'home.sell.cta': 'Empezar a vender',
 
   // Formularios de auth compartidos (login/registro/recuperación)
   'auth.emailLabel': 'Correo electrónico',

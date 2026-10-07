@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { useLanguage } from '@/i18n/LanguageContext'
+import type { ProductType } from '@/features/products/models/product'
 import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
 
 function formatPrice(price: string | number, currency: string, language: AppLanguage): string {
@@ -19,6 +20,8 @@ export interface ShopProductCardData {
   price: string | number
   currency: string
   tags: { tagId: number; name: string }[]
+  /** Venta o intercambio; si no se pasa, la tarjeta no muestra la etiqueta. */
+  type?: ProductType
   /** Solo viene en GET /products/shop; en otros listados no se sabe y no se muestra el badge. */
   isVerified?: boolean
 }
@@ -47,14 +50,28 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
 
       <ProductFavoriteButton productId={product.id} className="absolute top-[18px] right-[18px]" />
 
-      {product.tags.length > 0 && (
-        <p className="line-clamp-1 text-[11px] text-mynted-gray">{product.tags.map((tag) => `#${tag.name}`).join(' ')}</p>
+      {/* Venta / Intercambio sobre la foto: el intercambio es lo que diferencia a Mynted de una tienda común. */}
+      {product.type && (
+        <span
+          className={`absolute top-[18px] left-[18px] rounded-md px-2 py-1 text-[11px] font-semibold text-mynted-ink shadow-xs ${
+            product.type === 'exchange' ? 'bg-mynted-yellow' : 'bg-white/95'
+          }`}
+        >
+          {t(product.type === 'exchange' ? 'products.type.exchange' : 'products.type.sale')}
+        </span>
       )}
 
-      {product.isVerified && (
-        <span className="w-fit rounded-full bg-[#e8faf2] px-[9px] py-1 text-[10px] font-semibold text-[#0d8c66]">
-          ✓ {t('product.verified')}
-        </span>
+      {(product.tags.length > 0 || product.isVerified) && (
+        <div className="flex items-center justify-between gap-2">
+          <p className="line-clamp-1 min-w-0 text-xs text-mynted-gray">
+            {product.tags.map((tag) => `#${tag.name}`).join(' ')}
+          </p>
+          {product.isVerified && (
+            <span className="shrink-0 rounded-full bg-[#e8faf2] px-[9px] py-1 text-[10px] font-semibold text-[#0d8c66]">
+              ✓ {t('product.verified')}
+            </span>
+          )}
+        </div>
       )}
 
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">

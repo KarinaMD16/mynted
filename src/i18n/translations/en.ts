@@ -546,6 +546,16 @@ export const en: Record<TranslationKey, string> = {
   // SearchBar
   'search.placeholder': 'Search',
   'search.searchingToast': 'Searching for {{query}}',
+  'search.placeholderLong': 'Search figures, manga, communities…',
+  'home.hero.titleStart': 'Find what your collection has been',
+  'home.hero.titleAccent': 'waiting for.',
+  'home.hero.description': 'Buy, sell and trade the pieces you care about. Connect with people who get why that figure had to be yours.',
+  'home.shop.eyebrow': 'The showcase',
+  'home.shop.title': 'Featured in the shop',
+  'home.communities.title': 'Communities you might like',
+  'home.sell.title': 'Give your collection a new life.',
+  'home.sell.body': 'List the pieces that no longer fit in your display and find their next collector.',
+  'home.sell.cta': 'Start selling',
 
   // Shared auth forms (login/register/recovery)
   'auth.emailLabel': 'Email',

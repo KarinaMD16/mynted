@@ -36,9 +36,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto max-w-[1320px] px-4 pt-6 pb-16 sm:px-6">
         {!isLoggedIn && <SignedOutState />}

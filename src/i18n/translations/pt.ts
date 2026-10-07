@@ -555,6 +555,16 @@ export const pt: Record<TranslationKey, string> = {
   // SearchBar
   'search.placeholder': 'Pesquisar',
   'search.searchingToast': 'Pesquisando {{query}}',
+  'search.placeholderLong': 'Busque figuras, mangás, comunidades…',
+  'home.hero.titleStart': 'Encontre o que a sua coleção está',
+  'home.hero.titleAccent': 'esperando.',
+  'home.hero.description': 'Compre, venda e troque as peças que importam para você. Conecte-se com quem entende por que aquela figura tinha que ser sua.',
+  'home.shop.eyebrow': 'A vitrine',
+  'home.shop.title': 'Destaques da loja',
+  'home.communities.title': 'Comunidades que você pode curtir',
+  'home.sell.title': 'Dê uma nova vida à sua coleção.',
+  'home.sell.body': 'Anuncie as peças que não cabem mais na sua vitrine e encontre o próximo colecionador delas.',
+  'home.sell.cta': 'Começar a vender',
 
   // Shared auth forms (login/register/recovery)
   'auth.emailLabel': 'E-mail',

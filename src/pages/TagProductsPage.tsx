@@ -44,9 +44,7 @@ export default function TagProductsPage() {
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
         <ScrollReveal className="flex flex-col gap-3">
@@ -102,6 +100,7 @@ export default function TagProductsPage() {
                       price: product.price,
                       currency: product.currency,
                       tags: product.productTags?.map((item) => item.tag) ?? [],
+                      type: product.type,
                     }}
                   />
                 </StaggerItem>

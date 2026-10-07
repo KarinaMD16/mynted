@@ -540,6 +540,16 @@ export const ko: Record<TranslationKey, string> = {
   // SearchBar
   'search.placeholder': '검색',
   'search.searchingToast': '"{{query}}" 검색 중',
+  'search.placeholderLong': '피규어, 만화, 커뮤니티 검색…',
+  'home.hero.titleStart': '당신의 컬렉션이',
+  'home.hero.titleAccent': '기다리던 바로 그것.',
+  'home.hero.description': '소중한 컬렉션을 사고, 팔고, 교환해 보세요. 그 피규어가 왜 꼭 내 것이어야 했는지 아는 사람들과 이어져요.',
+  'home.shop.eyebrow': '쇼케이스',
+  'home.shop.title': '샵 추천 아이템',
+  'home.communities.title': '마음에 들 만한 커뮤니티',
+  'home.sell.title': '컬렉션에 새로운 삶을 선물하세요.',
+  'home.sell.body': '진열장에 더는 자리가 없는 아이템을 올리고, 다음 주인이 될 수집가를 찾아보세요.',
+  'home.sell.cta': '판매 시작하기',
 
   // Shared auth forms (login/register/recovery)
   'auth.emailLabel': '이메일',

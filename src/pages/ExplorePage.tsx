@@ -86,9 +86,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
         <ScrollReveal className="flex flex-wrap items-end justify-between gap-4">
@@ -130,7 +128,7 @@ export default function ExplorePage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:items-start lg:gap-8">
-            <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-6 lg:block`}>
+            <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
               <aside
                 aria-label={t('explore.filters.title')}
                 className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5"
@@ -225,6 +223,7 @@ export default function ExplorePage() {
                             price: product.price,
                             currency: product.currency,
                             tags: product.productTags?.map((item) => item.tag) ?? [],
+                            type: product.type,
                           }}
                         />
                       </StaggerItem>
