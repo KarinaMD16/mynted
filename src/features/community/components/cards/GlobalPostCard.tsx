@@ -25,6 +25,7 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
     <article className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5">
       <ForumAuthorLine
         displayName={post.author?.displayName ?? t('community.detail.deletedAuthor')}
+        photoUrl={post.author?.photoUrl}
         role={post.author?.role}
         postedAt={post.postedAt}
         relativeTime={formatRelativeTime(post.postedAt, language)}

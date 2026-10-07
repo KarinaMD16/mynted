@@ -73,6 +73,7 @@ function ReplyNode({ postId, reply, index, childrenByParent, authorProfileId }: 
       <div className="flex flex-col gap-2.5 rounded-2xl border border-mynted-border bg-white p-4">
         <ForumAuthorLine
           displayName={reply.author?.displayName ?? t('community.detail.deletedAuthor')}
+          photoUrl={reply.author?.photoUrl}
           role={reply.author?.role}
           postedAt={reply.postedAt}
           relativeTime={formatRelativeTime(reply.postedAt, language)}

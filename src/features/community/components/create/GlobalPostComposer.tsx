@@ -27,6 +27,7 @@ export function GlobalPostComposer() {
 
   const [isOpen, setIsOpen] = useState(false)
   const [slug, setSlug] = useState('')
+  const [hasPhotoFailed, setHasPhotoFailed] = useState(false)
 
   const communities = myCommunities.data?.data ?? []
   const detail = useCommunityDetailBySlug(slug, isOpen)
@@ -41,8 +42,15 @@ export function GlobalPostComposer() {
     <>
       <section className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-4">
         <div className="flex items-center gap-3">
-          {user?.photoUrl ? (
-            <img src={user.photoUrl} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+          {user?.photoUrl && !hasPhotoFailed ? (
+            <img
+              src={user.photoUrl}
+              alt=""
+              // Ver ForumAuthorLine: sin esto las fotos de Google dan 429.
+              referrerPolicy="no-referrer"
+              onError={() => setHasPhotoFailed(true)}
+              className="size-10 shrink-0 rounded-full object-cover"
+            />
           ) : (
             <span
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-mynted-orange text-sm font-bold text-white"

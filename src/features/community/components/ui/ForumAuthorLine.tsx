@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useLanguage } from '@/i18n/LanguageContext'
 
-/** Colores del avatar, rotando por posicion (el perfil de comunidad no guarda uno). */
+/** Colores de respaldo cuando el autor no tiene foto, rotando por posicion. */
 const AVATAR_COLORS = [
   'bg-mynted-orange text-white',
   'bg-mynted-blue text-white',
@@ -11,6 +11,8 @@ const AVATAR_COLORS = [
 
 interface ForumAuthorLineProps {
   displayName: string
+  /** Foto del usuario detras del perfil de comunidad; si no hay, van las iniciales. */
+  photoUrl?: string | null
   /** 'member' | 'moderator' | 'owner'; solo se marcan los dos ultimos. */
   role?: string
   postedAt: string
@@ -22,9 +24,10 @@ interface ForumAuthorLineProps {
   meta?: ReactNode
 }
 
-/** Avatar con iniciales, nombre, hace cuanto y la etiqueta de rol. */
+/** Avatar, nombre, hace cuanto y la etiqueta de rol. */
 export function ForumAuthorLine({
   displayName,
+  photoUrl,
   role,
   postedAt,
   relativeTime,
@@ -33,18 +36,32 @@ export function ForumAuthorLine({
   meta,
 }: ForumAuthorLineProps) {
   const { t } = useLanguage()
+  const [hasFailed, setHasFailed] = useState(false)
   const isStaff = role === 'moderator' || role === 'owner'
 
   return (
     <header className="flex items-center gap-3">
-      <span
-        className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-          AVATAR_COLORS[index % AVATAR_COLORS.length]
-        }`}
-        aria-hidden="true"
-      >
-        {displayName.slice(0, 2).toUpperCase()}
-      </span>
+      {photoUrl && !hasFailed ? (
+        <img
+          src={photoUrl}
+          alt=""
+          loading="lazy"
+          // Las fotos de Google (lh3.googleusercontent.com) se sirven solo sin
+          // Referer; con el de la app responden 429 y la imagen no carga.
+          referrerPolicy="no-referrer"
+          onError={() => setHasFailed(true)}
+          className="size-9 shrink-0 rounded-full bg-mynted-bg object-cover"
+        />
+      ) : (
+        <span
+          className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+            AVATAR_COLORS[index % AVATAR_COLORS.length]
+          }`}
+          aria-hidden="true"
+        >
+          {displayName.slice(0, 2).toUpperCase()}
+        </span>
+      )}
 
       <div className="flex min-w-0 flex-col">
         <span className="flex items-center gap-1.5">

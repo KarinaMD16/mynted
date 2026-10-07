@@ -11,6 +11,11 @@ export interface ForumAuthor {
   displayName: string
   /** 'member' | 'moderator' | 'owner' */
   role: string
+  /**
+   * Foto del usuario detras del perfil de comunidad. El perfil de comunidad no
+   * guarda una, asi que el backend la trae de `communityProfile.user`.
+   */
+  photoUrl: string | null
 }
 
 export interface ForumPostImage {
