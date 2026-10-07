@@ -12,6 +12,8 @@ import { useRequestEmailChangeMutation, useUpdateProfileMutation } from '@/featu
 import { makeEmailChangeSchema } from '@/features/auth/schema/authSchemas'
 import { makeEditProfileSchema } from '@/features/auth/schema/editProfileSchema'
 import { toProfileFormData, useSavedFlash } from '../hooks/useSavedFlash'
+import { FavoritesPreferencesCard } from './FavoritesPreferencesCard'
+import { ShipToPreferencesCard } from './ShipToPreferencesCard'
 import { SettingsCard, SettingsFormFooter, SettingsReadOnlyRow } from './SettingsCard'
 
 /** Pestaña "Cuenta": correo electrónico y datos personales. */
@@ -20,6 +22,8 @@ export function AccountSettingsSection({ user }: { user: AuthUser }) {
     <div className="flex flex-col gap-6">
       <EmailCard user={user} />
       <PersonalDataCard user={user} />
+      <ShipToPreferencesCard />
+      <FavoritesPreferencesCard />
     </div>
   )
 }

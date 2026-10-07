@@ -16,9 +16,7 @@ import { Navigation } from '../ui/Navigation'
 import { NAV_ITEMS } from '../ui/navItems'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
-import { useState } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { AccountControl } from './AccountControl'
 import { MenuItem } from './menuPrimitives'
@@ -91,12 +89,10 @@ function MobileMenuTrigger({
   pathname: string
 }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToMyProducts, goToAdmin, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
   const role = useCurrentUser().data?.role
   const isSuperAdmin = role === 'superadmin'
   const isSeller = role === 'seller'
-  // El diálogo vive fuera del drawer para que no se desmonte al cerrarlo.
-  const [isSellOpen, setIsSellOpen] = useState(false)
 
   return (
     <>
@@ -230,7 +226,7 @@ function MobileMenuTrigger({
                             label={t('header.sell')}
                             onPress={() => {
                               state.close()
-                              setIsSellOpen(true)
+                              goToCreateProduct()
                             }}
                           />
                         )}
@@ -263,7 +259,6 @@ function MobileMenuTrigger({
         )}
       </AriaModalOverlay>
     </AriaDialogTrigger>
-    {isSeller && <CreateProductDialog isOpen={isSellOpen} onClose={() => setIsSellOpen(false)} />}
     </>
   )
 }

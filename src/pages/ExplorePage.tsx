@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
-import { CONDITION_LABEL } from '@/features/products/components/CreateProductDialog'
+import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { useExploreProducts } from '@/features/products/hooks/useProductQueries'
 import {
@@ -17,6 +17,7 @@ import {
   type ProductType,
 } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useDisplayCurrency } from '@/features/auth/hooks/useDisplayCurrency'
 import { INTL_LOCALES } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
@@ -272,7 +273,7 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
 
 function PriceSlider({ value, onChange }: { value: [number, number]; onChange: (value: [number, number]) => void }) {
   const { t, language } = useLanguage()
-  const currency = useCurrentUser().data?.currency ?? 'CRC'
+  const currency = useDisplayCurrency()
   // Mientras se arrastra solo cambia el texto; el filtro se aplica al soltar.
   const [draft, setDraft] = useState<[number, number]>(value)
   const [lastValue, setLastValue] = useState(value)

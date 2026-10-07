@@ -132,6 +132,14 @@ export interface MyProductsPage {
   pagination: { page: number; limit: number; totalSections: number; totalPages: number }
 }
 
+/** Respuesta de GET /products/me/stats: contadores del vendedor por estado y total. */
+export interface MyProductsStats {
+  total: number
+  active: number
+  sold: number
+  inactive: number
+}
+
 export interface MyProductsFilters {
   status?: ProductStatus
   type?: ProductType

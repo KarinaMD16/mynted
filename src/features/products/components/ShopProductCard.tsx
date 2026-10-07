@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
 
@@ -27,7 +28,7 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
   const { t, language } = useLanguage()
 
   return (
-    <article className="flex h-full flex-col gap-2 overflow-hidden rounded-[14px] border border-mynted-border bg-white px-3 pt-3 pb-3.5 shadow-[0_2px_8px_0_rgba(13,13,20,0.06)]">
+    <article className="relative flex h-full flex-col gap-2 overflow-hidden rounded-[14px] border border-mynted-border bg-white px-3 pt-3 pb-3.5 shadow-[0_2px_8px_0_rgba(13,13,20,0.06)]">
       <Link
         to="/products/$productId"
         params={{ productId: String(product.id) }}
@@ -43,6 +44,8 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
         </div>
         <h3 className="line-clamp-2 font-heading text-sm font-semibold text-mynted-ink">{product.title}</h3>
       </Link>
+
+      <ProductFavoriteButton productId={product.id} className="absolute top-[18px] right-[18px]" />
 
       {product.tags.length > 0 && (
         <p className="line-clamp-1 text-[11px] text-mynted-gray">{product.tags.map((tag) => `#${tag.name}`).join(' ')}</p>

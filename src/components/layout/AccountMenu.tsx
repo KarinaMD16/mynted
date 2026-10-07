@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ChevronDown, LayoutAlt01, LogOut01, Settings01, Package, ShoppingBag01, User01 } from '@untitledui/icons'
 import {
   Button as AriaButton,
@@ -11,20 +10,17 @@ import { GooseIcon } from '../ui/GooseIcon'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { MenuItem } from './menuPrimitives'
 import { useAccountActions } from './useAccountActions'
 
 export function AccountMenu({ userName }: { userName: string }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToMyProducts, goToAdmin, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
   // Un superadmin no usa perfil ni ajustes de cuenta normal: su única opción
   // es el panel de administración (ver AdminPage).
   const role = useCurrentUser().data?.role
   const isSuperAdmin = role === 'superadmin'
   const isSeller = role === 'seller'
-  // El diálogo vive acá (no dentro del popover) para que no se desmonte al cerrar el menú.
-  const [isSellOpen, setIsSellOpen] = useState(false)
 
   return (
     <>
@@ -70,7 +66,7 @@ export function AccountMenu({ userName }: { userName: string }) {
                       label={t('header.sell')}
                       onPress={() => {
                         close()
-                        setIsSellOpen(true)
+                        goToCreateProduct()
                       }}
                     />
                   )}
@@ -89,7 +85,6 @@ export function AccountMenu({ userName }: { userName: string }) {
         </AriaDialog>
       </AriaPopover>
     </AriaDialogTrigger>
-    {isSeller && <CreateProductDialog isOpen={isSellOpen} onClose={() => setIsSellOpen(false)} />}
     </>
   )
 }

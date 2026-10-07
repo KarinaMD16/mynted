@@ -4,6 +4,7 @@ import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { useProduct, useRecommendedProducts } from '@/features/products/hooks/useProductQueries'
 import type { ProductCondition, ProductDetail, ProductListItem } from '@/features/products/models/product'
@@ -167,15 +168,7 @@ function Detail({ product }: { product: ProductDetail }) {
           >
             {t('itemDetail.contactSeller')}
           </Link>
-          {/* Favoritos todavía no existen en el backend: el botón queda deshabilitado. */}
-          <button
-            type="button"
-            disabled
-            aria-label={t('itemDetail.save')}
-            className="size-12 rounded-[10px] border border-mynted-border bg-white text-lg font-semibold text-mynted-ink opacity-60"
-          >
-            ♡
-          </button>
+          <ProductFavoriteButton productId={product.id} variant="outline" />
         </div>
       </div>
     </ScrollReveal>

@@ -19,6 +19,15 @@ export async function activateUser(userId: string): Promise<void> {
 }
 
 /**
+ * GET /users/seller-requests — [Superadmin] solicitudes de vendedor PENDIENTES, de la
+ * más antigua a la más nueva, con la cuenta (`user`) y los datos de cobro de cada una.
+ */
+export async function getPendingSellerRequests(): Promise<SellerRequestDetail[]> {
+  const { data } = await myntedAPI.get<SellerRequestDetail[]>('/users/seller-requests')
+  return data
+}
+
+/**
  * GET /users/seller-request/:id — [Superadmin] datos de la tienda y de cobro
  * de la solicitud pendiente de ese usuario. Responde 404 si ya no está pendiente.
  */

@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 
-interface CookieOptions {
+export interface CookieOptions {
   days?: number
   sameSite?: 'lax' | 'strict' | 'none'
   secure?: boolean
   path?: string
 }
 
-function readCookie(name: string): string | null {
+export function readCookie(name: string): string | null {
   if (typeof document === 'undefined') return null
   const escaped = name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1')
   const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`))
   return match ? decodeURIComponent(match[1]) : null
 }
 
-function writeCookie(name: string, value: string, options: CookieOptions = {}): void {
+export function writeCookie(name: string, value: string, options: CookieOptions = {}): void {
   if (typeof document === 'undefined') return
   const { days = 365, sameSite = 'lax', secure = true, path = '/' } = options
   const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString()
@@ -29,7 +29,7 @@ function writeCookie(name: string, value: string, options: CookieOptions = {}): 
     .join('; ')
 }
 
-function eraseCookie(name: string, path = '/'): void {
+export function eraseCookie(name: string, path = '/'): void {
   if (typeof document === 'undefined') return
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`
 }
