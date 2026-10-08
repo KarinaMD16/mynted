@@ -1,4 +1,5 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useForumActions } from '@/features/community/hooks/useForum'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
@@ -19,6 +20,10 @@ interface GlobalPostCardProps {
 export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
   const { t, language } = useLanguage()
   const { voteOnPost, favoritePost } = useForumActions()
+  const { isLoggedIn } = useCurrentUser()
+  const navigate = useNavigate()
+  // Votar y guardar piden sesión: sin ella se manda a iniciar sesión en vez de dejar que la petición falle.
+  const goToLogin = () => void navigate({ to: '/login' })
   const community = post.community
 
   return (
@@ -80,8 +85,10 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
         metrics={post}
         replyCount={post.replyCount}
         disabled={voteOnPost.isPending || favoritePost.isPending}
-        onVote={(voteType) => voteOnPost.mutate({ postId: post.id, voteType })}
-        onToggleFavorite={() => favoritePost.mutate({ postId: post.id, isSaved: !post.isSaved })}
+        onVote={(voteType) => (isLoggedIn ? voteOnPost.mutate({ postId: post.id, voteType }) : goToLogin())}
+        onToggleFavorite={() =>
+          isLoggedIn ? favoritePost.mutate({ postId: post.id, isSaved: !post.isSaved }) : goToLogin()
+        }
       />
     </article>
   )

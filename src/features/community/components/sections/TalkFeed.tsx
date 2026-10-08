@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { SlidersHorizontal } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, isUnauthorizedError } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
+import { LoginPrompt } from '@/components/ui/LoginPrompt'
 import { StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -27,8 +27,9 @@ interface TalkFeedProps {
 /**
  * Feed de publicaciones, en sus dos caras: el del home y el de explorar.
  *
- * A diferencia de "Shop", los dos endpoints piden sesion, asi que sin ella se
- * invita a entrar en vez de mostrar el feed vacio.
+ * `all` (Explorar) se ve sin sesion: si el backend responde 401 (GET /posts todavia
+ * exige login) se invita a entrar. `interests` (home) es personal, asi que sin sesion
+ * siempre se invita a entrar.
  */
 export function TalkFeed({ source }: TalkFeedProps) {
   const { t } = useLanguage()
@@ -48,7 +49,7 @@ export function TalkFeed({ source }: TalkFeedProps) {
     setTagIds([])
     setSearch('')
   }
-  const globalPosts = useGlobalPosts(filters, isLoggedIn && showsFilters)
+  const globalPosts = useGlobalPosts(filters, showsFilters)
   const recommendedPosts = useRecommendedPosts(isLoggedIn && !showsFilters)
   const posts = showsFilters ? globalPosts : recommendedPosts
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = posts
@@ -69,22 +70,12 @@ export function TalkFeed({ source }: TalkFeedProps) {
 
   const items = posts.data?.pages.flatMap((page) => page.data) ?? []
 
-  if (isLoadingSession) {
+  if (isLoadingSession && !showsFilters) {
     return <div className="h-64 animate-pulse rounded-2xl bg-white" aria-busy="true" />
   }
 
-  if (!isLoggedIn) {
-    return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-        <p className="text-sm text-mynted-gray">{t('talk.loginPrompt')}</p>
-        <Link
-          to="/login"
-          className="rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-        >
-          {t('home.goToLogin')}
-        </Link>
-      </div>
-    )
+  if (!showsFilters && !isLoggedIn) {
+    return <LoginPrompt message={t('talk.loginPrompt')} />
   }
 
   return (
@@ -115,7 +106,7 @@ export function TalkFeed({ source }: TalkFeedProps) {
         }`}
       >
         {showsFilters && (
-          <div className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-6 lg:block`}>
+          <div className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
             <TalkFilters
               search={search}
               onSearchChange={setSearch}
@@ -128,7 +119,7 @@ export function TalkFeed({ source }: TalkFeedProps) {
         )}
 
         <section aria-label={t('talk.title')} className="flex min-w-0 flex-col gap-4">
-          <GlobalPostComposer />
+          {isLoggedIn && <GlobalPostComposer />}
 
           {posts.isPending ? (
             <div className="flex flex-col gap-4" aria-busy="true">
@@ -136,6 +127,8 @@ export function TalkFeed({ source }: TalkFeedProps) {
                 <div key={index} className="h-44 animate-pulse rounded-2xl bg-white" />
               ))}
             </div>
+          ) : posts.isError && isUnauthorizedError(posts.error) ? (
+            <LoginPrompt message={t('talk.loginPrompt')} />
           ) : posts.isError ? (
             <div
               className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"
@@ -180,7 +173,7 @@ export function TalkFeed({ source }: TalkFeedProps) {
 
         <aside
           aria-label={t('talk.sidebar.label')}
-          className={`lg:sticky lg:top-6 ${showsFilters ? 'max-lg:block lg:max-xl:hidden' : ''}`}
+          className={`lg:sticky lg:top-28 ${showsFilters ? 'max-lg:block lg:max-xl:hidden' : ''}`}
         >
           <TalkSidebar />
         </aside>

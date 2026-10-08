@@ -42,14 +42,7 @@ export function AccountMenu({ userName }: { userName: string }) {
               ) : (
                 <>
                   <MenuItem icon={User01} label={t('header.myProfile')} onPress={goToProfile} />
-                  <MenuItem
-                    icon={Settings01}
-                    label={t('header.settings')}
-                    onPress={() => {
-                      close()
-                      goToSettings()
-                    }}
-                  />
+                  
                   {isSeller && (
                     <MenuItem
                       icon={Package}
@@ -70,6 +63,14 @@ export function AccountMenu({ userName }: { userName: string }) {
                       }}
                     />
                   )}
+                  <MenuItem
+                    icon={Settings01}
+                    label={t('header.settings')}
+                    onPress={() => {
+                      close()
+                      goToSettings()
+                    }}
+                  />
                 </>
               )}
               <div className="my-1 border-t border-mynted-border" />

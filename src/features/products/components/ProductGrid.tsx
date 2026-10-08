@@ -100,11 +100,11 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
   const tags = product.productTags?.map((item) => item.tag) ?? []
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-mynted-border bg-white transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(13,13,20,0.15)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-mynted-border bg-white transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(13,13,20,0.15)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-mynted-bg">
         <img
           src={product.imageUrl}
-          alt={product.title}
+          alt=""
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
@@ -124,7 +124,16 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 font-heading text-base font-semibold text-mynted-ink">{product.title}</h3>
+        <h3 className="line-clamp-2 font-heading text-base font-semibold text-mynted-ink">
+          {/* Enlace "estirado": todo el card abre el detalle, y el link de la comunidad queda por encima. */}
+          <Link
+            to="/products/$productId"
+            params={{ productId: String(product.id) }}
+            className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-mynted-blue focus-visible:after:rounded-2xl"
+          >
+            {product.title}
+          </Link>
+        </h3>
         <p className="text-xs font-medium text-mynted-gray">{t(CONDITION_LABEL[product.condition])}</p>
 
         {tags.length > 0 && (
@@ -142,7 +151,7 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
             <Link
               to="/communities/$slug"
               params={{ slug: product.community.slug }}
-              className="flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink hover:text-mynted-orange"
+              className="relative z-10 flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink hover:text-mynted-orange"
             >
               <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
               <span className="truncate">{product.community.name}</span>

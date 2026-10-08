@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { ProfileFeedFrame } from '@/features/community/components/profile/ProfileFeedFrame'
 import { BENTO_GRID_CLASS, TILE_MIN_HEIGHT } from '@/features/community/components/feed/bentoLayout'
 import { EAGER_ITEM_COUNT, StaggerItem } from '@/components/ui/ScrollReveal'
@@ -35,25 +36,12 @@ export function MyFavoritesTab() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div role="tablist" aria-label={t('favorites.filter.label')} className="flex flex-wrap items-center gap-2">
-        {FAVORITES_FILTERS.map((id) => {
-          const isActive = filter === id
-          return (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setFilter(id)}
-              className={`cursor-pointer rounded-[10px] px-5 py-2.5 font-heading text-[15px] font-semibold transition-colors ${
-                isActive ? 'bg-mynted-orange text-white' : 'text-mynted-gray hover:text-mynted-ink'
-              }`}
-            >
-              {t(FILTER_LABEL[id])}
-            </button>
-          )
-        })}
-      </div>
+      <AnimatedTabs
+        items={FAVORITES_FILTERS.map((id) => ({ id, label: t(FILTER_LABEL[id]) }))}
+        value={filter}
+        onChange={setFilter}
+        ariaLabel={t('favorites.filter.label')}
+      />
 
       <div role="tabpanel">
         <ProfileFeedFrame

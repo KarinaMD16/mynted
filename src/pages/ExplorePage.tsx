@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
 import { SlidersHorizontal, X } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, isUnauthorizedError } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { FilterGroup } from '@/components/ui/FilterGroup'
 import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
+import { LoginPrompt } from '@/components/ui/LoginPrompt'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
-import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
@@ -33,6 +33,29 @@ const EXPLORE_TABS: { id: ExploreTab; labelKey: TranslationKey }[] = [
 
 const EXPLORE_GRID_CLASS = 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'
 
+/** Conteo de resultados: entra con un fade y se anima otra vez cuando cambia el número (al filtrar). */
+function ResultsCount({ total }: { total: number }) {
+  const { t, language } = useLanguage()
+  const reduceMotion = useReducedMotion()
+  const locale = INTL_LOCALES[language]
+  // Intl.PluralRules aplica la regla de cada idioma (en francés 0 es singular, en español es plural).
+  const isSingular = new Intl.PluralRules(locale).select(total) === 'one'
+
+  return (
+    <p className="text-sm text-mynted-gray" aria-live="polite">
+      <motion.span
+        key={total}
+        className="inline-block"
+        initial={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {t(isSingular ? 'explore.results.one' : 'explore.results.other', { count: total.toLocaleString(locale) })}
+      </motion.span>
+    </p>
+  )
+}
+
 /**
  * Escala del slider de precio. Los precios van de unos pocos dólares a
  * cientos de miles de colones, así que el slider recorre estos escalones (no
@@ -45,12 +68,12 @@ const LAST_STEP = PRICE_STEPS.length - 1
 
 /**
  * Explorar: catálogo general de productos activos (GET /products) con filtros
- * por categoría, tipo, condición y rango de precio, y scroll infinito. El
- * endpoint pide sesión, así que sin ella se muestra una invitación a entrar.
+ * por categoría, tipo, condición y rango de precio, y scroll infinito. Se ve
+ * sin sesión: si el backend responde 401 (GET /products todavía exige login),
+ * se muestra una invitación a entrar en vez del catálogo.
  */
 export default function ExplorePage() {
   const { t } = useLanguage()
-  const { isLoggedIn, isLoading: isLoadingUser } = useCurrentUser()
 
   const [category, setCategory] = useState<number | undefined>()
   const [type, setType] = useState<ProductType | undefined>()
@@ -68,7 +91,7 @@ export default function ExplorePage() {
   }
   const activeCount = Object.keys(filters).length
 
-  const products = useExploreProducts(filters, isLoggedIn)
+  const products = useExploreProducts(filters)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = products
 
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -131,7 +154,7 @@ export default function ExplorePage() {
               {t(activeTab === 'talk' ? 'talk.subtitle' : 'explore.subtitle')}
             </p>
           </div>
-          {isLoggedIn && activeTab === 'shop' && (
+          {activeTab === 'shop' && (
             <Button
               type="button"
               variant="secondary"
@@ -153,18 +176,6 @@ export default function ExplorePage() {
 
         {activeTab === 'talk' ? (
           <TalkFeed source="all" />
-        ) : isLoadingUser ? (
-          <div className="h-64 animate-pulse rounded-2xl bg-white" aria-busy="true" />
-        ) : !isLoggedIn ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-            <p className="text-sm text-mynted-gray">{t('explore.loginPrompt')}</p>
-            <Link
-              to="/login"
-              className="rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-            >
-              {t('home.goToLogin')}
-            </Link>
-          </div>
         ) : (
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:items-start lg:gap-8">
             <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
@@ -216,11 +227,8 @@ export default function ExplorePage() {
             </ScrollReveal>
 
             <section aria-label={t('explore.title')} className="flex min-w-0 flex-col gap-4">
-              {total !== undefined && (
-                <p className="text-sm text-mynted-gray" aria-live="polite">
-                  {t('explore.results', { count: total })}
-                </p>
-              )}
+              {/* Altura reservada: así la lista no salta hacia abajo cuando aparece el conteo. */}
+              <div className="min-h-5">{total !== undefined && <ResultsCount total={total} />}</div>
 
               {products.isPending ? (
                 <div className={EXPLORE_GRID_CLASS} aria-busy="true">
@@ -228,6 +236,8 @@ export default function ExplorePage() {
                     <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
                   ))}
                 </div>
+              ) : products.isError && isUnauthorizedError(products.error) ? (
+                <LoginPrompt message={t('explore.loginPrompt')} />
               ) : products.isError ? (
                 <div
                   className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"

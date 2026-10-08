@@ -41,6 +41,12 @@ body {
   min-height: 100svh;
 }
 
+/* Al seleccionar texto, amarillo de marca en vez del azul del navegador (viene del mockup de diseño web). */
+::selection {
+  background: var(--color-mynted-yellow);
+  color: var(--color-mynted-ink);
+}
+
 /* Scrollbars delgados y sin fondo en toda la app (Chrome, Edge, Firefox y Safari 18.2+). */
 * {
   scrollbar-width: thin;
