@@ -1053,6 +1053,7 @@ export const ko: Record<TranslationKey, string> = {
   'forum.create.imagesHint': '선택사항, 개당 5MB 이미지 최대 {{max}}장.',
   'forum.create.addImages': '이미지 추가',
   'forum.create.removeImage': '이미지 제거',
+  'forum.create.viewImage': '이미지 보기',
   'forum.create.publish': '게시',
   'forum.create.publishing': '게시 중…',
   'forum.create.cancel': '취소',

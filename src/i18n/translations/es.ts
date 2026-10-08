@@ -1055,6 +1055,7 @@ export const es = {
   'forum.create.imagesHint': 'Opcional, hasta {{max}} imágenes de 5 MB cada una.',
   'forum.create.addImages': 'Agregar imágenes',
   'forum.create.removeImage': 'Quitar imagen',
+  'forum.create.viewImage': 'Ver la imagen',
   'forum.create.publish': 'Publicar',
   'forum.create.publishing': 'Publicando…',
   'forum.create.cancel': 'Cancelar',

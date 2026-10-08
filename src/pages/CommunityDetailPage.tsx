@@ -32,8 +32,8 @@ export default function CommunityDetailPage() {
   // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
   const community = isLoggedIn ? communityQuery.data : undefined
   const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
-  // En una comunidad privada el foro es solo para miembros. Ojo: hoy esto es
-  // solo de pantalla, el endpoint igual los devuelve (ver forum.service.findPosts).
+  // En una comunidad privada el foro es solo para miembros: el backend responde
+  // 403, asi que aca ni se pide y se explica en vez de mostrar un error.
   const canSeeForum = Boolean(community && (!community.isPrivate || community.isMember))
   // El foro ya no sale del detalle: tiene su propio endpoint paginado
   const postsQuery = useCommunityPosts(

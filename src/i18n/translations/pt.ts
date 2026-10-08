@@ -1071,6 +1071,7 @@ export const pt: Record<TranslationKey, string> = {
   'forum.create.imagesHint': 'Opcional, até {{max}} imagens de 5 MB cada.',
   'forum.create.addImages': 'Adicionar imagens',
   'forum.create.removeImage': 'Remover imagem',
+  'forum.create.viewImage': 'Ver a imagem',
   'forum.create.publish': 'Publicar',
   'forum.create.publishing': 'Publicando…',
   'forum.create.cancel': 'Cancelar',

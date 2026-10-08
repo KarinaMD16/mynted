@@ -28,8 +28,8 @@ export default function PostDetailPage() {
 
   // Sin sesion no se usa lo que haya quedado en cache de otra cuenta
   const community = isLoggedIn ? communityQuery.data : undefined
-  // En una comunidad privada la publicacion es solo para miembros. Ojo: hoy esto
-  // es solo de pantalla, el endpoint igual la devuelve (ver forum.service).
+  // En una comunidad privada la publicacion es solo para miembros: el backend
+  // responde 403, asi que aca se explica en vez de mostrar un error.
   const canSeePost = Boolean(community && (!community.isPrivate || community.isMember))
   const post = isLoggedIn && canSeePost ? postQuery.data : undefined
   const replies = isLoggedIn && canSeePost ? (repliesQuery.data ?? []) : []

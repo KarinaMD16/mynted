@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog'
 import type { ChangeEvent, ReactNode } from 'react'
 import { ImagePlus, X } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
@@ -65,6 +66,8 @@ function CreatePostForm({
   const [body, setBody] = useState('')
   const [tagIds, setTagIds] = useState<number[]>([])
   const [images, setImages] = useState<{ file: File; previewUrl: string }[]>([])
+  // Indice de la imagen abierta en grande; null con el visor cerrado.
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
 
   // Las vistas previas son object URLs: se liberan al cambiar la lista o cerrar
   useEffect(() => () => { images.forEach((image) => URL.revokeObjectURL(image.previewUrl)) }, [images])
@@ -196,12 +199,22 @@ function CreatePostForm({
             <ul className="flex flex-wrap gap-2">
               {images.map((image, index) => (
                 <li key={image.previewUrl} className="relative">
-                  <img src={image.previewUrl} alt="" className="size-20 rounded-lg object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setPreviewIndex(index)}
+                    aria-label={t('forum.create.viewImage')}
+                    className="block size-20 overflow-hidden rounded-lg outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+                  >
+                    <img src={image.previewUrl} alt="" className="size-full cursor-zoom-in object-cover" />
+                  </button>
                   <Button
                     variant="overlay"
                     size="icon-sm"
                     shape="pill"
-                    onClick={() => setImages((current) => current.filter((_, position) => position !== index))}
+                    onClick={() => {
+                      setImages((current) => current.filter((_, position) => position !== index))
+                      setPreviewIndex(null)
+                    }}
                     aria-label={t('forum.create.removeImage')}
                     className="absolute -top-1.5 -right-1.5 size-6"
                   >
@@ -241,6 +254,14 @@ function CreatePostForm({
           </p>
         )}
       </div>
+
+      <ImagePreviewDialog
+        src={previewIndex === null ? null : (images[previewIndex]?.previewUrl ?? null)}
+        alt=""
+        title={t('forum.create.viewImage')}
+        isOpen={previewIndex !== null}
+        onClose={() => setPreviewIndex(null)}
+      />
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
