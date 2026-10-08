@@ -6,8 +6,10 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityDetailHeader } from '@/features/community/components/detail/CommunityDetailHeader'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { CommunitySidebar } from '@/features/community/components/detail/CommunitySidebar'
+import { CreatePostDialog } from '@/features/community/components/create/CreatePostDialog'
 import { ForumPostCard } from '@/features/community/components/cards/ForumPostCard'
 import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
+import { useCommunityPosts } from '@/features/community/hooks/useForum'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ProductGrid } from '@/features/products/components/ProductGrid'
 import { useCommunityProducts } from '@/features/products/hooks/useProductQueries'
@@ -22,6 +24,7 @@ export default function CommunityDetailPage() {
   const navigate = useNavigate()
   const { isLoggedIn, isLoading: isLoadingSession, data: currentUser } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   // Publicar productos es exclusivo de vendedores (el backend lo exige con SellerGuard).
   const isSeller = currentUser?.role === 'seller'
 
@@ -29,6 +32,9 @@ export default function CommunityDetailPage() {
   // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
   const community = isLoggedIn ? communityQuery.data : undefined
   const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
+  // El foro ya no sale del detalle: tiene su propio endpoint paginado
+  const postsQuery = useCommunityPosts(community?.id ?? 0, { limit: 20 }, isLoggedIn && activeTab === 'talk')
+  const posts = isLoggedIn ? (postsQuery.data?.data ?? []) : []
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -121,15 +127,37 @@ export default function CommunityDetailPage() {
             {activeTab === 'talk' ? (
               <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
                 <div className="flex flex-col gap-4">
-                  {community.forumPosts.length > 0 ? (
-                    community.forumPosts.map((post, index) => (
-                      <ForumPostCard key={post.id} post={post} index={index} />
-                    ))
-                  ) : (
-                    <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                      {t('community.detail.noPosts')}
+                  {/* Publicar exige ser miembro (lo valida CommunityRoleGuard) */}
+                  {community.isMember && (
+                    <Button
+                      type="button"
+                      onClick={() => setIsCreatePostOpen(true)}
+                      variant="primary"
+                      size="md"
+                      className="w-fit self-end"
+                    >
+                      <Plus className="size-4" aria-hidden="true" />
+                      {t('forum.create.cta')}
+                    </Button>
+                  )}
+
+                  {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
+
+                  {postsQuery.isError && (
+                    <p className="text-sm text-red-500" role="alert">
+                      {t('forum.loadError')} {getApiErrorMessage(postsQuery.error)}
                     </p>
                   )}
+
+                  {posts.length > 0
+                    ? posts.map((post, index) => (
+                        <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
+                      ))
+                    : postsQuery.isSuccess && (
+                        <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
+                          {t('community.detail.noPosts')}
+                        </p>
+                      )}
                 </div>
 
                 <CommunitySidebar community={community} />
@@ -172,6 +200,12 @@ export default function CommunityDetailPage() {
                 />
               </div>
             )}
+
+            <CreatePostDialog
+              community={community}
+              isOpen={isCreatePostOpen}
+              onClose={() => setIsCreatePostOpen(false)}
+            />
           </>
         )}
       </main>

@@ -1,22 +1,25 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useForumActions } from '@/features/community/hooks/useForum'
-import type { ForumPost } from '@/features/community/models/forumDTOs'
+import type { FeedPost } from '@/features/community/models/communityDTOs'
 import { ForumAuthorLine } from '@/features/community/components/ui/ForumAuthorLine'
 import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetricsBar'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
-interface ForumPostCardProps {
-  post: ForumPost
-  /** Para enlazar al detalle de la publicacion. */
-  communitySlug: string
+interface GlobalPostCardProps {
+  post: FeedPost
   index: number
 }
 
-/** Publicacion del foro dentro de la lista de la comunidad. */
-export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps) {
+/**
+ * Publicacion dentro del feed de "Talk". Es la misma tarjeta del foro, pero
+ * aca se agrega la comunidad de donde salio: el feed mezcla varias, asi que
+ * sin eso no se sabe de cual es cada publicacion ni a donde lleva el titulo.
+ */
+export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
   const { t, language } = useLanguage()
   const { voteOnPost, favoritePost } = useForumActions()
+  const community = post.community
 
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5">
@@ -27,27 +30,38 @@ export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps
         postedAt={post.postedAt}
         relativeTime={formatRelativeTime(post.postedAt, language)}
         index={index}
+        meta={
+          community && (
+            <Link
+              to="/communities/$slug"
+              params={{ slug: community.slug }}
+              className="truncate font-medium text-mynted-blue hover:underline"
+            >
+              @{community.slug}
+            </Link>
+          )
+        }
       />
 
-      <Link
-        to="/communities/$slug/posts/$postId"
-        params={{ slug: communitySlug, postId: String(post.id) }}
-        className="font-heading text-base font-semibold text-mynted-ink hover:underline"
-      >
-        {post.title}
-      </Link>
+      {community ? (
+        <Link
+          to="/communities/$slug/posts/$postId"
+          params={{ slug: community.slug, postId: String(post.id) }}
+          className="font-heading text-base font-semibold text-mynted-ink hover:underline"
+        >
+          {post.title}
+        </Link>
+      ) : (
+        // Sin comunidad no hay ruta al detalle (la ruta del post cuelga del slug).
+        <h3 className="font-heading text-base font-semibold text-mynted-ink">{post.title}</h3>
+      )}
 
       <p className="text-sm whitespace-pre-line text-mynted-gray">{post.body}</p>
 
       {post.images.length > 0 && (
         <div className={`grid gap-2 ${post.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
           {post.images.map((image) => (
-            <img
-              key={image.id}
-              src={image.url}
-              alt=""
-              className="max-h-80 w-full rounded-xl object-cover"
-            />
+            <img key={image.id} src={image.url} alt="" className="max-h-96 w-full rounded-xl object-contain" />
           ))}
         </div>
       )}

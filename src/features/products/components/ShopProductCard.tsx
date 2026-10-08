@@ -2,16 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { ProductType } from '@/features/products/models/product'
-import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
-
-function formatPrice(price: string | number, currency: string, language: AppLanguage): string {
-  const value = typeof price === 'number' ? price : Number(price)
-  try {
-    return new Intl.NumberFormat(INTL_LOCALES[language], { style: 'currency', currency }).format(value)
-  } catch {
-    return `${currency} ${value.toFixed(2)}`
-  }
-}
+import { formatPrice } from '@/utils/price'
 
 export interface ShopProductCardData {
   id: number

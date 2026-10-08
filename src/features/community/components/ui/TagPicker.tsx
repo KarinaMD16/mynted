@@ -1,4 +1,5 @@
 import { getApiErrorMessage } from "@/api/apiError";
+import { Button } from '@/components/ui/Button'
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTags } from "@/features/community/hooks/useCommunitiesQueries";
 import type { TagPickerProps } from "@/features/community/types/CommunityTypes";
@@ -30,20 +31,18 @@ export const TagPicker = ({ categoryId, selected, onChange, error }: TagPickerPr
                     const isSelected = selected.includes(tag.tagId);
                     const isDisabled = !isSelected && selected.length >= MAX_TAGS;
                     return (
-                        <button
+                        <Button
                             key={tag.tagId}
-                            type="button"
+                            variant={isSelected ? 'primary' : 'secondary'}
+                            size="sm"
+                            shape="pill"
                             aria-pressed={isSelected}
                             disabled={isDisabled}
                             onClick={() => toggleTag(tag.tagId)}
-                            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
-                                isSelected
-                                    ? 'border-mynted-yellow bg-mynted-yellow text-mynted-ink'
-                                    : 'border-mynted-border bg-white text-mynted-ink enabled:hover:border-mynted-orange'
-                            }`}
+                            className="text-xs"
                         >
                             {tag.name}
-                        </button>
+                        </Button>
                     );
                 })}
             </div>

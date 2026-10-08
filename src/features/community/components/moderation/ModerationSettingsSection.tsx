@@ -253,23 +253,20 @@ export function ModerationSettingsSection({
           {categoriesQuery.data?.map((category) => {
             const isSelected = categoryId === category.categoryId
             return (
-              <button
+              <Button
                 key={category.categoryId}
-                type="button"
+                variant={isSelected ? 'primary' : 'secondary'}
+                size="sm"
+                shape="pill"
                 aria-pressed={isSelected}
                 onClick={() => {
                   if (isSelected) return
                   setCategoryId(category.categoryId)
                   setTagIds([])
                 }}
-                className={`rounded-full border px-4 py-1.5 text-[13px] font-medium transition-colors hover:cursor-pointer ${
-                  isSelected
-                    ? 'border-mynted-orange bg-mynted-orange text-white'
-                    : 'border-mynted-border bg-white text-mynted-ink hover:border-mynted-orange'
-                }`}
               >
                 {category.name}
-              </button>
+              </Button>
             )
           })}
         </div>

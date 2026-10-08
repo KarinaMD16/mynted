@@ -62,7 +62,13 @@ export function ModerationJoinRequestsSection({ community }: { community: Commun
               >
                 <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-mynted-yellow text-xs font-bold text-mynted-ink">
                   {request.user.photoUrl ? (
-                    <img src={request.user.photoUrl} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={request.user.photoUrl}
+                      alt=""
+                      // Ver ForumAuthorLine: sin esto las fotos de Google dan 429.
+                      referrerPolicy="no-referrer"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     request.user.username.slice(0, 2).toUpperCase()
                   )}

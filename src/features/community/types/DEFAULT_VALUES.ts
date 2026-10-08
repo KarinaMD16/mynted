@@ -1,10 +1,14 @@
 export const MAX_TAGS = 3;
 
-export const DEFAULT_RULES = [
-    'Solo productos verificados y auténticos, nada de réplicas sin declarar',
-    'Respeta a otros coleccionistas: sin acoso ni lenguaje ofensivo',
-    'Sin spam ni promoción excesiva de tiendas externas',
-];
+/**
+ * Reglas sugeridas al crear una comunidad. Son claves de traduccion, no texto:
+ * se resuelven con t() en el formulario para que salgan en el idioma elegido.
+ */
+export const DEFAULT_RULE_KEYS = [
+    'communities.create.defaultRule1',
+    'communities.create.defaultRule2',
+    'communities.create.defaultRule3',
+] as const;
 
 export const labelClasses = 'text-[13px] font-medium text-mynted-ink';
 export const hintClasses = 'text-xs text-mynted-gray';

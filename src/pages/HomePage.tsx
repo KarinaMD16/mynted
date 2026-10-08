@@ -5,6 +5,7 @@ import gooseMynted from '@/assets/goose-mynted.png'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
+import { TalkHighlights } from '@/features/community/components/sections/TalkHighlights'
 import { useCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import type { CommunityListItem } from '@/features/community/models/communityDTOs'
 import { ShopFeed } from '@/features/products/components/ShopFeed'
@@ -17,15 +18,16 @@ import { SiteHeader } from '../components/layout/SiteHeader'
  * 1. Hero (solo sin sesión): explica qué es Mynted en una pantalla y lleva a crear cuenta o
  *    a la tienda. Con sesión se omite, para que quien vuelve llegue directo a los productos.
  * 2. Shop: productos agrupados por tag, con scroll infinito (visible también sin sesión).
- * 3. Comunidades más populares (GET /communities es público).
- * 4. Llamado a vender.
- *
- * Falta la sección "Talk" (conversaciones): no hay un endpoint de hilos recientes o populares
- * (solo GET /forums/me, los del propio usuario). Está en backend-pendientes-frontend.md.
+ * 3. Talk (solo con sesión): las publicaciones que coinciden con los intereses del usuario
+ *    (GET /users/me/recommended-posts). El feed de todas las comunidades vive en /explore.
+ * 4. Comunidades más populares (GET /communities es público).
+ * 5. Llamado a vender.
  */
 export default function HomePage() {
   const { t } = useLanguage()
-  const { isLoggedIn, isLoading } = useCurrentUser()
+  const { data: user, isLoggedIn, isLoading } = useCurrentUser()
+  // SellCta no se muestra a un superadmin; sin el, la lista ocupa todo el ancho.
+  const showsSellCta = !isLoading && user?.role !== 'superadmin'
 
   return (
     <div className="min-h-svh bg-mynted-bg">
@@ -42,9 +44,33 @@ export default function HomePage() {
           <ShopFeed />
         </section>
 
+        {/* Pide sesión: sin ella no se muestra, en vez de dejar un bloque pidiendo entrar. */}
+        {isLoggedIn && (
+          <section id="talk" aria-labelledby="home-talk-title" className="flex scroll-mt-28 flex-col gap-8">
+            <ScrollReveal className="flex flex-wrap items-end justify-between gap-4">
+              <SectionHeading id="home-talk-title" eyebrow={t('home.talk.eyebrow')} title={t('home.talk.title')} />
+              <Link
+                to="/explore"
+                className="flex items-center gap-1 text-sm font-semibold text-mynted-blue hover:underline"
+              >
+                {t('home.talk.seeAll')}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </ScrollReveal>
+
+            <div
+              className={`grid gap-6 ${showsSellCta ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''}`}
+            >
+              <TalkHighlights />
+              {showsSellCta && <SellCta layout="column" />}
+            </div>
+          </section>
+        )}
+
         <PopularCommunities />
 
-        <SellCta />
+        {/* Con sesión el llamado a vender va junto a Talk; sin ella, a lo ancho. */}
+        {!isLoggedIn && <SellCta />}
       </main>
 
       <motion.div
@@ -267,11 +293,13 @@ function CommunityCard({ community, tone, language }: { community: CommunityList
  * Vendedor → publicar; con sesión pero sin rol de vendedor → ajustes de perfil, donde está
  * la solicitud para serlo; sin sesión → crear cuenta. El superadmin no vende, así que no lo ve.
  */
-function SellCta() {
+function SellCta({ layout = 'row' }: { layout?: 'row' | 'column' }) {
   const { t } = useLanguage()
   const { data: user, isLoggedIn, isLoading } = useCurrentUser()
 
   if (isLoading || user?.role === 'superadmin') return null
+
+  const isColumn = layout === 'column'
 
   const buttonClass = `${ctaBase} bg-white text-mynted-ink hover:bg-mynted-bg`
   const label = (
@@ -283,9 +311,19 @@ function SellCta() {
 
   return (
     <ScrollReveal>
-      <section className="flex flex-col items-start justify-between gap-6 rounded-[22px] bg-mynted-orange p-7 sm:flex-row sm:items-center sm:p-9">
-        <div className="flex items-start gap-5">
-          <span className="hidden size-12 shrink-0 place-items-center rounded-xl bg-white/40 text-mynted-ink sm:grid">
+      <section
+        className={`flex gap-6 rounded-[22px] bg-mynted-orange p-7 sm:p-9 ${
+          isColumn
+            ? 'h-full flex-col items-start justify-between'
+            : 'flex-col items-start justify-between sm:flex-row sm:items-center'
+        }`}
+      >
+        <div className={`flex gap-5 ${isColumn ? 'flex-col items-start' : 'items-start'}`}>
+          <span
+            className={`size-12 shrink-0 place-items-center rounded-xl bg-white/40 text-mynted-ink ${
+              isColumn ? 'grid' : 'hidden sm:grid'
+            }`}
+          >
             <Package className="size-6" aria-hidden="true" />
           </span>
           <div>

@@ -193,7 +193,13 @@ function ProfileHeader({
 
         <span className="absolute -top-14 left-1/2 z-20 flex size-28 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
           {user.photoUrl ? (
-            <img src={user.photoUrl} alt={user.username} className="size-full object-cover" />
+            // Las fotos de Google se sirven solo sin Referer; con el de la app dan 429.
+            <img
+              src={user.photoUrl}
+              alt={user.username}
+              referrerPolicy="no-referrer"
+              className="size-full object-cover"
+            />
           ) : (
             getInitials(user.username)
           )}

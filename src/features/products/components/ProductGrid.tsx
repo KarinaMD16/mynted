@@ -5,7 +5,7 @@ import { Repeat, Tag, UsersRound } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
+import { formatPrice } from '@/utils/price'
 import type { ProductCondition, ProductListItem, ProductPage, ProductStatus } from '../models/product'
 import { Button } from '@/components/ui/Button'
 
@@ -19,16 +19,6 @@ const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
 const STATUS_LABEL: Record<Exclude<ProductStatus, 'active'>, TranslationKey> = {
   sold: 'products.status.sold',
   inactive: 'products.status.inactive',
-}
-
-function formatPrice(price: string | number, currency: string, language: AppLanguage): string {
-  const value = typeof price === 'number' ? price : Number(price)
-  try {
-    return new Intl.NumberFormat(INTL_LOCALES[language], { style: 'currency', currency }).format(value)
-  } catch {
-    // Código de moneda que Intl no reconoce: se muestra tal cual.
-    return `${currency} ${value.toFixed(2)}`
-  }
 }
 
 /**

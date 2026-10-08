@@ -4,13 +4,14 @@ import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { CommunitiesForTagSection } from '@/features/community/components/sections/CommunitiesForTagSection'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { useProduct, useRecommendedProducts } from '@/features/products/hooks/useProductQueries'
 import type { ProductCondition, ProductDetail, ProductListItem } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
+import { formatPrice } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
@@ -18,15 +19,6 @@ const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
   like_new: 'products.condition.likeNew',
   good_condition: 'products.condition.good',
   used_with_details: 'products.condition.usedWithDetails',
-}
-
-function formatPrice(price: string | number, currency: string, language: AppLanguage): string {
-  const value = typeof price === 'number' ? price : Number(price)
-  try {
-    return new Intl.NumberFormat(INTL_LOCALES[language], { style: 'currency', currency }).format(value)
-  } catch {
-    return `${currency} ${value.toFixed(2)}`
-  }
 }
 
 function initials(name: string): string {
@@ -87,6 +79,7 @@ export default function ProductDetailPage() {
             <Breadcrumb title={product.data.title} />
             <Detail key={product.data.id} product={product.data} />
             {related.data && related.data.length > 0 && <Related items={related.data} />}
+            <CommunitiesForTagSection tags={product.data.productTags.map((item) => item.tag)} />
           </>
         ) : null}
       </main>
