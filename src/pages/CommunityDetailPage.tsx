@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Plus, Shield, ShoppingBag } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { SiteHeader } from '@/components/layout/SiteHeader'
@@ -9,7 +9,6 @@ import { CommunitySidebar } from '@/features/community/components/detail/Communi
 import { ForumPostCard } from '@/features/community/components/cards/ForumPostCard'
 import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { ProductGrid } from '@/features/products/components/ProductGrid'
 import { useCommunityProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -20,9 +19,9 @@ type CommunityTab = 'talk' | 'shop'
 export default function CommunityDetailPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug' })
+  const navigate = useNavigate()
   const { isLoggedIn, isLoading: isLoadingSession, data: currentUser } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
-  const [isCreateProductOpen, setIsCreateProductOpen] = useState(false)
   // Publicar productos es exclusivo de vendedores (el backend lo exige con SellerGuard).
   const isSeller = currentUser?.role === 'seller'
 
@@ -33,9 +32,7 @@ export default function CommunityDetailPage() {
 
   return (
     <section className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 sm:px-10">
         <div className="flex items-center justify-between gap-4">
@@ -142,7 +139,7 @@ export default function CommunityDetailPage() {
                 {isSeller && (productsQuery.data?.pages[0]?.data.length ?? 0) > 0 && (
                   <Button
                     type="button"
-                    onClick={() => setIsCreateProductOpen(true)}
+                    onClick={() => void navigate({ to: '/products/new', search: { community: slug } })}
                     variant="primary"
                     size="md"
                     className="w-fit self-end"
@@ -161,7 +158,7 @@ export default function CommunityDetailPage() {
                       {isSeller && (
                         <Button
                           type="button"
-                          onClick={() => setIsCreateProductOpen(true)}
+                          onClick={() => void navigate({ to: '/products/new', search: { community: slug } })}
                           variant="primary"
                           size="md"
                           className="mt-1"
@@ -174,18 +171,6 @@ export default function CommunityDetailPage() {
                   }
                 />
               </div>
-            )}
-
-            {isSeller && (
-              <CreateProductDialog
-                isOpen={isCreateProductOpen}
-                onClose={() => setIsCreateProductOpen(false)}
-                community={{
-                  id: community.id,
-                  name: community.name,
-                  categoryId: community.category?.categoryId ?? null,
-                }}
-              />
             )}
           </>
         )}

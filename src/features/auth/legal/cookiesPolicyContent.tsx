@@ -55,6 +55,14 @@ export const cookiesPolicyContent: Record<AppLanguage, PolicyContent> = {
               </ul>
             </li>
             <li>
+              <strong>Preferencias (solo si las cambias):</strong>
+              <ul>
+                <li>
+                  <code>mynted_preferences</code>: guarda las preferencias de uso de la app que cambias a mano, como el aviso de confirmación antes de quitar un favorito ("No volver a mostrar") y el país al que recibes tus compras, que define la moneda de referencia de los precios. Solo se crea cuando cambias una de ellas, dura 1 año y se guarda únicamente en este navegador. Puedes ver sus valores y restablecerla desde Configuración &gt; Privacidad, o borrarla desde tu navegador: la app vuelve a los valores por defecto.
+                </li>
+              </ul>
+            </li>
+            <li>
               <strong>Marketing/analítica:</strong> por ahora no usamos ninguna. El interruptor de "Marketing"
               en el aviso de cookies queda preparado para cuando agreguemos analítica (por ejemplo, para
               entender qué comunidades o productos generan más interés), pero activarlo hoy no habilita ningún
@@ -118,6 +126,14 @@ export const cookiesPolicyContent: Record<AppLanguage, PolicyContent> = {
                   <code>mynted_language</code>: stores the language you picked by hand with the language
                   switcher in the header. If you never touch it, this cookie is never created, and the app keeps
                   auto-detecting your language on every visit from your browser and approximate location.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Preferences (only if you change them):</strong>
+              <ul>
+                <li>
+                  <code>mynted_preferences</code>: stores the app usage preferences you change by hand, such as the confirmation notice before removing a favorite ("Don't show this again") and the country where you receive your purchases, which sets the reference currency for prices. It is only created when you change one of them, lasts 1 year and is stored only in this browser. You can see its values and reset it from Settings &gt; Privacy, or delete it from your browser: the app goes back to the default values.
                 </li>
               </ul>
             </li>
@@ -192,6 +208,14 @@ export const cookiesPolicyContent: Record<AppLanguage, PolicyContent> = {
               </ul>
             </li>
             <li>
+              <strong>Einstellungen (nur wenn Sie sie ändern):</strong>
+              <ul>
+                <li>
+                  <code>mynted_preferences</code>: speichert die Nutzungseinstellungen der App, die Sie selbst ändern, etwa den Bestätigungshinweis vor dem Entfernen eines Favoriten („Nicht mehr anzeigen“) und das Land, in dem Sie Ihre Einkäufe erhalten und das die Referenzwährung der Preise bestimmt. Es wird nur erstellt, wenn Sie eine davon ändern, gilt 1 Jahr und wird nur in diesem Browser gespeichert. Sie können die Werte unter Einstellungen &gt; Datenschutz einsehen und zurücksetzen oder das Cookie in Ihrem Browser löschen: Die App kehrt zu den Standardwerten zurück.
+                </li>
+              </ul>
+            </li>
+            <li>
               <strong>Marketing/Analyse:</strong> Derzeit verwenden wir keine. Der Schalter „Marketing“ im
               Cookie-Hinweis ist für den Zeitpunkt vorbereitet, an dem wir Analysefunktionen hinzufügen (zum
               Beispiel, um zu verstehen, welche Communitys oder Produkte das meiste Interesse wecken); wenn Sie
@@ -258,6 +282,14 @@ export const cookiesPolicyContent: Record<AppLanguage, PolicyContent> = {
                   le sélecteur de langue de l’en-tête. Si vous ne l’utilisez jamais, ce cookie n’est pas créé et
                   l’application continue de détecter automatiquement votre langue à chaque visite, à partir de
                   votre navigateur et de votre localisation approximative.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Préférences (uniquement si vous les modifiez)&nbsp;:</strong>
+              <ul>
+                <li>
+                  <code>mynted_preferences</code>&nbsp;: enregistre les préférences d’utilisation de l’app que vous modifiez vous-même, comme l’avertissement de confirmation avant de retirer un favori («&nbsp;Ne plus afficher&nbsp;») et le pays où vous recevez vos achats, qui définit la devise de référence des prix. Il n’est créé que lorsque vous en modifiez une, dure 1 an et n’est enregistré que dans ce navigateur. Vous pouvez consulter ses valeurs et le réinitialiser depuis Paramètres &gt; Confidentialité, ou le supprimer depuis votre navigateur&nbsp;: l’app revient aux valeurs par défaut.
                 </li>
               </ul>
             </li>
@@ -330,6 +362,14 @@ export const cookiesPolicyContent: Record<AppLanguage, PolicyContent> = {
               </ul>
             </li>
             <li>
+              <strong>Preferências (somente se você as alterar):</strong>
+              <ul>
+                <li>
+                  <code>mynted_preferences</code>: guarda as preferências de uso do app que você altera manualmente, como o aviso de confirmação antes de remover um favorito ("Não mostrar novamente") e o país onde você recebe suas compras, que define a moeda de referência dos preços. Só é criado quando você altera uma delas, dura 1 ano e fica salvo apenas neste navegador. Você pode ver seus valores e redefini-lo em Configurações &gt; Privacidade, ou apagá-lo pelo navegador: o app volta aos valores padrão.
+                </li>
+              </ul>
+            </li>
+            <li>
               <strong>Marketing/análise:</strong> por enquanto não usamos nenhum. A opção "Marketing" no aviso de
               cookies está preparada para quando adicionarmos ferramentas de análise (por exemplo, para entender
               quais comunidades ou produtos despertam mais interesse), mas ativá-la hoje ainda não habilita nenhum
@@ -393,6 +433,14 @@ export const cookiesPolicyContent: Record<AppLanguage, PolicyContent> = {
                   <code>mynted_language</code>: 헤더의 언어 선택기에서 직접 고른 언어를 저장합니다. 언어 선택기를
                   사용하지 않으면 이 쿠키는 생성되지 않으며, 앱은 방문할 때마다 브라우저와 대략적인 위치를 바탕으로
                   언어를 자동 감지합니다.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>환경설정(직접 변경한 경우에만):</strong>
+              <ul>
+                <li>
+                  <code>mynted_preferences</code>: 즐겨찾기를 제거하기 전 확인 안내("다시 보지 않기")와 구매한 상품을 받는 국가(가격의 기준 통화를 정함)처럼 직접 변경한 앱 사용 환경설정을 저장합니다. 이 중 하나를 변경할 때만 생성되며 1년간 유지되고 이 브라우저에만 저장됩니다. 설정 &gt; 개인정보에서 값을 확인하고 초기화하거나 브라우저에서 삭제할 수 있으며, 삭제하면 앱이 기본값으로 돌아갑니다.
                 </li>
               </ul>
             </li>

@@ -19,7 +19,7 @@ import {
 import { UserHoverName } from '../components/HoverSummary'
 import { SellerRequestDialog } from '../components/SellerRequestDialog'
 import { UserReviewDrawer } from '../components/UserReviewDrawer'
-import { useAdminUsers } from '../hooks/useAdminQueries'
+import { useAdminUsers, usePendingSellerRequests } from '../hooks/useAdminQueries'
 import type { AdminTab, AdminUser } from '../models/admin'
 import { ManageLink, OverviewSkeleton } from './UsersSection'
 import { Button } from '@/components/ui/Button'
@@ -39,10 +39,11 @@ const STATUS_TONE: Record<RequestStatus, PillTone> = {
 }
 
 /**
- * Las solicitudes salen de GET /users: son las cuentas cuyo
- * sellerRequestStatus no es "none" (así también se ven las ya aprobadas o
- * rechazadas). Los datos de la tienda y del cobro de una pendiente se piden
- * aparte al abrirla (ver SellerRequestDialog).
+ * Las pendientes salen de GET /users/seller-requests (ya vienen de la más
+ * antigua a la más nueva). Las ya aprobadas o rechazadas no están en ese
+ * listado, así que salen de GET /users: son las cuentas cuyo
+ * sellerRequestStatus no es "none". Los datos de la tienda y del cobro de una
+ * pendiente se piden aparte al abrirla (ver SellerRequestDialog).
  */
 function toRequests(users: AdminUser[] | undefined) {
   return users?.filter((user) => user.sellerRequestStatus !== 'none')
@@ -54,26 +55,43 @@ function requestedAt(user: AdminUser) {
 
 export function SellerRequestsSection({ tab, currentUserId }: { tab: AdminTab; currentUserId: string }) {
   const usersQuery = useAdminUsers()
-  if (tab === 'overview' && usersQuery.isError) {
-    return <LoadErrorPanel error={usersQuery.error} onRetry={() => void usersQuery.refetch()} />
+  const pendingQuery = usePendingSellerRequests()
+  if (tab === 'overview') {
+    const failed = usersQuery.isError ? usersQuery : pendingQuery.isError ? pendingQuery : null
+    if (failed) {
+      return (
+        <LoadErrorPanel
+          error={failed.error}
+          onRetry={() => {
+            void usersQuery.refetch()
+            void pendingQuery.refetch()
+          }}
+        />
+      )
+    }
   }
   return tab === 'overview' ? (
     <SellerRequestsOverview
       requests={toRequests(usersQuery.data)}
-      isLoading={usersQuery.isPending}
+      pending={pendingQuery.data?.map((request) => request.user)}
+      isLoading={usersQuery.isPending || pendingQuery.isPending}
       currentUserId={currentUserId}
     />
   ) : (
-    <SellerRequestsManage usersQuery={usersQuery} currentUserId={currentUserId} />
+    <SellerRequestsManage usersQuery={usersQuery} pendingQuery={pendingQuery} currentUserId={currentUserId} />
   )
 }
 
 function SellerRequestsOverview({
   requests,
+  pending,
   isLoading,
   currentUserId,
 }: {
+  /** Cuentas con alguna solicitud (GET /users): sirven para los totales por estado. */
   requests: AdminUser[] | undefined
+  /** Solo las pendientes, más antiguas primero (GET /users/seller-requests). */
+  pending: AdminUser[] | undefined
   isLoading: boolean
   currentUserId: string
 }) {
@@ -83,16 +101,17 @@ function SellerRequestsOverview({
 
   const stats = useMemo(() => {
     const list = requests ?? []
-    const pending = list.filter((user) => user.sellerRequestStatus === 'pending')
+    const pendingList = pending ?? []
     return {
-      pending: pending.length,
+      pending: pendingList.length,
       approved: list.filter((user) => user.sellerRequestStatus === 'approved').length,
       rejected: list.filter((user) => user.sellerRequestStatus === 'rejected').length,
-      total: list.length,
-      // Las más viejas primero: son las que llevan más tiempo esperando.
-      oldestPending: [...pending].sort((a, b) => requestedAt(a) - requestedAt(b)).slice(0, 6),
+      // El total cuenta cada solicitud una vez: las revisadas (de /users) más las pendientes.
+      total: list.filter((user) => user.sellerRequestStatus !== 'pending').length + pendingList.length,
+      // El backend ya las manda de la más antigua a la más nueva: las que llevan más tiempo esperando.
+      oldestPending: pendingList.slice(0, 6),
     }
-  }, [requests])
+  }, [requests, pending])
 
   if (isLoading) return <OverviewSkeleton />
 
@@ -147,9 +166,11 @@ type StatusFilter = 'all' | RequestStatus
 
 function SellerRequestsManage({
   usersQuery,
+  pendingQuery,
   currentUserId,
 }: {
   usersQuery: ReturnType<typeof useAdminUsers>
+  pendingQuery: ReturnType<typeof usePendingSellerRequests>
   currentUserId: string
 }) {
   const { t, language } = useLanguage()
@@ -158,13 +179,12 @@ function SellerRequestsManage({
   const [reviewUserId, setReviewUserId] = useState<string | null>(null)
   const [requestUserId, setRequestUserId] = useState<string | null>(null)
 
-  const rows = useMemo(
-    () =>
-      toRequests(usersQuery.data)?.filter(
-        (user) => statusFilter === 'all' || user.sellerRequestStatus === statusFilter,
-      ),
-    [usersQuery.data, statusFilter],
-  )
+  // "Pendientes" usa su listado propio; los demás filtros, la lista de cuentas.
+  const source = statusFilter === 'pending' ? pendingQuery : usersQuery
+  const rows = useMemo(() => {
+    if (statusFilter === 'pending') return pendingQuery.data?.map((request) => request.user)
+    return toRequests(usersQuery.data)?.filter((user) => statusFilter === 'all' || user.sellerRequestStatus === statusFilter)
+  }, [usersQuery.data, pendingQuery.data, statusFilter])
 
   const columns: AdminColumn<AdminUser>[] = [
     {
@@ -172,7 +192,11 @@ function SellerRequestsManage({
       header: t('admin.sellers.columns.requester'),
       sortValue: (user) => user.username,
       render: (user) => (
-        <IdentityCell avatar={<Avatar src={user.photoUrl} name={user.username} />} title={user.username} subtitle={user.email} />
+        <IdentityCell
+          avatar={<Avatar src={user.photoUrl} name={user.username} />}
+          title={<UserHoverName user={user} onOpen={() => setReviewUserId(user.id)} />}
+          subtitle={user.email}
+        />
       ),
     },
     {
@@ -205,9 +229,9 @@ function SellerRequestsManage({
         columns={columns}
         getRowId={(user) => user.id}
         getSearchText={(user) => `${user.username} ${user.email} ${user.location ?? ''}`}
-        isLoading={usersQuery.isPending}
-        error={usersQuery.error}
-        onRetry={() => void usersQuery.refetch()}
+        isLoading={source.isPending}
+        error={source.error}
+        onRetry={() => void source.refetch()}
         initialSort={{ id: 'requestedAt', direction: 'asc' }}
         toolbar={
           <FilterSelect<StatusFilter>

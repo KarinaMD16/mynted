@@ -5,8 +5,9 @@ import { Link } from '@tanstack/react-router'
 import { BadgeCheck, Camera, Clock, ExternalLink, ShoppingBag, XCircle } from 'lucide-react'
 import { getFieldErrorMessage } from '@/utils/form'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { INTL_LOCALES, SUPPORTED_CURRENCIES } from '@/utils/locale'
+import { INTL_LOCALES, PUBLISH_FALLBACK_CURRENCY, SUPPORTED_CURRENCIES } from '@/utils/locale'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import type { AuthUser } from '@/features/auth/models/auth'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { useUpdateProfileMutation } from '@/features/auth/hooks/useAuthMutations'
@@ -286,12 +287,12 @@ function StatusBanner({
   )
 }
 
-/** Moneda de publicación del vendedor (la usa CreateProductDialog). */
+/** Moneda de publicación del vendedor (la usa CreateProductPage). */
 function CurrencyForm({ user }: { user: AuthUser }) {
   const { t, language } = useLanguage()
   const updateProfile = useUpdateProfileMutation()
   const saved = useSavedFlash()
-  const currentCurrency = user.currency ?? 'CRC'
+  const currentCurrency = user.currency ?? PUBLISH_FALLBACK_CURRENCY
   const [currency, setCurrency] = useState(currentCurrency)
 
   const currencyNames = useMemo(() => {
@@ -316,21 +317,17 @@ function CurrencyForm({ user }: { user: AuthUser }) {
         <label htmlFor="settings-currency" className="text-[13px] font-medium text-mynted-ink">
           {t('settings.profile.currencyLabel')}
         </label>
-        <select
+        <Select
           id="settings-currency"
+          className="sm:max-w-sm"
           value={currency}
-          onChange={(event) => setCurrency(event.target.value)}
-          className="w-full rounded-[10px] border border-mynted-border bg-white px-3.5 py-2.5 text-sm text-mynted-ink outline-none focus:border-mynted-orange focus:ring-2 focus:ring-mynted-orange/20 sm:max-w-sm"
-        >
-          {options.map((code) => {
+          placeholder={currency}
+          options={options.map((code) => {
             const name = currencyNames?.of(code)
-            return (
-              <option key={code} value={code}>
-                {name && name !== code ? `${name} (${code})` : code}
-              </option>
-            )
+            return { value: code, label: name && name !== code ? `${name} (${code})` : code }
           })}
-        </select>
+          onChange={setCurrency}
+        />
         <p className="text-xs text-mynted-gray">{t('settings.profile.currencyHint')}</p>
       </div>
 

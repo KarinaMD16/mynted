@@ -20,6 +20,11 @@ import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ConfirmEmailChangePage from './pages/ConfirmEmailChangePage'
 import SettingsPage from './pages/SettingsPage'
+import ProductDetailPage from './pages/ProductDetailPage'
+import MyProductsPage from './pages/MyProductsPage'
+import CreateProductPage from './pages/CreateProductPage'
+import TagProductsPage from './pages/TagProductsPage'
+import UserProfilePage from './pages/UserProfilePage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
 
 /**
@@ -85,6 +90,40 @@ const exploreRoute = createRoute({
   component: ExplorePage,
 })
 
+/** "Ver todo" de una sección de la tienda: todos los productos de un tag. */
+const shopTagRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shop/tag/$tagId',
+  component: TagProductsPage,
+})
+
+/** Detalle de un producto (Marketplace — Item Detail). */
+const productDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/products/$productId',
+  component: ProductDetailPage,
+})
+
+/**
+ * Publicar un producto (solo vendedores). Con ?community=<slug> la comunidad
+ * queda fija (viene del botón "Publicar en esta comunidad").
+ */
+const createProductRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/products/new',
+  component: CreateProductPage,
+  validateSearch: (search: Record<string, unknown>): { community?: string } => ({
+    community: typeof search.community === 'string' && search.community ? search.community : undefined,
+  }),
+})
+
+/** Panel del vendedor: sus productos publicados, con edición y cambio de estado. */
+const myProductsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-products',
+  component: MyProductsPage,
+})
+
 const communitiesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/communities',
@@ -113,6 +152,16 @@ const messagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/messages',
   component: MessagesPage,
+})
+
+/**
+ * Perfil público de otra persona. Por ahora solo se llega escribiendo la ruta
+ * (/users/<id>); cuando haya buscador de personas se enlazará desde ahí.
+ */
+const userProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/users/$userId',
+  component: UserProfilePage,
 })
 
 const profileRoute = createRoute({
@@ -197,12 +246,17 @@ const routeTree = rootRoute.addChildren([
   forgotPasswordRoute,
   resetPasswordRoute,
   exploreRoute,
+  shopTagRoute,
+  createProductRoute,
+  productDetailRoute,
+  myProductsRoute,
   communitiesRoute,
   communityDetailRoute,
   communityModerationRoute,
   favoritesRoute,
   messagesRoute,
   profileRoute,
+  userProfileRoute,
   settingsRoute,
   confirmEmailChangeRoute,
   privacyPolicyRoute,

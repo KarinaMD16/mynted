@@ -1,112 +1,51 @@
-"use client";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { cn } from "@/cuicui/utils/cn";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-export default function GrowingSearchVariant1() {
-    const { t } = useLanguage()
-    return (
-        <div className="flex flex-col items-center">
-            <p className="mb-8 text-neutral-500/70 tracking-tighter">
-                {t('search.placeholder')}
-            </p>
-            <SearchBar />
-        </div>
-    );
-}
+/**
+ * Buscador del header: un campo siempre visible (antes era una píldora amarilla de
+ * 40px que solo crecía al enfocarla, y la búsqueda es la acción principal de un
+ * marketplace). Es un <form role="search">, así que Enter y el botón "Buscar" del
+ * teclado móvil funcionan igual.
+ *
+ * OJO: todavía no busca de verdad. GET /products y GET /products/shop no aceptan un
+ * filtro de texto, así que al enviar solo se muestra el aviso. Cuando el backend
+ * agregue ese parámetro (p. ej. `q`), el cambio es en `handleSubmit`: navegar a
+ * /explore con el texto en vez de mostrar el toast.
+ */
+export const SearchBar = ({ className }: { className?: string }) => {
+    const { t } = useLanguage();
+    const inputId = useId();
+    const [value, setValue] = useState("");
 
-export const SearchBar = () => {
-    const { t } = useLanguage()
-    const [searchSubmittedOutline, setSearchSubmittedOutline] = useState(false);
-    const [searchSubmittedShadow, setSearchSubmittedShadow] = useState(false);
-    const [searchValue, setSearchValue] = useState("");
-
-    function handleSearch() {
-        setSearchSubmittedOutline(true);
-        setSearchSubmittedShadow(true);
-        toast(t('search.searchingToast', { query: searchValue }));
+    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const query = value.trim();
+        if (!query) return;
+        toast(t('search.searchingToast', { query }));
     }
 
-    useEffect(() => {
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-        if (searchSubmittedOutline) {
-            timeoutId = setTimeout(() => {
-                setSearchSubmittedOutline(false);
-            }, 150);
-        }
-
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [searchSubmittedOutline]);
-
-    useEffect(() => {
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-        if (searchSubmittedShadow) {
-            timeoutId = setTimeout(() => {
-                setSearchSubmittedShadow(false);
-            }, 1000);
-        }
-
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [searchSubmittedShadow]);
-
     return (
-        <label
-            className={cn(
-                "relative inline-flex origin-center rounded-full",
-                "group transform-gpu transition-all ease-in-out",
-                "before:absolute before:top-0 before:left-0 before:h-full before:w-full before:transform-gpu before:rounded-full before:transition-all before:duration-700 before:ease-in-out before:content-['']",
-                searchSubmittedShadow
-                    ? "before:shadow-[0px_0px_0px_5px_var(--color-mynted-blue-mid)] before:blur-2xl"
-                    : "before:shadow-[0px_0px_1px_0px_#FFFFFF00] before:blur-0",
-                searchSubmittedOutline
-                    ? "scale-90 duration-75"
-                    : "duration-300 hover:scale-105",
-            )}
-            htmlFor="search"
-        >
-            <input
-                className={cn(
-                    "peer max-w-10 transform-gpu rounded-full border border-mynted-border p-2 pl-10 text-mynted-white transition-all ease-in-out focus:max-w-40",
-                    // BACKGROUND
-                    "bg-mynted-yellow hover:opacity-90",
-                    // OUTLINE
-                    "-outline-offset-1 outline outline-1",
-                    searchSubmittedOutline
-                        ? "outline-mynted-white/70 duration-150"
-                        : "outline-mynted-white/0 duration-300 hover:outline-mynted-white/30",
-                    // PLACEHOLDER
-                    "placeholder-black text-sm focus:placeholder-black",
-                )}
-                id="search"
-                onBlur={() => {
-                    setSearchSubmittedOutline(false);
-                    setSearchSubmittedShadow(false);
-                    setSearchValue("");
-                }}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                        handleSearch();
-                    }
-                }}
-                onSubmit={handleSearch}
-                placeholder={t('search.placeholder')}
-                type="search"
-                value={searchValue}
+        <form role="search" onSubmit={handleSubmit} className={cn("relative w-full", className)}>
+            <label htmlFor={inputId} className="sr-only">
+                {t('search.placeholder')}
+            </label>
+            <SearchIcon
+                className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-mynted-gray"
+                aria-hidden="true"
             />
-            <SearchIcon className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 size-5 text-black transition-colors" />
-        </label>
+            <input
+                id={inputId}
+                type="search"
+                value={value}
+                onChange={(event) => setValue(event.target.value)}
+                placeholder={t('search.placeholderLong')}
+                className="h-10 w-full rounded-full border border-mynted-border bg-white pr-4 pl-10 text-sm text-mynted-ink outline-none transition-colors placeholder:text-mynted-gray hover:border-mynted-gray-light focus:border-mynted-blue-mid focus:ring-2 focus:ring-mynted-blue-mid/20"
+            />
+        </form>
     );
 };
+
+export default SearchBar;

@@ -1,4 +1,4 @@
-import { ChevronDown, LayoutAlt01, LogOut01, Settings01, User01 } from '@untitledui/icons'
+import { ChevronDown, LayoutAlt01, LogOut01, Settings01, Package, ShoppingBag01, User01 } from '@untitledui/icons'
 import {
   Button as AriaButton,
   Dialog as AriaDialog,
@@ -15,19 +15,22 @@ import { useAccountActions } from './useAccountActions'
 
 export function AccountMenu({ userName }: { userName: string }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToAdmin, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
   // Un superadmin no usa perfil ni ajustes de cuenta normal: su única opción
   // es el panel de administración (ver AdminPage).
-  const isSuperAdmin = useCurrentUser().data?.role === 'superadmin'
+  const role = useCurrentUser().data?.role
+  const isSuperAdmin = role === 'superadmin'
+  const isSeller = role === 'seller'
 
   return (
+    <>
     <AriaDialogTrigger>
       <AriaButton className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-mynted-border bg-mynted-orange py-1.5 pr-3.5 pl-1.5 outline-none transition-colors hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-orange-hover">
-        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/25">
-          <GooseIcon className="size-[22px] text-mynted-white" />
+        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/40">
+          <GooseIcon className="size-[22px] text-mynted-ink" />
         </span>
-        <span className="text-sm font-semibold whitespace-nowrap text-mynted-white">{userName}</span>
-        <ChevronDown className="size-3.5 shrink-0 text-mynted-white/80" aria-hidden="true" />
+        <span className="text-sm font-semibold whitespace-nowrap text-mynted-ink">{userName}</span>
+        <ChevronDown className="size-3.5 shrink-0 text-mynted-ink/70" aria-hidden="true" />
       </AriaButton>
 
       <AriaPopover placement="bottom right" offset={8} className={popoverAnimationClass}>
@@ -47,6 +50,26 @@ export function AccountMenu({ userName }: { userName: string }) {
                       goToSettings()
                     }}
                   />
+                  {isSeller && (
+                    <MenuItem
+                      icon={Package}
+                      label={t('header.myProducts')}
+                      onPress={() => {
+                        close()
+                        goToMyProducts()
+                      }}
+                    />
+                  )}
+                  {isSeller && (
+                    <MenuItem
+                      icon={ShoppingBag01}
+                      label={t('header.sell')}
+                      onPress={() => {
+                        close()
+                        goToCreateProduct()
+                      }}
+                    />
+                  )}
                 </>
               )}
               <div className="my-1 border-t border-mynted-border" />
@@ -62,5 +85,6 @@ export function AccountMenu({ userName }: { userName: string }) {
         </AriaDialog>
       </AriaPopover>
     </AriaDialogTrigger>
+    </>
   )
 }

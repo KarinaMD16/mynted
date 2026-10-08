@@ -131,7 +131,7 @@ function CommunitiesManage({ communitiesQuery }: { communitiesQuery: ReturnType<
       render: (community) => (
         <IdentityCell
           avatar={<Avatar src={community.imageUrl} name={community.name} square />}
-          title={community.name}
+          title={<CommunityHoverName community={community} />}
           subtitle={`@${community.slug}`}
         />
       ),
