@@ -12,6 +12,7 @@ interface ForumMetricsBarProps {
   disabled?: boolean
   /** Accion a la izquierda (en las respuestas es "Responder"). */
   leading?: React.ReactNode
+  className?: string
 }
 
 /**
@@ -26,10 +27,11 @@ export function ForumMetricsBar({
   onToggleFavorite,
   disabled = false,
   leading,
+  className = '',
 }: ForumMetricsBarProps) {
   const { t } = useLanguage()
   return (
-    <div className="flex items-center gap-3 text-xs text-mynted-gray">
+    <div className={`flex items-center gap-3 text-xs text-mynted-gray ${className}`}>
       {leading}
 
       {replyCount !== undefined && (
