@@ -2,7 +2,7 @@
  * Tipos del foro de una comunidad (modulo `forum` del backend): publicaciones,
  * respuestas, votos y favoritos.
  */
-import type { CommunityTagItem, PaginatedResponse } from './communityDTOs'
+import type { CommunityTagItem, FeedPost, PaginatedResponse } from './communityDTOs'
 
 export type VoteType = 'UP' | 'DOWN'
 
@@ -79,23 +79,12 @@ export interface ForumFavoriteResult {
   isSaved: boolean
 }
 
-/** Comunidad a la que pertenece una publicacion del feed global. */
-export interface ForumPostCommunity {
-  id: number
-  name: string
-  slug: string
-  imageUrl: string | null
-}
-
 /**
- * Publicacion del feed global (GET /posts): la misma del foro mas la comunidad
- * de donde salio, porque ahi se mezclan publicaciones de varias comunidades.
+ * Los feeds que mezclan comunidades (GET /posts y GET /users/me/recommended-posts)
+ * devuelven la publicacion con su comunidad: es el mismo `FeedPost` que usan las
+ * pantallas de perfil y favoritos.
  */
-export interface GlobalForumPost extends ForumPost {
-  community: ForumPostCommunity | null
-}
-
-export type GlobalPostsPage = PaginatedResponse<GlobalForumPost>
+export type GlobalPostsPage = PaginatedResponse<FeedPost>
 
 export interface GlobalPostsQuery {
   page?: number

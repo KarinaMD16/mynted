@@ -1,13 +1,13 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useForumActions } from '@/features/community/hooks/useForum'
-import type { GlobalForumPost } from '@/features/community/models/forumDTOs'
+import type { FeedPost } from '@/features/community/models/communityDTOs'
 import { ForumAuthorLine } from '@/features/community/components/ui/ForumAuthorLine'
 import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetricsBar'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
 interface GlobalPostCardProps {
-  post: GlobalForumPost
+  post: FeedPost
   index: number
 }
 
