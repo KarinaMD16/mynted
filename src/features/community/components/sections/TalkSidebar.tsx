@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/Button'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useRecommendedCommunities } from '@/features/community/hooks/useCommunitiesQueries'
+import { useCommunities, useRecommendedCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import { useJoinCommunity } from '@/features/community/hooks/useCommunitiesMutations'
 import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
 import type { CommunityListItem } from '@/features/community/models/communityDTOs'
@@ -41,8 +41,7 @@ function SidebarCard({ title, children }: { title: string; children: ReactNode }
 
 function SuggestedProducts() {
   const { t, language } = useLanguage()
-  const { isLoggedIn } = useCurrentUser()
-  const products = useExploreProducts({}, isLoggedIn)
+  const products = useExploreProducts({})
 
   const items = (products.data?.pages[0]?.data ?? []).slice(0, SIDEBAR_PRODUCTS)
 
@@ -81,12 +80,15 @@ function SuggestedProducts() {
 
 function SuggestedCommunities() {
   const { t } = useLanguage()
-  const { isLoggedIn } = useCurrentUser()
+  const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
+  // Sin sesión no hay intereses con qué recomendar: se muestran las más populares (GET /communities es público).
   const recommended = useRecommendedCommunities({ limit: SIDEBAR_COMMUNITIES }, isLoggedIn)
+  const popular = useCommunities({ sort: 'popularity', limit: SIDEBAR_COMMUNITIES }, !isLoggedIn && !isLoadingSession)
+  const communities = isLoggedIn ? recommended : popular
 
-  const items = recommended.data?.data ?? []
+  const items: CommunityListItem[] = communities.data?.data ?? []
 
-  if (recommended.isPending) return <SidebarSkeleton rows={SIDEBAR_COMMUNITIES} />
+  if (isLoadingSession || communities.isPending) return <SidebarSkeleton rows={SIDEBAR_COMMUNITIES} />
   if (items.length === 0) return <p className="text-xs text-mynted-gray">{t('talk.sidebar.noCommunities')}</p>
 
   return (
@@ -103,6 +105,8 @@ function SuggestedCommunities() {
 function SuggestedCommunityRow({ community }: { community: CommunityListItem }) {
   const { t } = useLanguage()
   const join = useJoinCommunity(community.id)
+  const { isLoggedIn } = useCurrentUser()
+  const navigate = useNavigate()
 
   // Igual que en el detalle: en una comunidad privada el backend deja una
   // solicitud pendiente en vez de unir, y eso solo se sabe al responder.
@@ -143,7 +147,7 @@ function SuggestedCommunityRow({ community }: { community: CommunityListItem }) 
         shape="pill"
         isLoading={join.isPending}
         disabled={join.isPending || join.isSuccess}
-        onClick={() => join.mutate()}
+        onClick={() => (isLoggedIn ? join.mutate() : void navigate({ to: '/login' }))}
         className="border-mynted-orange text-mynted-orange hover:bg-mynted-orange/10"
       >
         {label}

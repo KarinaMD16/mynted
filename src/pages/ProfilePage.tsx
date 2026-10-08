@@ -3,6 +3,7 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
 import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
+import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
@@ -276,22 +277,18 @@ function ProfileTabsBar({
   const visibleTabs = PROFILE_TABS.filter((tab) => !tab.sellerOnly || isSeller)
 
   return (
-    <div className="mt-6 flex items-center gap-2 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]">
-      {visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onChange(id)}
-          aria-pressed={activeTab === id}
-          className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${
-            mobileOnly ? 'lg:hidden' : ''
-          } ${activeTab === id ? 'bg-mynted-orange text-white' : 'text-mynted-gray hover:text-mynted-ink'}`}
-        >
-          <Icon className="size-4" aria-hidden="true" />
-          {t(labelKey)}
-        </button>
-      ))}
-    </div>
+    <AnimatedTabs
+      items={visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => ({
+        id,
+        label: t(labelKey),
+        icon: <Icon className="size-4" aria-hidden="true" />,
+        className: mobileOnly ? 'lg:hidden' : undefined,
+      }))}
+      value={activeTab}
+      onChange={onChange}
+      semantics="pressed"
+      className="mt-6 flex items-center gap-1.5 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]"
+    />
   )
 }
 
