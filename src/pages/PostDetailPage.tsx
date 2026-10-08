@@ -1,4 +1,5 @@
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useParams, useRouter } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { getApiErrorMessage } from '@/api/apiError'
 import { SiteHeader } from '@/components/layout/SiteHeader'
@@ -17,6 +18,7 @@ import { formatRelativeTime } from '@/utils/relativeTime'
 export default function PostDetailPage() {
   const { t, language } = useLanguage()
   const { slug, postId } = useParams({ from: '/communities/$slug/posts/$postId' })
+  const router = useRouter()
   const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
   const { voteOnPost, favoritePost } = useForumActions()
 
@@ -26,8 +28,11 @@ export default function PostDetailPage() {
 
   // Sin sesion no se usa lo que haya quedado en cache de otra cuenta
   const community = isLoggedIn ? communityQuery.data : undefined
-  const post = isLoggedIn ? postQuery.data : undefined
-  const replies = isLoggedIn ? (repliesQuery.data ?? []) : []
+  // En una comunidad privada la publicacion es solo para miembros. Ojo: hoy esto
+  // es solo de pantalla, el endpoint igual la devuelve (ver forum.service).
+  const canSeePost = Boolean(community && (!community.isPrivate || community.isMember))
+  const post = isLoggedIn && canSeePost ? postQuery.data : undefined
+  const replies = isLoggedIn && canSeePost ? (repliesQuery.data ?? []) : []
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -36,13 +41,30 @@ export default function PostDetailPage() {
       </div>
 
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 sm:px-10">
-        <Link
-          to="/communities/$slug"
-          params={{ slug }}
-          className="flex w-fit items-center gap-1.5 text-sm font-semibold text-mynted-gray hover:text-mynted-ink"
-        >
-          {t('forum.backToCommunity', { slug })}
-        </Link>
+        {/*
+          A la publicacion se llega desde la comunidad, desde el home o desde
+          Explorar, asi que volver sigue el historial. Solo cuando no hay nada
+          atras (se entro por la URL directa) se cae a la comunidad.
+        */}
+        {router.history.canGoBack() ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.history.back()}
+            className="w-fit px-0 text-sm text-mynted-gray hover:text-mynted-ink"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            {t('forum.back')}
+          </Button>
+        ) : (
+          <Link
+            to="/communities/$slug"
+            params={{ slug }}
+            className="flex w-fit items-center gap-1.5 text-sm font-semibold text-mynted-gray hover:text-mynted-ink"
+          >
+            {t('forum.backToCommunity', { slug })}
+          </Link>
+        )}
 
         {!isLoadingSession && !isLoggedIn && (
           <CommunityNotice
@@ -65,7 +87,22 @@ export default function PostDetailPage() {
           </div>
         )}
 
-        {isLoggedIn && postQuery.isError && (
+        {community && !canSeePost && (
+          <CommunityNotice
+            title={t('community.detail.privateTitle')}
+            description={t('community.detail.privateForum')}
+          >
+            <Link
+              to="/communities/$slug"
+              params={{ slug }}
+              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
+            >
+              {t('forum.backToCommunity', { slug })}
+            </Link>
+          </CommunityNotice>
+        )}
+
+        {isLoggedIn && canSeePost && postQuery.isError && (
           <CommunityNotice title={t('forum.loadError')} description={getApiErrorMessage(postQuery.error)}>
             <Button variant="secondary" size="sm" onClick={() => void postQuery.refetch()}>
               {t('communities.list.retry')}
@@ -118,16 +155,23 @@ export default function PostDetailPage() {
 
               <section className="flex flex-col gap-3">
                 <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('forum.replies.title')}</h2>
-                
-                {replies.length === 0 && (
-                  <ReplyForm postId={post.id} />
-                )}
 
+                {/* Responder exige ser miembro: el backend devuelve 403 si no lo sos. */}
+                {community?.isMember ? (
+                  <ReplyForm postId={post.id} />
+                ) : (
+                  community && (
+                    <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-4 py-3 text-sm text-mynted-gray">
+                      {t('forum.replies.membersOnly')}
+                    </p>
+                  )
+                )}
 
                 {repliesQuery.isPending ? (
                   <div className="h-24 animate-pulse rounded-2xl bg-white" />
                 ) : (
                   <ForumReplyTree
+                    canReply={Boolean(community?.isMember)}
                     postId={post.id}
                     replies={replies}
                     authorProfileId={post.communityProfileId}

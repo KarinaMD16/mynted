@@ -32,9 +32,16 @@ export default function CommunityDetailPage() {
   // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
   const community = isLoggedIn ? communityQuery.data : undefined
   const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
+  // En una comunidad privada el foro es solo para miembros. Ojo: hoy esto es
+  // solo de pantalla, el endpoint igual los devuelve (ver forum.service.findPosts).
+  const canSeeForum = Boolean(community && (!community.isPrivate || community.isMember))
   // El foro ya no sale del detalle: tiene su propio endpoint paginado
-  const postsQuery = useCommunityPosts(community?.id ?? 0, { limit: 20 }, isLoggedIn && activeTab === 'talk')
-  const posts = isLoggedIn ? (postsQuery.data?.data ?? []) : []
+  const postsQuery = useCommunityPosts(
+    community?.id ?? 0,
+    { limit: 20 },
+    isLoggedIn && activeTab === 'talk' && canSeeForum,
+  )
+  const posts = isLoggedIn && canSeeForum ? (postsQuery.data?.data ?? []) : []
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -141,23 +148,31 @@ export default function CommunityDetailPage() {
                     </Button>
                   )}
 
-                  {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
-
-                  {postsQuery.isError && (
-                    <p className="text-sm text-red-500" role="alert">
-                      {t('forum.loadError')} {getApiErrorMessage(postsQuery.error)}
+                  {!canSeeForum ? (
+                    <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
+                      {t('community.detail.privateForum')}
                     </p>
-                  )}
+                  ) : (
+                    <>
+                      {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
 
-                  {posts.length > 0
-                    ? posts.map((post, index) => (
-                        <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
-                      ))
-                    : postsQuery.isSuccess && (
-                        <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                          {t('community.detail.noPosts')}
+                      {postsQuery.isError && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {t('forum.loadError')} {getApiErrorMessage(postsQuery.error)}
                         </p>
                       )}
+
+                      {posts.length > 0
+                        ? posts.map((post, index) => (
+                            <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
+                          ))
+                        : postsQuery.isSuccess && (
+                            <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
+                              {t('community.detail.noPosts')}
+                            </p>
+                          )}
+                    </>
+                  )}
                 </div>
 
                 <CommunitySidebar community={community} />

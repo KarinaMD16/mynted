@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { MessageSquare } from 'lucide-react'
+import { CornerDownRight, MessageSquare } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useForumActions } from '@/features/community/hooks/useForum'
@@ -13,15 +13,24 @@ import { formatRelativeTime } from '@/utils/relativeTime'
 interface ForumReplyTreeProps {
   postId: number
   replies: ForumReply[]
+  /** Responder exige ser miembro; si no lo es, no se ofrece el boton. */
+  canReply: boolean
   /** Perfil de quien abrio la publicacion, para marcar "Autor" en sus respuestas. */
   authorProfileId?: number
 }
 
 /**
+ * Hasta donde se indenta el arbol. Mas abajo las respuestas siguen existiendo
+ * y guardando a quien contestan, pero se muestran al mismo nivel detras de un
+ * boton: si no, una conversacion larga termina pegada al borde derecho.
+ */
+const MAX_DEPTH = 3
+
+/**
  * Respuestas de una publicacion. El backend las devuelve planas con
  * `parentReplyId`, asi que aca se arma el arbol y cada nivel se indenta.
  */
-export function ForumReplyTree({ postId, replies, authorProfileId }: ForumReplyTreeProps) {
+export function ForumReplyTree({ postId, replies, canReply, authorProfileId }: ForumReplyTreeProps) {
   const { t } = useLanguage()
 
   const childrenByParent = new Map<number | null, ForumReply[]>()
@@ -45,6 +54,8 @@ export function ForumReplyTree({ postId, replies, authorProfileId }: ForumReplyT
           postId={postId}
           reply={reply}
           index={index}
+          depth={0}
+          canReply={canReply}
           childrenByParent={childrenByParent}
           authorProfileId={authorProfileId}
         />
@@ -57,16 +68,21 @@ interface ReplyNodeProps {
   postId: number
   reply: ForumReply
   index: number
+  /** Cuantos niveles lleva anidada; a partir de MAX_DEPTH deja de indentarse. */
+  depth: number
+  canReply: boolean
   childrenByParent: Map<number | null, ForumReply[]>
   authorProfileId?: number
 }
 
-function ReplyNode({ postId, reply, index, childrenByParent, authorProfileId }: ReplyNodeProps) {
+function ReplyNode({ postId, reply, index, depth, canReply, childrenByParent, authorProfileId }: ReplyNodeProps) {
   const { t, language } = useLanguage()
   const { voteOnReply, favoriteReply } = useForumActions()
   const [isReplying, setIsReplying] = useState(false)
+  const [showsDeeper, setShowsDeeper] = useState(false)
 
   const children = childrenByParent.get(reply.id) ?? []
+  const isAtMaxDepth = depth >= MAX_DEPTH
 
   return (
     <li>
@@ -89,15 +105,17 @@ function ReplyNode({ postId, reply, index, childrenByParent, authorProfileId }: 
           onVote={(voteType) => voteOnReply.mutate({ replyId: reply.id, voteType })}
           onToggleFavorite={() => favoriteReply.mutate({ replyId: reply.id, isSaved: !reply.isSaved })}
           leading={
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsReplying((current) => !current)}
-              className="px-2 text-xs text-mynted-blue"
-            >
-              <MessageSquare className="size-3.5" aria-hidden="true" />
-              {t('forum.replies.reply')}
-            </Button>
+            canReply && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsReplying((current) => !current)}
+                className="px-2 text-xs text-mynted-blue"
+              >
+                <MessageSquare className="size-3.5" aria-hidden="true" />
+                {t('forum.replies.reply')}
+              </Button>
+            )
           }
         />
 
@@ -106,14 +124,32 @@ function ReplyNode({ postId, reply, index, childrenByParent, authorProfileId }: 
         )}
       </div>
 
-      {children.length > 0 && (
-        <ul className="mt-3 ml-4 flex flex-col gap-3 border-l-2 border-mynted-border pl-4">
+      {children.length > 0 && isAtMaxDepth && !showsDeeper && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowsDeeper(true)}
+          className="mt-2 px-2 text-xs text-mynted-blue"
+        >
+          <CornerDownRight className="size-3.5" aria-hidden="true" />
+          {t('forum.replies.showMore', { count: countDescendants(reply.id, childrenByParent) })}
+        </Button>
+      )}
+
+      {children.length > 0 && (!isAtMaxDepth || showsDeeper) && (
+        <ul
+          className={`mt-3 flex flex-col gap-3 ${
+            isAtMaxDepth ? '' : 'ml-4 border-l-2 border-mynted-border pl-4'
+          }`}
+        >
           {children.map((child, childIndex) => (
             <ReplyNode
               key={child.id}
               postId={postId}
               reply={child}
               index={index + childIndex + 1}
+              depth={isAtMaxDepth ? depth : depth + 1}
+              canReply={canReply}
               childrenByParent={childrenByParent}
               authorProfileId={authorProfileId}
             />
@@ -122,6 +158,12 @@ function ReplyNode({ postId, reply, index, childrenByParent, authorProfileId }: 
       )}
     </li>
   )
+}
+
+/** Cuantas respuestas cuelgan de una, contando las de sus hijas. */
+function countDescendants(replyId: number, childrenByParent: Map<number | null, ForumReply[]>): number {
+  const children = childrenByParent.get(replyId) ?? []
+  return children.reduce((total, child) => total + 1 + countDescendants(child.id, childrenByParent), 0)
 }
 
 /** Caja para escribir una respuesta; sin `parentReplyId` responde a la publicacion. */

@@ -14,11 +14,12 @@ import {
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useForumActions } from '@/features/community/hooks/useForum'
 import type { CommunityDetail } from '@/features/community/models/communityDTOs'
-import { errorClasses, hintClasses, inputClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
+import { MAX_TAGS, errorClasses, hintClasses, inputClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
 
 /** Limites del backend (ver CreatePostDto y el interceptor de archivos). */
 const MAX_TITLE = 200
 const MAX_IMAGES = 10
+const MIN_TAGS = 1
 
 interface CreatePostDialogProps {
   /** Sin comunidad el formulario queda listo pero no deja publicar todavia. */
@@ -104,7 +105,11 @@ function CreatePostForm({
   }
 
   const canSubmit =
-    community !== undefined && title.trim().length > 0 && body.trim().length > 0 && !publishPost.isPending
+    community !== undefined &&
+    title.trim().length > 0 &&
+    body.trim().length > 0 &&
+    tagIds.length >= MIN_TAGS &&
+    !publishPost.isPending
 
   return (
     <>
@@ -155,7 +160,7 @@ function CreatePostForm({
         {community && community.tags.length > 0 && (
           <fieldset className="flex flex-col gap-1.5">
             <legend className={labelClasses}>{t('forum.create.tagsLabel')}</legend>
-            <p className={hintClasses}>{t('forum.create.tagsHint')}</p>
+            <p className={hintClasses}>{t('forum.create.tagsHint', { max: MAX_TAGS })}</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
               {community.tags.map((tag) => {
                 const isSelected = tagIds.includes(tag.tagId)
@@ -166,6 +171,9 @@ function CreatePostForm({
                     size="sm"
                     shape="pill"
                     aria-pressed={isSelected}
+                    // Con el tope alcanzado hay que soltar uno antes de cambiarlo:
+                    // el backend rechaza mas de tres y el error llegaria al publicar.
+                    disabled={!isSelected && tagIds.length >= MAX_TAGS}
                     onClick={() =>
                       setTagIds((current) =>
                         isSelected ? current.filter((id) => id !== tag.tagId) : [...current, tag.tagId],
