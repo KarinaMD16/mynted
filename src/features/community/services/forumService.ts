@@ -42,6 +42,18 @@ export const getGlobalPosts = async (query: GlobalPostsQuery = {}): Promise<Glob
   return data
 }
 
+/**
+ * Feed por intereses (GET /users/me/recommended-posts): publicaciones cuyos
+ * tags coinciden con los intereses del usuario, ordenadas por cuantos
+ * coinciden. Es el feed del home; no acepta filtros, solo paginacion.
+ */
+export const getRecommendedPosts = async (page: number, limit: number): Promise<GlobalPostsPage> => {
+  const { data } = await myntedAPI.get<GlobalPostsPage>('/users/me/recommended-posts', {
+    params: { page, limit },
+  })
+  return data
+}
+
 export const getPost = async (postId: number): Promise<ForumPost> => {
   const { data } = await myntedAPI.get<ForumPost>(`/posts/${postId}`)
   return data

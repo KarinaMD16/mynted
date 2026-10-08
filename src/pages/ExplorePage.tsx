@@ -4,6 +4,8 @@ import { SlidersHorizontal, X } from 'lucide-react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
 import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
+import { FilterGroup } from '@/components/ui/FilterGroup'
+import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
@@ -17,8 +19,16 @@ import {
   type ProductType,
 } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
+import type { TranslationKey } from '@/i18n/translations/es'
 import { INTL_LOCALES } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
+
+type ExploreTab = 'shop' | 'talk'
+
+const EXPLORE_TABS: { id: ExploreTab; labelKey: TranslationKey }[] = [
+  { id: 'shop', labelKey: 'shop.tab.shop' },
+  { id: 'talk', labelKey: 'shop.tab.talk' },
+]
 
 const EXPLORE_GRID_CLASS = 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'
 
@@ -46,6 +56,7 @@ export default function ExplorePage() {
   const [condition, setCondition] = useState<ProductCondition | undefined>()
   const [priceSteps, setPriceSteps] = useState<[number, number]>([0, LAST_STEP])
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<ExploreTab>('shop')
 
   const filters: ExploreFilters = {
     ...(category !== undefined && { category }),
@@ -90,12 +101,38 @@ export default function ExplorePage() {
       </div>
 
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+        <ScrollReveal>
+          <div role="tablist" className="flex items-center gap-2">
+            {EXPLORE_TABS.map(({ id, labelKey }) => {
+              const isActive = activeTab === id
+              return (
+                <Button
+                  key={id}
+                  variant="ghost"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(id)}
+                  className={`rounded-[10px] px-[18px] text-[15px] ${
+                    isActive
+                      ? 'bg-[#ffdfd1] font-semibold text-mynted-orange hover:bg-[#ffdfd1] hover:text-mynted-orange'
+                      : 'bg-[#f3f3f2] font-medium text-mynted-gray hover:text-mynted-ink'
+                  }`}
+                >
+                  {t(labelKey)}
+                </Button>
+              )
+            })}
+          </div>
+        </ScrollReveal>
+
         <ScrollReveal className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="font-heading text-[26px] font-semibold text-mynted-ink">{t('explore.title')}</h1>
-            <p className="text-sm text-mynted-gray">{t('explore.subtitle')}</p>
+            <p className="text-sm text-mynted-gray">
+              {t(activeTab === 'talk' ? 'talk.subtitle' : 'explore.subtitle')}
+            </p>
           </div>
-          {isLoggedIn && (
+          {isLoggedIn && activeTab === 'shop' && (
             <Button
               type="button"
               variant="secondary"
@@ -115,7 +152,9 @@ export default function ExplorePage() {
           )}
         </ScrollReveal>
 
-        {isLoadingUser ? (
+        {activeTab === 'talk' ? (
+          <TalkFeed source="all" />
+        ) : isLoadingUser ? (
           <div className="h-64 animate-pulse rounded-2xl bg-white" aria-busy="true" />
         ) : !isLoggedIn ? (
           <div className="flex flex-col items-center gap-4 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
@@ -240,15 +279,6 @@ export default function ExplorePage() {
           </div>
         )}
       </main>
-    </div>
-  )
-}
-
-function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div role="group" aria-label={label} className="flex flex-col gap-2">
-      <span className="text-xs font-semibold text-mynted-gray">{label}</span>
-      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   )
 }

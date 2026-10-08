@@ -37,7 +37,7 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
               params={{ slug: community.slug }}
               className="truncate font-medium text-mynted-blue hover:underline"
             >
-              #{community.slug}
+              @{community.slug}
             </Link>
           )
         }

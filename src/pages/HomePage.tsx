@@ -19,8 +19,9 @@ const HOME_TABS: { id: HomeTab; labelKey: TranslationKey }[] = [
 
 /**
  * Home: pestaña "Shop" (productos agrupados por tag, con scroll infinito, visible
- * también sin sesión) y pestaña "Talk" (el feed de publicaciones de todas las
- * comunidades públicas, que sí pide sesión).
+ * también sin sesión) y pestaña "Talk" (las publicaciones que coinciden con los
+ * intereses del usuario, que sí pide sesión). El feed de todas las comunidades
+ * vive en /explore.
  */
 export default function HomePage() {
   const { t } = useLanguage()
@@ -63,7 +64,7 @@ export default function HomePage() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
-            {activeTab === 'talk' ? <TalkFeed /> : <ShopFeed />}
+            {activeTab === 'talk' ? <TalkFeed source="interests" /> : <ShopFeed />}
           </motion.div>
         </AnimatePresence>
       </main>

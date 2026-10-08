@@ -5,6 +5,7 @@ import {
   getCommunityPosts,
   getGlobalPosts,
   getPost,
+  getRecommendedPosts,
   getPostReplies,
   setPostFavorite,
   setReplyFavorite,
@@ -20,13 +21,26 @@ export const forumKeys = {
   all: ['forum'] as const,
   posts: (communityId: number, query: ForumPostsQuery) => ['forum', 'posts', communityId, query] as const,
   globalPosts: (filters: GlobalPostsFilters) => ['forum', 'global-posts', filters] as const,
+  recommendedPosts: () => ['forum', 'recommended-posts'] as const,
   post: (postId: number) => ['forum', 'post', postId] as const,
   replies: (postId: number) => ['forum', 'replies', postId] as const,
 }
 
 const GLOBAL_POSTS_PAGE_SIZE = 10
 
-/** Feed global de "Talk", con scroll infinito. */
+/** Feed por intereses del home, con scroll infinito. No admite filtros. */
+export const useRecommendedPosts = (enabled = true) => {
+  return useInfiniteQuery({
+    queryKey: forumKeys.recommendedPosts(),
+    queryFn: ({ pageParam }) => getRecommendedPosts(pageParam, GLOBAL_POSTS_PAGE_SIZE),
+    initialPageParam: 1,
+    getNextPageParam: (last: GlobalPostsPage) =>
+      last.pagination.page < last.pagination.totalPages ? last.pagination.page + 1 : undefined,
+    enabled,
+  })
+}
+
+/** Feed de "Talk" en Explorar: todas las comunidades publicas, con scroll infinito. */
 export const useGlobalPosts = (filters: GlobalPostsFilters = {}, enabled = true) => {
   return useInfiniteQuery({
     queryKey: forumKeys.globalPosts(filters),
