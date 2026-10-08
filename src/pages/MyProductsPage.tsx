@@ -1,23 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { PackageCheck, PauseCircle, Pencil, Plus } from 'lucide-react'
+import { PackageCheck, PauseCircle, Pencil, Play, Plus, Rocket, Search, Trash2 } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
-import { EditProductDialog } from '@/features/products/components/EditProductDialog'
-import { useUpdateProductStatusMutation } from '@/features/products/hooks/useProductMutations'
+import { ProductPrice } from '@/features/products/components/ProductPrice'
+import {
+  useDeleteProductMutation,
+  usePublishProductMutation,
+  useUpdateProductStatusMutation,
+} from '@/features/products/hooks/useProductMutations'
 import { useMyProductsDashboard, useMyProductsStats } from '@/features/products/hooks/useProductQueries'
-import type { MyProductCard, MyProductsFilters, ProductStatus, ProductType } from '@/features/products/models/product'
+import type {
+  MyProductCard,
+  MyProductsFilters,
+  ProductStatus,
+  ProductType,
+  PublishedProductStatus,
+} from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 const STATUS_FILTERS: { value: ProductStatus | undefined; label: TranslationKey }[] = [
   { value: undefined, label: 'myProducts.filter.all' },
+  { value: 'draft', label: 'products.status.draft' },
   { value: 'active', label: 'myProducts.status.active' },
   { value: 'sold', label: 'products.status.sold' },
   { value: 'inactive', label: 'products.status.inactive' },
@@ -30,30 +40,26 @@ const TYPE_FILTERS: { value: ProductType | undefined; label: TranslationKey }[] 
 ]
 
 const STATUS_LABEL: Record<ProductStatus, TranslationKey> = {
+  draft: 'products.status.draft',
   active: 'myProducts.status.active',
   sold: 'products.status.sold',
   inactive: 'products.status.inactive',
 }
 
 const STATUS_STYLE: Record<ProductStatus, string> = {
+  draft: 'bg-mynted-blue/10 text-mynted-blue',
   active: 'bg-teal-50 text-teal-700',
   sold: 'bg-mynted-ink/10 text-mynted-ink',
   inactive: 'bg-amber-50 text-amber-700',
 }
 
-function formatPrice(price: number, currency: string, language: AppLanguage): string {
-  try {
-    return new Intl.NumberFormat(INTL_LOCALES[language], { style: 'currency', currency }).format(price)
-  } catch {
-    return `${currency} ${price.toFixed(2)}`
-  }
-}
-
 /**
  * Panel del vendedor ("Mis productos"): lista sus publicaciones agrupadas por
- * tag (GET /products/me), con filtros por estado/tipo, edición
- * (PATCH /products/:id) y cambio de estado a vendido/pausado
- * (PATCH /products/:id/status, no se puede volver a "activo").
+ * tag (GET /products/me), con borradores, búsqueda por título y filtros por
+ * estado/tipo. Desde cada fila: editar (pantalla /products/:id/edit), publicar
+ * un borrador (POST /products/:id/publish), pausar o marcar como vendido,
+ * reactivar uno pausado (PATCH /products/:id/status; un vendido no vuelve a
+ * "activo") y eliminar (DELETE /products/:id).
  */
 export default function MyProductsPage() {
   const { t } = useLanguage()
@@ -63,13 +69,32 @@ export default function MyProductsPage() {
 
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined)
   const [type, setType] = useState<ProductType | undefined>(undefined)
-  const filters: MyProductsFilters = { ...(status && { status }), ...(type && { type }) }
+  const [search, setSearch] = useState('')
+  const [searchQuery, setQueryQ] = useState('')
+  // La búsqueda se manda al backend un momento después de dejar de escribir.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setQueryQ(search.trim()), 350)
+    return () => window.clearTimeout(timer)
+  }, [search])
+  const filters: MyProductsFilters = { ...(status && { status }), ...(type && { type }), ...(searchQuery && { q: searchQuery }) }
 
   const query = useMyProductsDashboard(filters, isSeller)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
 
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [pendingChange, setPendingChange] = useState<{ product: MyProductCard; status: 'sold' | 'inactive' } | null>(null)
+  const [pendingChange, setPendingChange] = useState<PendingChange | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const publishMutation = usePublishProductMutation()
+  const statusMutation = useUpdateProductStatusMutation()
+
+  /** Acciones sin confirmación: publicar un borrador y reactivar uno pausado. */
+  async function runDirectAction(action: () => Promise<unknown>) {
+    setActionError(null)
+    try {
+      await action()
+    } catch (error) {
+      setActionError(getApiErrorMessage(error))
+    }
+  }
 
   const sentinelRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -124,7 +149,24 @@ export default function MyProductsPage() {
               />
               <div className="hidden h-6 w-px bg-mynted-border lg:block" aria-hidden="true" />
               <FilterChips label={t('myProducts.filter.type')} options={TYPE_FILTERS} value={type} onChange={setType} />
+              <div className="relative lg:ml-auto lg:w-64">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-mynted-gray" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={t('myProducts.search.placeholder')}
+                  aria-label={t('myProducts.search.placeholder')}
+                  className="w-full rounded-[10px] border border-mynted-border bg-white py-2 pr-3 pl-9 text-sm text-mynted-ink outline-none placeholder:text-mynted-gray-light focus:border-mynted-orange focus:ring-2 focus:ring-mynted-orange/20"
+                />
+              </div>
             </ScrollReveal>
+
+            {actionError && (
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600" role="alert">
+                {actionError}
+              </p>
+            )}
 
             {query.isPending ? (
               <div className="flex flex-col gap-3" aria-busy="true">
@@ -142,10 +184,10 @@ export default function MyProductsPage() {
             ) : sections.length === 0 ? (
               <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
                 <p className="text-sm font-semibold text-mynted-ink">
-                  {status || type ? t('myProducts.emptyFiltered.title') : t('myProducts.empty.title')}
+                  {status || type || searchQuery ? t('myProducts.emptyFiltered.title') : t('myProducts.empty.title')}
                 </p>
                 <p className="max-w-sm text-sm text-mynted-gray">
-                  {status || type ? t('myProducts.emptyFiltered.body') : t('myProducts.empty.body')}
+                  {status || type || searchQuery ? t('myProducts.emptyFiltered.body') : t('myProducts.empty.body')}
                 </p>
               </div>
             ) : (
@@ -167,8 +209,12 @@ export default function MyProductsPage() {
                         <StaggerItem key={product.id} index={index}>
                           <ProductRow
                             product={product}
-                            onEdit={() => setEditingId(product.id)}
-                            onChangeStatus={(next) => setPendingChange({ product, status: next })}
+                            isBusy={publishMutation.isPending || statusMutation.isPending}
+                            onPublish={() => void runDirectAction(() => publishMutation.mutateAsync(product.id))}
+                            onReactivate={() =>
+                              void runDirectAction(() => statusMutation.mutateAsync({ productId: product.id, status: 'active' }))
+                            }
+                            onChange={(kind) => setPendingChange({ product, kind })}
                           />
                         </StaggerItem>
                       ))}
@@ -186,7 +232,6 @@ export default function MyProductsPage() {
           </>
         )}
       </main>
-      <EditProductDialog productId={editingId} onClose={() => setEditingId(null)} />
       <StatusConfirmDialog change={pendingChange} onClose={() => setPendingChange(null)} />
     </div>
   )
@@ -213,6 +258,7 @@ function Stats() {
 
   const items: { label: TranslationKey; value: number | undefined }[] = [
     { label: 'myProducts.stats.total', value: stats.data?.total },
+    { label: 'myProducts.stats.draft', value: stats.data?.draft },
     { label: 'myProducts.stats.active', value: stats.data?.active },
     { label: 'myProducts.stats.sold', value: stats.data?.sold },
     { label: 'myProducts.stats.paused', value: stats.data?.inactive },
@@ -220,7 +266,7 @@ function Stats() {
 
   return (
     <ScrollReveal>
-      <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {items.map((item) => (
           <div key={item.label} className="flex flex-col gap-1 rounded-2xl border border-mynted-border bg-white px-5 py-4">
             <dt className="text-xs font-medium text-mynted-gray">{t(item.label)}</dt>
@@ -272,17 +318,33 @@ function FilterChips<T extends string>({
   )
 }
 
+type PendingKind = 'sold' | 'inactive' | 'delete'
+interface PendingChange {
+  product: MyProductCard
+  kind: PendingKind
+}
+
 function ProductRow({
   product,
-  onEdit,
-  onChangeStatus,
+  isBusy,
+  onPublish,
+  onReactivate,
+  onChange,
 }: {
   product: MyProductCard
-  onEdit: () => void
-  onChangeStatus: (status: 'sold' | 'inactive') => void
+  isBusy: boolean
+  onPublish: () => void
+  onReactivate: () => void
+  onChange: (kind: PendingKind) => void
 }) {
-  const { t, language } = useLanguage()
-  const isActive = product.status === 'active'
+  const { t } = useLanguage()
+  const detail = [
+    product.type ? t(product.type === 'sale' ? 'products.type.sale' : 'products.type.exchange') : null,
+    product.condition ? t(CONDITION_LABEL[product.condition]) : null,
+    product.community?.name ?? t('products.create.noCommunity'),
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <article className="flex flex-col gap-4 rounded-2xl border border-mynted-border bg-white p-4 sm:flex-row sm:items-center">
@@ -291,7 +353,7 @@ function ProductRow({
         params={{ productId: String(product.id) }}
         className="block size-24 shrink-0 overflow-hidden rounded-xl bg-mynted-bg sm:size-20"
       >
-        <img src={product.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+        {product.imageUrl && <img src={product.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />}
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -306,12 +368,24 @@ function ProductRow({
           <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_STYLE[product.status]}`}>
             {t(STATUS_LABEL[product.status])}
           </span>
+          {!product.isVisible && (
+            <span className="rounded-full bg-mynted-bg px-2.5 py-0.5 text-[11px] font-semibold text-mynted-gray">
+              {t('myProducts.badge.hidden')}
+            </span>
+          )}
         </div>
-        <p className="text-sm font-semibold text-mynted-orange">{formatPrice(product.price, product.currency, language)}</p>
-        <p className="text-xs text-mynted-gray">
-          {t(product.type === 'sale' ? 'products.type.sale' : 'products.type.exchange')} · {t(CONDITION_LABEL[product.condition])} ·{' '}
-          {product.community.name}
-        </p>
+        {product.price !== null && product.currency ? (
+          <ProductPrice
+            price={product.price}
+            finalPrice={product.finalPrice}
+            discountPercent={product.discountPercent}
+            currency={product.currency}
+            className="text-sm font-semibold text-mynted-orange"
+          />
+        ) : (
+          <p className="text-sm text-mynted-gray">—</p>
+        )}
+        <p className="text-xs text-mynted-gray">{detail}</p>
         <ul className="flex flex-wrap gap-1.5">
           {product.tags.map((tag) => (
             <li key={tag.tagId} className="rounded-full bg-mynted-bg px-2.5 py-0.5 text-[11px] text-mynted-ink">
@@ -322,37 +396,63 @@ function ProductRow({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-        <Button type="button" variant="secondary" size="sm" onClick={onEdit}>
+        {product.status === 'draft' && (
+          <Button type="button" variant="primary" size="sm" disabled={isBusy} onClick={onPublish}>
+            <Rocket className="size-4" aria-hidden="true" />
+            {t('myProducts.action.publish')}
+          </Button>
+        )}
+        {product.status === 'inactive' && (
+          <Button type="button" variant="secondary" size="sm" disabled={isBusy} onClick={onReactivate}>
+            <Play className="size-4" aria-hidden="true" />
+            {t('myProducts.action.reactivate')}
+          </Button>
+        )}
+        <Link
+          to="/products/$productId/edit"
+          params={{ productId: String(product.id) }}
+          className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-mynted-border bg-white px-3 text-sm font-medium text-mynted-ink transition-colors hover:border-mynted-orange/60"
+        >
           <Pencil className="size-4" aria-hidden="true" />
           {t('myProducts.action.edit')}
-        </Button>
-        {isActive && (
+        </Link>
+        {product.status === 'active' && (
           <>
-            <Button type="button" variant="secondary" size="sm" onClick={() => onChangeStatus('inactive')}>
+            <Button type="button" variant="secondary" size="sm" onClick={() => onChange('inactive')}>
               <PauseCircle className="size-4" aria-hidden="true" />
               {t('myProducts.action.pause')}
             </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={() => onChangeStatus('sold')}>
+            <Button type="button" variant="secondary" size="sm" onClick={() => onChange('sold')}>
               <PackageCheck className="size-4" aria-hidden="true" />
               {t('myProducts.action.markSold')}
             </Button>
           </>
         )}
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="text-red-600"
+          onClick={() => onChange('delete')}
+          aria-label={t('myProducts.action.deleteLabel', { title: product.title })}
+        >
+          <Trash2 className="size-4" aria-hidden="true" />
+          {t('myProducts.action.delete')}
+        </Button>
       </div>
     </article>
   )
 }
 
-/** Pide confirmación antes de cambiar el estado: el backend no permite volver a "activo". */
-function StatusConfirmDialog({
-  change,
-  onClose,
-}: {
-  change: { product: MyProductCard; status: 'sold' | 'inactive' } | null
-  onClose: () => void
-}) {
+/**
+ * Pide confirmación antes de pausar, marcar como vendido (el backend no deja
+ * volver de "vendido" a "activo") o eliminar un producto.
+ */
+function StatusConfirmDialog({ change, onClose }: { change: PendingChange | null; onClose: () => void }) {
   const { t } = useLanguage()
-  const mutation = useUpdateProductStatusMutation()
+  const statusMutation = useUpdateProductStatusMutation()
+  const deleteMutation = useDeleteProductMutation()
+  const mutation = change?.kind === 'delete' ? deleteMutation : statusMutation
 
   // Se conserva el último cambio para que el texto no desaparezca durante la animación de cierre.
   const [last, setLast] = useState(change)
@@ -362,35 +462,46 @@ function StatusConfirmDialog({
   async function confirm() {
     if (!change) return
     try {
-      await mutation.mutateAsync({ productId: change.product.id, status: change.status })
+      if (change.kind === 'delete') {
+        await deleteMutation.mutateAsync(change.product.id)
+      } else {
+        const next: PublishedProductStatus = change.kind
+        await statusMutation.mutateAsync({ productId: change.product.id, status: next })
+      }
       onClose()
     } catch {
       // el error se muestra abajo (mutation.error)
     }
   }
 
+  const titleKey: TranslationKey =
+    shown?.kind === 'sold'
+      ? 'myProducts.confirm.soldTitle'
+      : shown?.kind === 'delete'
+        ? 'myProducts.confirm.deleteTitle'
+        : 'myProducts.confirm.pauseTitle'
+  const bodyKey: TranslationKey =
+    shown?.kind === 'sold'
+      ? 'myProducts.confirm.soldBody'
+      : shown?.kind === 'delete'
+        ? 'myProducts.confirm.deleteBody'
+        : 'myProducts.confirm.pauseBody'
+
   return (
     <Dialog
       open={change !== null}
       onOpenChange={(open) => {
         if (!open) {
-          mutation.reset()
+          statusMutation.reset()
+          deleteMutation.reset()
           onClose()
         }
       }}
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">
-            {shown?.status === 'sold' ? t('myProducts.confirm.soldTitle') : t('myProducts.confirm.pauseTitle')}
-          </DialogTitle>
-          <DialogDescription>
-            {shown
-              ? t(shown.status === 'sold' ? 'myProducts.confirm.soldBody' : 'myProducts.confirm.pauseBody', {
-                  title: shown.product.title,
-                })
-              : ''}
-          </DialogDescription>
+          <DialogTitle className="text-xl">{t(titleKey)}</DialogTitle>
+          <DialogDescription>{shown ? t(bodyKey, { title: shown.product.title }) : ''}</DialogDescription>
         </DialogHeader>
         {mutation.isError && (
           <p className="mt-3 text-sm text-red-500" role="alert">

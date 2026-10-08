@@ -2,13 +2,16 @@ import { Link } from '@tanstack/react-router'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { ProductType } from '@/features/products/models/product'
-import { formatPrice } from '@/utils/price'
+import { ProductPrice } from './ProductPrice'
 
 export interface ShopProductCardData {
   id: number
   title: string
   imageUrl: string
   price: string | number
+  /** Precio con descuento; si falta se muestra `price`. */
+  finalPrice?: number | null
+  discountPercent?: number | string | null
   currency: string
   tags: { tagId: number; name: string }[]
   /** Venta o intercambio; si no se pasa, la tarjeta no muestra la etiqueta. */
@@ -19,7 +22,7 @@ export interface ShopProductCardData {
 
 /** Tarjeta de producto de la tienda (Neutral Redesign): foto, título, tags, verificación, precio y contacto. */
 export function ShopProductCard({ product }: { product: ShopProductCardData }) {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
 
   return (
     <article className="relative flex h-full flex-col gap-2 overflow-hidden rounded-[14px] border border-mynted-border bg-white px-3 pt-3 pb-3.5 shadow-[0_2px_8px_0_rgba(13,13,20,0.06)]">
@@ -66,9 +69,13 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
       )}
 
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        <span className="font-heading text-[17px] font-semibold text-mynted-ink">
-          {formatPrice(product.price, product.currency, language)}
-        </span>
+        <ProductPrice
+          price={product.price}
+          finalPrice={product.finalPrice}
+          discountPercent={product.discountPercent}
+          currency={product.currency}
+          className="font-heading text-[17px] font-semibold text-mynted-ink"
+        />
         <button
           type="button"
           className="cursor-pointer rounded-full bg-mynted-blue px-[13px] py-1.5 text-[11px] font-semibold text-white transition-opacity outline-none hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue"

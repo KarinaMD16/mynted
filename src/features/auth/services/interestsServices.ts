@@ -45,3 +45,9 @@ export async function getMyInterestsRequest(): Promise<Interest[]> {
   const { data } = await myntedAPI.get<Interest[]>('/users/me/tags')
   return data
 }
+
+/** GET /users/:id/tags — intereses de otra persona (perfil público; pide sesión). */
+export async function getUserInterestsRequest(userId: string): Promise<Interest[]> {
+  const { data } = await myntedAPI.get<Interest[]>(`/users/${userId}/tags`)
+  return data
+}

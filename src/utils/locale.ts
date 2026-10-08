@@ -170,13 +170,6 @@ const REGION_LANGUAGE: Record<string, AppLanguage> = {
 const DEFAULT_LOCALE = 'es-CR'
 const DEFAULT_CURRENCY = 'CRC'
 const DEFAULT_REGION = 'CR'
-
-/**
- * Moneda en la que el backend guarda un producto cuando la cuenta del vendedor
- * no tiene una (DEFAULT_CURRENCY de products.service). Ojo: es distinta de
- * DEFAULT_CURRENCY de arriba, que solo sirve para detectar la moneda local.
- */
-export const PUBLISH_FALLBACK_CURRENCY = 'USD'
 const DEFAULT_LANGUAGE: AppLanguage = 'es'
 
 export function detectLocale(): string {

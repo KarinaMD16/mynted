@@ -4,6 +4,7 @@ import type {
   FeedPost,
   ForumPost,
   MyContentEntry,
+  MyContentProduct,
   MyForumPostsQuery,
   PaginatedResponse,
 } from '../models/communityDTOs'
@@ -30,6 +31,37 @@ export const getMyContent = async (
   query: FeedPageQuery & { order?: 'asc' | 'desc' } = {},
 ): Promise<PaginatedResponse<MyContentEntry>> => {
   const { data } = await myntedAPI.get<PaginatedResponse<MyContentEntry>>('/posts/me', { params: query })
+  return data
+}
+
+/**
+ * Contenido público de otra persona (pide sesión): solo comunidades públicas y
+ * activas, y productos activos. Mismas formas que /posts/me, /forums/me y los
+ * productos de /posts/me.
+ */
+export const getUserContent = async (
+  userId: string,
+  query: FeedPageQuery & { order?: 'asc' | 'desc' } = {},
+): Promise<PaginatedResponse<MyContentEntry>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<MyContentEntry>>(`/users/${userId}/posts`, { params: query })
+  return data
+}
+
+/** GET /users/:id/forums — los hilos de otra persona. */
+export const getUserForumPosts = async (
+  userId: string,
+  query: MyForumPostsQuery = {},
+): Promise<PaginatedResponse<FeedPost>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<FeedPost>>(`/users/${userId}/forums`, { params: query })
+  return data
+}
+
+/** GET /users/:id/products — productos activos de una persona vendedora. */
+export const getUserProducts = async (
+  userId: string,
+  query: FeedPageQuery = {},
+): Promise<PaginatedResponse<MyContentProduct>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<MyContentProduct>>(`/users/${userId}/products`, { params: query })
   return data
 }
 

@@ -26,9 +26,12 @@ import SettingsPage from './pages/SettingsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import MyProductsPage from './pages/MyProductsPage'
 import CreateProductPage from './pages/CreateProductPage'
+import EditProductPage from './pages/EditProductPage'
+import SearchPage from './pages/SearchPage'
 import TagProductsPage from './pages/TagProductsPage'
 import UserProfilePage from './pages/UserProfilePage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
+import { SEARCH_MAX_LENGTH, SEARCH_TYPES, type SearchType } from './features/search/models/search'
 
 /**
  * Configuración de rutas del frontend.
@@ -100,6 +103,17 @@ const shopTagRoute = createRoute({
   component: TagProductsPage,
 })
 
+/** Resultados de la búsqueda global del header: /search?q=texto&type=products|communities|users|posts. */
+const searchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/search',
+  component: SearchPage,
+  validateSearch: (search: Record<string, unknown>): { q: string; type: SearchType | undefined } => ({
+    q: typeof search.q === 'string' ? search.q.trim().slice(0, SEARCH_MAX_LENGTH) : '',
+    type: (SEARCH_TYPES as readonly unknown[]).includes(search.type) ? (search.type as SearchType) : undefined,
+  }),
+})
+
 /** Detalle de un producto (Marketplace — Item Detail). */
 const productDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -118,6 +132,13 @@ const createProductRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): { community?: string } => ({
     community: typeof search.community === 'string' && search.community ? search.community : undefined,
   }),
+})
+
+/** Editar un producto propio (misma pantalla que publicar, con los datos cargados). */
+const editProductRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/products/$productId/edit',
+  component: EditProductPage,
 })
 
 /** Panel del vendedor: sus productos publicados, con edición y cambio de estado. */
@@ -270,6 +291,8 @@ const routeTree = rootRoute.addChildren([
   exploreRoute,
   shopTagRoute,
   createProductRoute,
+  editProductRoute,
+  searchRoute,
   productDetailRoute,
   myProductsRoute,
   communitiesRoute,

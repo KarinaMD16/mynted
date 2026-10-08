@@ -7,6 +7,7 @@ import {
   forgotPasswordRequest,
   getCurrentUserRequest,
   getUserByIdRequest,
+  getUserByUsernameRequest,
   loginRequest,
   loginWithFacebookRequest,
   loginWithGoogleRequest,
@@ -93,11 +94,21 @@ export function useFacebookLoginMutation() {
   })
 }
 
+/** Perfil público de otra persona, por id (la clave empieza con 'users' para invalidarlo junto con sus datos). */
 export function useUserByIdQuery(id: string | undefined) {
   return useQuery({
-    queryKey: ['users', id],
+    queryKey: ['users', 'by-id', id],
     queryFn: () => getUserByIdRequest(id as string),
     enabled: Boolean(id),
+  })
+}
+
+/** Perfil público de otra persona, por username (/users/keishi). */
+export function useUserByUsernameQuery(username: string | undefined) {
+  return useQuery({
+    queryKey: ['users', 'by-username', username],
+    queryFn: () => getUserByUsernameRequest(username as string),
+    enabled: Boolean(username),
   })
 }
 

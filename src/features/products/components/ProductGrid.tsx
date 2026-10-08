@@ -5,7 +5,7 @@ import { Repeat, Tag, UsersRound } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { formatPrice } from '@/utils/price'
+import { ProductPrice } from './ProductPrice'
 import type { ProductCondition, ProductListItem, ProductPage, ProductStatus } from '../models/product'
 import { Button } from '@/components/ui/Button'
 
@@ -17,6 +17,7 @@ const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
 }
 
 const STATUS_LABEL: Record<Exclude<ProductStatus, 'active'>, TranslationKey> = {
+  draft: 'products.status.draft',
   sold: 'products.status.sold',
   inactive: 'products.status.inactive',
 }
@@ -95,7 +96,7 @@ export function ProductGrid({
 }
 
 function ProductListingCard({ product, showCommunity }: { product: ProductListItem; showCommunity: boolean }) {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const isExchange = product.type === 'exchange'
   const tags = product.productTags?.map((item) => item.tag) ?? []
 
@@ -143,19 +144,31 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <span className="flex flex-col">
             {isExchange && <span className="text-[11px] text-mynted-gray">{t('products.card.referenceValue')}</span>}
-            <span className="font-heading text-lg font-semibold text-mynted-ink">
-              {formatPrice(product.price, product.currency, language)}
-            </span>
+            <ProductPrice
+              price={product.price}
+              finalPrice={product.finalPrice}
+              discountPercent={product.discountPercent}
+              currency={product.currency}
+              className="font-heading text-lg font-semibold text-mynted-ink"
+            />
           </span>
+          {/* Un producto sin comunidad (community: null) no pinta el chip. */}
           {showCommunity && product.community && (
-            <Link
-              to="/communities/$slug"
-              params={{ slug: product.community.slug }}
-              className="relative z-10 flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink hover:text-mynted-orange"
-            >
-              <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
-              <span className="truncate">{product.community.name}</span>
-            </Link>
+            product.community.slug ? (
+              <Link
+                to="/communities/$slug"
+                params={{ slug: product.community.slug }}
+                className="relative z-10 flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink hover:text-mynted-orange"
+              >
+                <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{product.community.name}</span>
+              </Link>
+            ) : (
+              <span className="flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink">
+                <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{product.community.name}</span>
+              </span>
+            )
           )}
         </div>
       </div>

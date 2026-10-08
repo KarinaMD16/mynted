@@ -4,7 +4,6 @@ import { ArrowLeft } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
-import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 import { useTag, useTagProducts } from '@/features/products/hooks/useProductQueries'
@@ -13,7 +12,7 @@ import { SiteHeader } from '../components/layout/SiteHeader'
 
 /**
  * "Ver todo" de una sección del Shop: todos los productos activos de un tag
- * (GET /products?tag=), con scroll infinito. Ese endpoint pide sesión.
+ * (GET /products?tag=), con scroll infinito. Es público: no pide sesión.
  */
 export default function TagProductsPage() {
   const { t } = useLanguage()
@@ -21,9 +20,8 @@ export default function TagProductsPage() {
   const parsed = Number(rawTagId)
   const tagId = Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
 
-  const { isLoggedIn, isLoading: isLoadingUser } = useCurrentUser()
   const tag = useTag(tagId)
-  const products = useTagProducts(tagId, isLoggedIn)
+  const products = useTagProducts(tagId)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = products
 
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -57,19 +55,7 @@ export default function TagProductsPage() {
           </h1>
         </ScrollReveal>
 
-        {isLoadingUser ? (
-          <div className="h-64 animate-pulse rounded-2xl bg-white" aria-busy="true" />
-        ) : !isLoggedIn ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-            <p className="text-sm text-mynted-gray">{t('shop.tag.loginPrompt')}</p>
-            <Link
-              to="/login"
-              className="rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-            >
-              {t('home.goToLogin')}
-            </Link>
-          </div>
-        ) : products.isPending ? (
+        {products.isPending ? (
           <div className={SHOP_GRID_CLASS} aria-busy="true">
             {Array.from({ length: 8 }, (_, index) => (
               <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
@@ -98,6 +84,8 @@ export default function TagProductsPage() {
                       title: product.title,
                       imageUrl: product.imageUrl,
                       price: product.price,
+                      finalPrice: product.finalPrice,
+                      discountPercent: product.discountPercent,
                       currency: product.currency,
                       tags: product.productTags?.map((item) => item.tag) ?? [],
                       type: product.type,
