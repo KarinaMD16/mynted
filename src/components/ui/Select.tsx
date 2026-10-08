@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
-import { Check, ChevronDown } from '@untitledui/icons'
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { Check, ChevronDown, SearchLg } from '@untitledui/icons'
 
 export interface SelectOption<T extends string | number> {
   value: T
@@ -17,6 +17,16 @@ interface SelectProps<T extends string | number> {
   disabled?: boolean
   invalid?: boolean
   className?: string
+  /** Agrega un campo para filtrar las opciones (útil en listas largas, como los países). */
+  searchable?: boolean
+  searchPlaceholder?: string
+  /** Texto cuando el filtro no encuentra nada; `{{query}}` ya viene resuelto. */
+  emptyLabel?: (query: string) => string
+}
+
+/** Compara sin importar mayúsculas ni tildes ("peru" encuentra "Perú"). */
+function normalize(text: string) {
+  return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 }
 
 /**
@@ -36,23 +46,35 @@ export function Select<T extends string | number>({
   disabled = false,
   invalid = false,
   className = '',
+  searchable = false,
+  searchPlaceholder = '',
+  emptyLabel,
 }: SelectProps<T>) {
   const autoId = useId()
   const buttonId = id ?? `${autoId}-button`
   const listId = `${autoId}-list`
   const rootRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
   const typeaheadRef = useRef({ text: '', timer: 0 })
 
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
-  const selectedIndex = options.findIndex((option) => option.value === value)
-  const selected = selectedIndex >= 0 ? options[selectedIndex] : undefined
+  const [query, setQuery] = useState('')
+
+  const selected = options.find((option) => option.value === value)
+  // Con búsqueda, la lista que se dibuja (y por la que se navega) es la filtrada.
+  const visible = useMemo(() => {
+    const term = normalize(query.trim())
+    return searchable && term ? options.filter((option) => normalize(option.label).includes(term)) : options
+  }, [options, query, searchable])
+  const selectedIndex = visible.findIndex((option) => option.value === value)
 
   function open() {
     if (disabled) return
-    setActiveIndex(Math.max(selectedIndex, 0))
+    setQuery('')
+    setActiveIndex(Math.max(options.findIndex((option) => option.value === value), 0))
     setIsOpen(true)
   }
 
@@ -61,7 +83,7 @@ export function Select<T extends string | number>({
   }
 
   function choose(index: number) {
-    const option = options[index]
+    const option = visible[index]
     if (!option) return
     onChange(option.value)
     close()
@@ -80,13 +102,18 @@ export function Select<T extends string | number>({
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [isOpen, onBlur])
 
+  // Al abrir, el cursor va directo al campo de búsqueda.
+  useEffect(() => {
+    if (isOpen && searchable) searchRef.current?.focus()
+  }, [isOpen, searchable])
+
   // Mantiene visible la opción activa al navegar con teclado.
   useEffect(() => {
     if (!isOpen) return
     listRef.current?.children[activeIndex]?.scrollIntoView({ block: 'nearest' })
   }, [isOpen, activeIndex])
 
-  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+  function onKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (disabled) return
 
     if (!isOpen) {
@@ -100,22 +127,30 @@ export function Select<T extends string | number>({
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault()
-        setActiveIndex((current) => Math.min(options.length - 1, current + 1))
+        setActiveIndex((current) => Math.min(visible.length - 1, current + 1))
         break
       case 'ArrowUp':
         event.preventDefault()
         setActiveIndex((current) => Math.max(0, current - 1))
         break
       case 'Home':
+        // En el campo de búsqueda, Inicio/Fin mueven el cursor del texto.
+        if (searchable) break
         event.preventDefault()
         setActiveIndex(0)
         break
       case 'End':
+        if (searchable) break
         event.preventDefault()
-        setActiveIndex(options.length - 1)
+        setActiveIndex(visible.length - 1)
         break
       case 'Enter':
+        event.preventDefault()
+        choose(activeIndex)
+        break
       case ' ':
+        // El espacio es parte del texto buscado (p. ej. "Costa Rica").
+        if (searchable) break
         event.preventDefault()
         choose(activeIndex)
         break
@@ -129,12 +164,12 @@ export function Select<T extends string | number>({
         close()
         break
       default: {
-        if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) break
+        if (searchable || event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) break
         const state = typeaheadRef.current
         window.clearTimeout(state.timer)
         state.text += event.key.toLowerCase()
         state.timer = window.setTimeout(() => (state.text = ''), 600)
-        const match = options.findIndex((option) => option.label.toLowerCase().startsWith(state.text))
+        const match = visible.findIndex((option) => option.label.toLowerCase().startsWith(state.text))
         if (match >= 0) setActiveIndex(match)
       }
     }
@@ -172,14 +207,41 @@ export function Select<T extends string | number>({
       </button>
 
       {isOpen && (
-        <ul
-          ref={listRef}
-          id={listId}
-          role="listbox"
-          aria-labelledby={buttonId}
-          className="absolute top-full right-0 left-0 z-30 mt-1.5 max-h-60 overflow-auto rounded-xl border border-mynted-border bg-mynted-white p-1.5 shadow-lg duration-150 ease-out animate-in fade-in slide-in-from-top-1"
-        >
-          {options.map((option, index) => {
+        <div className="absolute top-full right-0 left-0 z-30 mt-1.5 overflow-hidden rounded-xl border border-mynted-border bg-mynted-white shadow-lg duration-150 ease-out animate-in fade-in slide-in-from-top-1">
+          {searchable && (
+            <div className="flex items-center gap-2 border-b border-mynted-border px-3 py-2">
+              <SearchLg className="size-4 shrink-0 text-mynted-gray" aria-hidden="true" />
+              <input
+                ref={searchRef}
+                type="text"
+                role="searchbox"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setActiveIndex(0)
+                }}
+                onKeyDown={onKeyDown}
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                aria-controls={listId}
+                autoComplete="off"
+                className="w-full min-w-0 bg-transparent text-sm text-mynted-ink outline-none placeholder:text-mynted-gray-light"
+              />
+            </div>
+          )}
+          {searchable && visible.length === 0 && (
+            <p className="px-3.5 py-3 text-sm text-mynted-gray" role="status">
+              {emptyLabel?.(query.trim()) ?? ''}
+            </p>
+          )}
+          <ul
+            ref={listRef}
+            id={listId}
+            role="listbox"
+            aria-labelledby={buttonId}
+            className="max-h-60 overflow-auto p-1.5"
+          >
+          {visible.map((option, index) => {
             const isSelected = index === selectedIndex
             return (
               <li
@@ -199,7 +261,8 @@ export function Select<T extends string | number>({
               </li>
             )
           })}
-        </ul>
+          </ul>
+        </div>
       )}
     </div>
   )

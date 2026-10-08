@@ -2,11 +2,10 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
-import { getApiErrorMessage, isUnauthorizedError } from '@/api/apiError'
+import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { FilterGroup } from '@/components/ui/FilterGroup'
 import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
-import { LoginPrompt } from '@/components/ui/LoginPrompt'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
@@ -19,9 +18,10 @@ import {
   type ProductType,
 } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useShipTo } from '@/features/region/hooks/useShipTo'
 import { useDisplayCurrency } from '@/features/auth/hooks/useDisplayCurrency'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { INTL_LOCALES } from '@/utils/locale'
+import { INTL_LOCALES, regionName } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 type ExploreTab = 'shop' | 'talk'
@@ -68,16 +68,21 @@ const LAST_STEP = PRICE_STEPS.length - 1
 
 /**
  * Explorar: catálogo general de productos activos (GET /products) con filtros
- * por categoría, tipo, condición y rango de precio, y scroll infinito. Se ve
- * sin sesión: si el backend responde 401 (GET /products todavía exige login),
- * se muestra una invitación a entrar en vez del catálogo.
+ * por categoría, tipo, condición, rango de precio y, si la persona lo pide,
+ * solo lo que se envía a su país; con scroll infinito. La pestaña Shop es
+ * pública (GET /products no pide sesión); la pestaña Talk sí necesita sesión.
+ * El rango de precio se aplica al precio final (con descuento) y se manda con
+ * la moneda de referencia.
  */
 export default function ExplorePage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const displayCurrency = useDisplayCurrency()
+  const { shipTo } = useShipTo()
 
   const [category, setCategory] = useState<number | undefined>()
   const [type, setType] = useState<ProductType | undefined>()
   const [condition, setCondition] = useState<ProductCondition | undefined>()
+  const [onlyMyCountry, setOnlyMyCountry] = useState(false)
   const [priceSteps, setPriceSteps] = useState<[number, number]>([0, LAST_STEP])
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<ExploreTab>('shop')
@@ -88,10 +93,14 @@ export default function ExplorePage() {
     ...(condition && { condition }),
     ...(priceSteps[0] > 0 && { priceMin: PRICE_STEPS[priceSteps[0]] }),
     ...(priceSteps[1] < LAST_STEP && { priceMax: PRICE_STEPS[priceSteps[1]] }),
+    ...(onlyMyCountry && shipTo && { shipTo }),
   }
+  // La moneda solo acompaña al rango de precio; no es un filtro que la persona elija.
+  const hasPriceFilter = filters.priceMin !== undefined || filters.priceMax !== undefined
   const activeCount = Object.keys(filters).length
+  const requestFilters: ExploreFilters = hasPriceFilter ? { ...filters, currency: displayCurrency } : filters
 
-  const products = useExploreProducts(filters)
+  const products = useExploreProducts(requestFilters)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = products
 
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -115,6 +124,7 @@ export default function ExplorePage() {
     setCategory(undefined)
     setType(undefined)
     setCondition(undefined)
+    setOnlyMyCountry(false)
     setPriceSteps([0, LAST_STEP])
   }
 
@@ -181,7 +191,8 @@ export default function ExplorePage() {
             <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
               <aside
                 aria-label={t('explore.filters.title')}
-                className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5"
+                // En pantallas bajas los filtros no caben: la barra lateral es fija, así que se desplaza por dentro.
+                className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5 lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto"
               >
                 <div className="flex items-center justify-between">
                   <h2 className="font-heading text-base font-semibold text-mynted-ink">{t('explore.filters.title')}</h2>
@@ -223,6 +234,14 @@ export default function ExplorePage() {
                 </FilterGroup>
 
                 <PriceSlider value={priceSteps} onChange={setPriceSteps} />
+
+                {shipTo && (
+                  <FilterGroup label={t('explore.filters.shipping')}>
+                    <Chip selected={onlyMyCountry} onClick={() => setOnlyMyCountry((value) => !value)}>
+                      {t('explore.filters.shipToMine', { country: regionName(shipTo, language) })}
+                    </Chip>
+                  </FilterGroup>
+                )}
               </aside>
             </ScrollReveal>
 
@@ -236,8 +255,6 @@ export default function ExplorePage() {
                     <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
                   ))}
                 </div>
-              ) : products.isError && isUnauthorizedError(products.error) ? (
-                <LoginPrompt message={t('explore.loginPrompt')} />
               ) : products.isError ? (
                 <div
                   className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"
@@ -270,6 +287,8 @@ export default function ExplorePage() {
                             title: product.title,
                             imageUrl: product.imageUrl,
                             price: product.price,
+                            finalPrice: product.finalPrice,
+                            discountPercent: product.discountPercent,
                             currency: product.currency,
                             tags: product.productTags?.map((item) => item.tag) ?? [],
                             type: product.type,

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
 import { PostStats } from '@/features/community/components/cards/PostStats'
@@ -10,8 +11,17 @@ export function FavoritePostCard({ post }: { post: FeedPost }) {
   const name = post.author?.displayName ?? '—'
 
   return (
-    <article className="flex w-full flex-col gap-2.5 overflow-hidden rounded-2xl border border-mynted-border bg-white p-5">
-      <header className="flex items-center gap-2.5">
+    <article className="group relative flex w-full flex-col gap-2.5 overflow-hidden rounded-2xl border border-mynted-border bg-white p-5 transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(13,13,20,0.15)]">
+      {/* Toda la tarjeta lleva al post; el contenido no captura el clic. Sin comunidad no hay ruta a la que ir. */}
+      {post.community && (
+        <Link
+          to="/communities/$slug/posts/$postId"
+          params={{ slug: post.community.slug, postId: String(post.id) }}
+          aria-label={post.title}
+          className="absolute inset-0 z-0 rounded-2xl outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-mynted-blue"
+        />
+      )}
+      <header className="pointer-events-none flex items-center gap-2.5">
         {post.author?.photoUrl ? (
           <img src={post.author.photoUrl} alt="" loading="lazy" className="size-8 shrink-0 rounded-full object-cover" />
         ) : (
@@ -32,10 +42,10 @@ export function FavoritePostCard({ post }: { post: FeedPost }) {
         </div>
       </header>
 
-      <h3 className="line-clamp-2 font-heading text-sm font-semibold text-mynted-ink">{post.title}</h3>
+      <h3 className="pointer-events-none line-clamp-2 font-heading text-sm font-semibold text-mynted-ink">{post.title}</h3>
 
       {post.tags.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5">
+        <ul className="pointer-events-none flex flex-wrap gap-1.5">
           {post.tags.slice(0, 3).map((tag) => (
             <li key={tag.tagId} className="rounded-full bg-mynted-bg px-2.5 py-1 text-[11px] text-mynted-gray">
               #{tag.name}
@@ -44,7 +54,7 @@ export function FavoritePostCard({ post }: { post: FeedPost }) {
         </ul>
       )}
 
-      <PostStats post={post} accent className="mt-auto" />
+      <PostStats post={post} accent className="pointer-events-none mt-auto" />
     </article>
   )
 }

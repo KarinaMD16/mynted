@@ -1,5 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { getInterestsRequest, getMyInterestsRequest, saveInterestsRequest } from '../services/interestsServices'
+import {
+  getInterestsRequest,
+  getMyInterestsRequest,
+  getUserInterestsRequest,
+  saveInterestsRequest,
+} from '../services/interestsServices'
 
 export function useInterestsQuery() {
   return useQuery({
@@ -20,5 +25,14 @@ export function useMyInterestsQuery(enabled: boolean) {
     queryKey: ['interests', 'me'],
     queryFn: getMyInterestsRequest,
     enabled,
+  })
+}
+
+/** Intereses de otra persona, para su perfil público. */
+export function useUserInterestsQuery(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['interests', 'user', userId],
+    queryFn: () => getUserInterestsRequest(userId as string),
+    enabled: Boolean(userId),
   })
 }

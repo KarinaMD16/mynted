@@ -1,15 +1,19 @@
-import { useId, useRef, type ReactNode } from 'react'
-import { ImagePlus, Trash2, X } from 'lucide-react'
+import { useId, useMemo, type ReactNode } from 'react'
+import { Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
+import { TextField } from '@/components/ui/TextField'
 import { useTags } from '@/features/community/hooks/useCommunitiesQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useObjectUrl } from '../hooks/useObjectUrl'
-import { MAX_GALLERY_IMAGES, REQUIRED_PRODUCT_TAGS } from '../models/product'
+import { cx } from '@/utils/cx'
+import { SHIPPING_REGIONS, regionFlag, regionName } from '@/utils/locale'
+import { useMyProducts } from '../hooks/useProductQueries'
+import { MAX_RELATED_PRODUCTS, REQUIRED_PRODUCT_TAGS } from '../models/product'
 import { errorClass, hintClass, labelClass } from './productFormShared'
 
 /**
- * Piezas compartidas de los formularios de producto (crear en
- * CreateProductPage, editar en EditProductDialog).
+ * Piezas del formulario de producto compartido por las pantallas de publicar
+ * y de editar (ver ProductEditor.tsx).
  */
 
 export function ChoiceChip({
@@ -41,167 +45,27 @@ export function ChoiceChip({
   )
 }
 
-export function CoverPicker({ file, error, onChange }: { file: File | null; error?: string; onChange: (file: File | null) => void }) {
-  const { t } = useLanguage()
-  const inputId = useId()
-  const inputRef = useRef<HTMLInputElement>(null)
-  const preview = useObjectUrl(file)
-
-  return (
-    // relative: el <input type="file"> (sr-only, posición absoluta) queda anclado a
-    // este bloque; así, cuando el navegador le devuelve el foco al cerrar el
-    // explorador de archivos, no hace saltar el scroll del diálogo.
-    <div className="relative flex flex-col gap-1.5">
-      <span className={labelClass}>{t('products.create.coverLabel')}</span>
-      <input
-        ref={inputRef}
-        id={inputId}
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        onChange={(event) => {
-          onChange(event.target.files?.[0] ?? null)
-          event.target.value = ''
-        }}
-      />
-      {preview ? (
-        <div className="relative overflow-hidden rounded-xl border border-mynted-border">
-          <img src={preview} alt={t('products.create.coverPreviewAlt')} className="h-52 w-full object-cover" />
-          <div className="absolute right-3 bottom-3 flex gap-2">
-            <Button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              variant="secondary"
-              size="sm"
-              className="border-0 bg-white/95 shadow hover:bg-white"
-            >
-              {t('products.create.changeImage')}
-            </Button>
-            <Button
-              type="button"
-              onClick={() => onChange(null)}
-              aria-label={t('products.create.removeImage')}
-              variant="secondary"
-              size="icon-sm"
-              className="border-0 bg-white/95 text-red-600 shadow hover:bg-white"
-            >
-              <Trash2 className="size-4" aria-hidden="true" />
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <label
-          htmlFor={inputId}
-          className={`flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-mynted-bg/60 text-center transition-colors hover:border-mynted-orange ${
-            error ? 'border-red-300' : 'border-mynted-border'
-          }`}
-        >
-          <ImagePlus className="size-7 text-mynted-orange" aria-hidden="true" />
-          <span className="text-sm font-semibold text-mynted-ink">{t('products.create.coverCta')}</span>
-          <span className={hintClass}>{t('products.create.imageHint')}</span>
-        </label>
-      )}
-      {error && <span className={errorClass}>{error}</span>}
-    </div>
-  )
-}
-
-export function GalleryThumb({ file, index, onRemove }: { file: File; index: number; onRemove: () => void }) {
-  const { t } = useLanguage()
-  const preview = useObjectUrl(file)
-  return (
-    <li className="relative aspect-square overflow-hidden rounded-lg border border-mynted-border">
-      {preview && <img src={preview} alt={t('products.create.galleryImageAlt', { number: index + 1 })} className="h-full w-full object-cover" />}
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={t('products.create.removeGalleryImage', { number: index + 1 })}
-        className="absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-white/95 text-mynted-ink shadow hover:cursor-pointer"
-      >
-        <X className="size-3.5" aria-hidden="true" />
-      </button>
-    </li>
-  )
-}
-
-export function GalleryPicker({
-  files,
-  onAdd,
-  onRemove,
-}: {
-  files: File[]
-  onAdd: (files: File[]) => void
-  onRemove: (index: number) => void
-}) {
-  const { t } = useLanguage()
-  const inputId = useId()
-  const canAdd = files.length < MAX_GALLERY_IMAGES
-
-  return (
-    <div className="relative flex flex-col gap-1.5">
-      <span className={labelClass}>{t('products.create.galleryLabel')}</span>
-      <span className={hintClass}>
-        {t('products.create.galleryHint', { count: files.length, max: MAX_GALLERY_IMAGES })}
-      </span>
-      <input
-        id={inputId}
-        type="file"
-        accept="image/*"
-        multiple
-        className="sr-only"
-        disabled={!canAdd}
-        onChange={(event) => {
-          onAdd(Array.from(event.target.files ?? []))
-          event.target.value = ''
-        }}
-      />
-      <ul className="mt-1 grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {files.map((file, index) => (
-          <GalleryThumb key={`${file.name}-${file.lastModified}-${index}`} file={file} index={index} onRemove={() => onRemove(index)} />
-        ))}
-        {canAdd && (
-          <li>
-            <label
-              htmlFor={inputId}
-              className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-mynted-border px-1.5 text-center text-mynted-gray transition-colors hover:border-mynted-orange hover:text-mynted-orange"
-            >
-              <ImagePlus className="size-5 shrink-0" aria-hidden="true" />
-              <span className="text-[11px] leading-tight font-semibold">{t('products.create.addImages')}</span>
-            </label>
-          </li>
-        )}
-      </ul>
-    </div>
-  )
-}
-
 /**
- * Selector de exactamente 3 tags. Muestra los tags generales y los de la
- * categoría de la comunidad elegida (mismo criterio que TagPicker al crear
- * una comunidad).
+ * Selector de 3 tags. Si el producto va en una comunidad con categoría muestra
+ * los tags generales y los de esa categoría (mismo criterio que TagPicker al
+ * crear una comunidad); sin comunidad, o si no se conoce su categoría, muestra
+ * todos.
  */
 export function ProductTagPicker({
-  hasCommunity,
   categoryId,
   selected,
   onChange,
   error,
-  showAllCategories = false,
 }: {
-  hasCommunity: boolean
+  /** Categoría de la comunidad elegida; null = sin comunidad (o categoría desconocida). */
   categoryId: number | null
-  /** Sin categoría conocida: muestra todos los tags en vez de solo los generales. */
-  showAllCategories?: boolean
   selected: number[]
   onChange: (ids: number[]) => void
   error?: string
 }) {
   const { t } = useLanguage()
   const tagsQuery = useTags()
-  // Los tags dependen de la categoría de la comunidad: sin comunidad elegida no se muestran.
-  const tags = hasCommunity
-    ? tagsQuery.data?.filter((tag) => showAllCategories || tag.categoryId === null || tag.categoryId === categoryId)
-    : []
+  const tags = tagsQuery.data?.filter((tag) => categoryId === null || tag.categoryId === null || tag.categoryId === categoryId)
 
   return (
     <fieldset className="flex flex-col gap-1.5">
@@ -210,8 +74,7 @@ export function ProductTagPicker({
         {t('products.create.tagsHint', { required: REQUIRED_PRODUCT_TAGS, count: selected.length })}
       </p>
       <div className="mt-1.5 flex flex-wrap gap-2">
-        {hasCommunity &&
-          tagsQuery.isPending &&
+        {tagsQuery.isPending &&
           Array.from({ length: 5 }, (_, index) => <span key={index} className="h-7 w-20 animate-pulse rounded-full bg-mynted-bg" />)}
         {tags?.map((tag) => {
           const isSelected = selected.includes(tag.tagId)
@@ -234,11 +97,185 @@ export function ProductTagPicker({
           )
         })}
       </div>
-      {!hasCommunity && <span className={hintClass}>{t('products.create.tagsChooseCommunity')}</span>}
-      {hasCommunity && tags?.length === 0 && <span className={hintClass}>{t('communities.tags.empty')}</span>}
+      {tags?.length === 0 && <span className={hintClass}>{t('communities.tags.empty')}</span>}
       {tagsQuery.isError && <span className={errorClass}>{t('communities.tags.loadError')}</span>}
       {error && <span className={errorClass}>{error}</span>}
     </fieldset>
   )
 }
 
+/** Descuento en porcentaje (0–100). El precio original no cambia: el backend calcula el precio final. */
+export function DiscountField({
+  value,
+  onChange,
+  onBlur,
+  error,
+}: {
+  value: string
+  onChange: (value: string) => void
+  onBlur?: () => void
+  error?: string
+}) {
+  const { t } = useLanguage()
+  return (
+    <div className="flex flex-col gap-1.5">
+      <TextField
+        label={t('products.create.discountLabel')}
+        placeholder="0"
+        inputMode="decimal"
+        value={value}
+        onChange={(event) => onChange(event.target.value.replace(',', '.'))}
+        onBlur={onBlur}
+        error={error}
+      />
+      <span className={hintClass}>{t('products.create.discountHint')}</span>
+    </div>
+  )
+}
+
+/** Si el producto aparece en los listados públicos o queda oculto (solo se llega con el enlace). */
+export function VisibilityToggle({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) {
+  const { t } = useLanguage()
+  const id = useId()
+  return (
+    <div className="flex items-start gap-3">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="mt-0.5 size-4 shrink-0 cursor-pointer accent-mynted-orange"
+      />
+      <label htmlFor={id} className="flex cursor-pointer flex-col gap-0.5">
+        <span className={labelClass}>{t('products.create.visibleLabel')}</span>
+        <span className={hintClass}>{t('products.create.visibleHint')}</span>
+      </label>
+    </div>
+  )
+}
+
+/** Países a los que se envía: se agregan desde una lista y se quitan con la X de cada chip. */
+export function ShipsToPicker({ selected, onChange }: { selected: string[]; onChange: (regions: string[]) => void }) {
+  const { t, language } = useLanguage()
+  const options = useMemo(
+    () =>
+      SHIPPING_REGIONS.filter((region) => !selected.includes(region))
+        .map((region) => ({ value: region, label: `${regionFlag(region)} ${regionName(region, language)}` }))
+        .sort((a, b) => a.label.localeCompare(b.label, language)),
+    [selected, language],
+  )
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={labelClass}>{t('products.create.shipsToLabel')}</span>
+      <Select
+        value=""
+        options={options}
+        placeholder={t('products.create.shipsToAdd')}
+        searchable
+        searchPlaceholder={t('select.searchPlaceholder')}
+        emptyLabel={(query) => t('select.noOptions', { query })}
+        disabled={options.length === 0}
+        onChange={(region) => onChange([...selected, region])}
+      />
+      {selected.length > 0 && (
+        <ul className="mt-1 flex flex-wrap gap-2">
+          {selected.map((region) => (
+            <li
+              key={region}
+              className="flex items-center gap-1.5 rounded-full border border-mynted-border bg-white py-1 pr-1.5 pl-3 text-xs font-medium text-mynted-ink"
+            >
+              <span aria-hidden="true">{regionFlag(region)}</span>
+              {regionName(region, language)}
+              <button
+                type="button"
+                onClick={() => onChange(selected.filter((item) => item !== region))}
+                aria-label={t('products.create.shipsToRemove', { country: regionName(region, language) })}
+                className="grid size-5 place-items-center rounded-full text-mynted-gray hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
+              >
+                <X className="size-3" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <span className={hintClass}>{t('products.create.shipsToHint')}</span>
+    </div>
+  )
+}
+
+/**
+ * Productos relacionados que elige el vendedor (los muestra en el detalle como
+ * "Más del vendedor"). Solo se pueden elegir productos propios y activos, hasta
+ * MAX_RELATED_PRODUCTS. `excludeId` es el producto que se está editando.
+ */
+export function RelatedProductsPicker({
+  selected,
+  onChange,
+  excludeId,
+}: {
+  selected: number[]
+  onChange: (ids: number[]) => void
+  excludeId?: number
+}) {
+  const { t } = useLanguage()
+  const query = useMyProducts()
+  const items = (query.data?.pages.flatMap((page) => page.data) ?? []).filter(
+    (product) => product.status === 'active' && product.id !== excludeId,
+  )
+
+  return (
+    <fieldset className="flex flex-col gap-1.5">
+      <legend className={labelClass}>{t('products.create.relatedLabel')}</legend>
+      <p className={`${hintClass} mt-1.5`}>
+        {t('products.create.relatedHint', { count: selected.length, max: MAX_RELATED_PRODUCTS })}
+      </p>
+
+      {query.isPending ? (
+        <div className="mt-1.5 h-16 animate-pulse rounded-xl bg-mynted-bg" aria-busy="true" />
+      ) : query.isError ? (
+        <span className={errorClass}>{t('products.list.loadError')}</span>
+      ) : items.length === 0 ? (
+        <span className={hintClass}>{t('products.create.relatedEmpty')}</span>
+      ) : (
+        <ul className="mt-1.5 grid max-h-64 gap-2 overflow-y-auto sm:grid-cols-2">
+          {items.map((product) => {
+            const isSelected = selected.includes(product.id)
+            const isDisabled = !isSelected && selected.length >= MAX_RELATED_PRODUCTS
+            return (
+              <li key={product.id}>
+                <button
+                  type="button"
+                  aria-pressed={isSelected}
+                  disabled={isDisabled}
+                  onClick={() => onChange(isSelected ? selected.filter((id) => id !== product.id) : [...selected, product.id])}
+                  className={cx(
+                    'flex w-full items-center gap-3 rounded-xl border p-2 text-left transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40',
+                    isSelected ? 'border-mynted-orange bg-mynted-orange/10' : 'border-mynted-border bg-white enabled:hover:border-mynted-orange/60',
+                  )}
+                >
+                  <img src={product.imageUrl} alt="" className="size-10 shrink-0 rounded-lg bg-mynted-bg object-cover" />
+                  <span className="line-clamp-2 min-w-0 flex-1 text-xs font-medium text-mynted-ink">{product.title}</span>
+                  {isSelected && <Check className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {query.hasNextPage && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="self-start"
+          disabled={query.isFetchingNextPage}
+          onClick={() => void query.fetchNextPage()}
+        >
+          {t('products.create.relatedMore')}
+        </Button>
+      )}
+    </fieldset>
+  )
+}
