@@ -13,13 +13,17 @@ interface ForumPostCardProps {
   index: number
 }
 
-/** Publicacion del foro dentro de la lista de la comunidad. */
+/**
+ * Publicacion del foro dentro de la lista de la comunidad. Toda la tarjeta
+ * abre la publicacion: el enlace del titulo se estira sobre ella con un
+ * pseudo-elemento, y lo que se pueda tocar aparte va en una capa por encima.
+ */
 export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps) {
   const { t, language } = useLanguage()
   const { voteOnPost, favoritePost } = useForumActions()
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5">
+    <article className="relative flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5 transition-colors hover:border-mynted-orange/50">
       <ForumAuthorLine
         displayName={post.author?.displayName ?? t('community.detail.deletedAuthor')}
         photoUrl={post.author?.photoUrl}
@@ -32,7 +36,7 @@ export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps
       <Link
         to="/communities/$slug/posts/$postId"
         params={{ slug: communitySlug, postId: String(post.id) }}
-        className="font-heading text-base font-semibold text-mynted-ink hover:underline"
+        className="font-heading text-base font-semibold text-mynted-ink hover:underline after:absolute after:inset-0 after:rounded-2xl after:content-['']"
       >
         {post.title}
       </Link>
@@ -63,6 +67,7 @@ export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps
       )}
 
       <ForumMetricsBar
+        className="relative z-10"
         metrics={post}
         replyCount={post.replyCount}
         disabled={voteOnPost.isPending || favoritePost.isPending}

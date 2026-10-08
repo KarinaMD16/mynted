@@ -16,6 +16,11 @@ interface GlobalPostCardProps {
  * Publicacion dentro del feed de "Talk". Es la misma tarjeta del foro, pero
  * aca se agrega la comunidad de donde salio: el feed mezcla varias, asi que
  * sin eso no se sabe de cual es cada publicacion ni a donde lleva el titulo.
+ *
+ * Toda la tarjeta abre la publicacion: el enlace del titulo se estira sobre
+ * ella con un pseudo-elemento, asi sigue habiendo un solo enlace de verdad
+ * (el teclado y el "abrir en pestana nueva" siguen funcionando). Lo que se
+ * pueda tocar aparte —la comunidad, votar, guardar— va en una capa por encima.
  */
 export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
   const { t, language } = useLanguage()
@@ -27,7 +32,11 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
   const community = post.community
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5">
+    <article
+      className={`relative flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5 transition-colors ${
+        community ? 'hover:border-mynted-orange/50' : ''
+      }`}
+    >
       <ForumAuthorLine
         displayName={post.author?.displayName ?? t('community.detail.deletedAuthor')}
         photoUrl={post.author?.photoUrl}
@@ -40,7 +49,7 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
             <Link
               to="/communities/$slug"
               params={{ slug: community.slug }}
-              className="truncate font-medium text-mynted-blue hover:underline"
+              className="relative z-10 truncate font-medium text-mynted-blue hover:underline"
             >
               @{community.slug}
             </Link>
@@ -52,7 +61,7 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
         <Link
           to="/communities/$slug/posts/$postId"
           params={{ slug: community.slug, postId: String(post.id) }}
-          className="font-heading text-base font-semibold text-mynted-ink hover:underline"
+          className="font-heading text-base font-semibold text-mynted-ink hover:underline after:absolute after:inset-0 after:rounded-2xl after:content-['']"
         >
           {post.title}
         </Link>
@@ -82,6 +91,7 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
       )}
 
       <ForumMetricsBar
+        className="relative z-10"
         metrics={post}
         replyCount={post.replyCount}
         disabled={voteOnPost.isPending || favoritePost.isPending}
