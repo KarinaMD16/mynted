@@ -1,7 +1,15 @@
 import myntedAPI from '@/api/apiConfig'
 import type {
-  ForumFavoriteResult,
+  FeedPageQuery,
+  FeedPost,
   ForumPost,
+  MyContentEntry,
+  MyForumPostsQuery,
+  PaginatedResponse,
+} from '../models/communityDTOs'
+
+import type {
+  ForumFavoriteResult,
   ForumPostsPage,
   ForumPostsQuery,
   ForumReply,
@@ -10,6 +18,20 @@ import type {
   GlobalPostsQuery,
   VoteType,
 } from '../models/forumDTOs'
+
+/** GET /forums/me — solo los posts (hilos) del usuario autenticado; ordenables por fecha, votos o guardados. */
+export const getMyForumPosts = async (query: MyForumPostsQuery = {}): Promise<PaginatedResponse<FeedPost>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<FeedPost>>('/forums/me', { params: query })
+  return data
+}
+
+/** GET /posts/me — posts y productos del usuario autenticado mezclados por fecha (pestaña "Publicaciones"). */
+export const getMyContent = async (
+  query: FeedPageQuery & { order?: 'asc' | 'desc' } = {},
+): Promise<PaginatedResponse<MyContentEntry>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<MyContentEntry>>('/posts/me', { params: query })
+  return data
+}
 
 /**
  * Foro de la comunidad. Todo pide sesion; publicar ademas exige ser miembro,

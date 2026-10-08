@@ -16,43 +16,48 @@ import { Navigation } from '../ui/Navigation'
 import { NAV_ITEMS } from '../ui/navItems'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
-import { useState } from 'react'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { AccountControl } from './AccountControl'
 import { MenuItem } from './menuPrimitives'
 import { useAccountActions } from './useAccountActions'
 
 const navItemBaseClass =
-  'rounded-[10px] px-4 py-[9px] text-[15px] font-medium whitespace-nowrap text-mynted-gray transition-colors hover:bg-mynted-orange hover:text-mynted-white'
+  'rounded-[10px] px-4 py-[9px] text-[15px] font-medium whitespace-nowrap text-mynted-gray transition-colors hover:bg-mynted-orange hover:text-mynted-ink'
 
 export function SiteHeader() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const { data: currentUser, isLoggedIn, isLoading } = useCurrentUser()
 
   return (
-    <header className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-4 rounded-2xl border border-mynted-border bg-mynted-white px-4 py-3.5 sm:px-6 lg:px-12 lg:py-[18px]">
-      <Link to="/" className="flex shrink-0 items-center gap-2.5 rounded-xs outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-      <Logo ver='small'/>
-      </Link>
+    // El contenedor es el que se pega (sticky): antes cada página envolvía el header en su
+    // propio <div>, y un sticky no puede salirse de la caja de su padre. `-top-2` + `pt-5`
+    // deja 12px de aire arriba cuando está pegado. `pointer-events-none` evita que ese
+    // espacio transparente bloquee clics en el contenido que pasa por detrás.
+    <div className="pointer-events-none sticky -top-2 z-30 px-4 pt-5 sm:px-6">
+      <header className="pointer-events-auto mx-auto flex w-full max-w-[1320px] items-center justify-between gap-4 rounded-2xl border border-mynted-border bg-mynted-white/90 px-4 py-3.5 shadow-[0_2px_12px_rgba(13,13,20,0.06)] backdrop-blur-md sm:px-6 xl:px-8 xl:py-[18px]">
+        <Link to="/" className="flex shrink-0 items-center gap-2.5 rounded-xs outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+          <Logo ver="small" />
+        </Link>
 
-      <Navigation className="hidden items-center gap-1.5 lg:flex lg:flex-wrap" />
+        {/* Menú y acciones completas desde xl (1280px); por debajo, botón de menú con drawer. */}
+        <Navigation className="hidden shrink-0 items-center gap-1 xl:flex" />
 
-      {/* Acciones de escritorio */}
-      <div className="hidden shrink-0 items-center gap-3.5 lg:flex">
-        <SearchBar />
-        <LanguageSwitcher />
-        <NotificationsMenu />
-        <AccountControl isLoading={isLoading} isLoggedIn={isLoggedIn} userName={currentUser?.username} />
-      </div>
+        {/* Acciones de escritorio */}
+        <div className="hidden min-w-0 flex-1 items-center justify-end gap-3.5 xl:flex">
+          <SearchBar className="max-w-[260px] min-w-[160px] flex-1" />
+          <LanguageSwitcher />
+          <NotificationsMenu />
+          <AccountControl isLoading={isLoading} isLoggedIn={isLoggedIn} userName={currentUser?.username} />
+        </div>
 
-      {/* Acciones compactas (mobile / tablet) */}
-      <div className="flex shrink-0 items-center gap-2 lg:hidden">
-        <NotificationsMenu />
-        <MobileMenuTrigger isLoggedIn={isLoggedIn} userName={currentUser?.username} pathname={pathname} />
-      </div>
-    </header>
+        {/* Acciones compactas (mobile / tablet / laptop chica) */}
+        <div className="flex shrink-0 items-center gap-2 xl:hidden">
+          <NotificationsMenu />
+          <MobileMenuTrigger isLoggedIn={isLoggedIn} userName={currentUser?.username} pathname={pathname} />
+        </div>
+      </header>
+    </div>
   )
 }
 
@@ -63,7 +68,7 @@ function NotificationsMenu() {
     <AriaDialogTrigger>
       <AriaButton
         aria-label={t('header.notifications')}
-        className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-mynted-border bg-mynted-blue-mid text-mynted-white outline-none transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:opacity-80"
+        className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-mynted-border bg-mynted-white text-mynted-ink outline-none transition-colors hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-bg"
       >
         <Bell01 className="size-[22px]" aria-hidden="true" />
       </AriaButton>
@@ -91,12 +96,10 @@ function MobileMenuTrigger({
   pathname: string
 }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToMyProducts, goToAdmin, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
   const role = useCurrentUser().data?.role
   const isSuperAdmin = role === 'superadmin'
   const isSeller = role === 'seller'
-  // El diálogo vive fuera del drawer para que no se desmonte al cerrarlo.
-  const [isSellOpen, setIsSellOpen] = useState(false)
 
   return (
     <>
@@ -168,7 +171,7 @@ function MobileMenuTrigger({
                         <Link
                           to={item.href}
                           onClick={() => state.close()}
-                          className={`block ${navItemBaseClass} ${isActive ? 'bg-mynted-orange font-semibold text-mynted-white' : ''}`}
+                          className={`block ${navItemBaseClass} ${isActive ? 'bg-mynted-orange font-semibold text-mynted-ink' : ''}`}
                         >
                           {t(item.labelKey)}
                         </Link>
@@ -183,7 +186,7 @@ function MobileMenuTrigger({
                   <>
                     <div className="mb-1.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2">
                       <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-mynted-orange">
-                        <GooseIcon className="size-5 text-mynted-white" />
+                        <GooseIcon className="size-5 text-mynted-ink" />
                       </span>
                       <span className="text-sm font-semibold text-mynted-ink">{userName ?? t('header.account')}</span>
                     </div>
@@ -230,7 +233,7 @@ function MobileMenuTrigger({
                             label={t('header.sell')}
                             onPress={() => {
                               state.close()
-                              setIsSellOpen(true)
+                              goToCreateProduct()
                             }}
                           />
                         )}
@@ -252,7 +255,7 @@ function MobileMenuTrigger({
                   <Link
                     to="/login"
                     onClick={() => state.close()}
-                    className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-mynted-orange px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+                    className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-mynted-orange px-4 py-2.5 text-sm font-semibold text-mynted-ink transition-colors hover:bg-mynted-orange-hover"
                   >
                     {t('header.login')}
                   </Link>
@@ -263,7 +266,6 @@ function MobileMenuTrigger({
         )}
       </AriaModalOverlay>
     </AriaDialogTrigger>
-    {isSeller && <CreateProductDialog isOpen={isSellOpen} onClose={() => setIsSellOpen(false)} />}
     </>
   )
 }

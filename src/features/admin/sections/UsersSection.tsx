@@ -158,7 +158,8 @@ function UsersManage({
       render: (user) => (
         <IdentityCell
           avatar={<Avatar src={user.photoUrl} name={user.username} />}
-          title={user.username}
+          // Mismo nombre clicable que en el resumen: abre el panel de revisión de la cuenta.
+          title={<UserHoverName user={user} onOpen={() => setReviewUserId(user.id)} />}
           subtitle={user.email}
           badge={
             user.id === currentUserId && (

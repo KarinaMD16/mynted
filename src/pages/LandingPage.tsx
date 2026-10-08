@@ -44,14 +44,20 @@ export default function LandingPage() {
   const { isLoggedIn } = useCurrentUser()
 
   return (
-    <div className="overflow-hidden bg-[#fbfcff] text-mynted-ink">
+    // `overflow-x-clip` (no `overflow-hidden`): este último vuelve al <div> un contenedor de
+    // scroll y el header sticky dejaría de pegarse. El header vive acá arriba, fuera del hero,
+    // por la misma razón: un sticky solo se mueve dentro de la caja de su padre.
+    <div className="overflow-x-clip bg-[#f4f7ff] text-mynted-ink">
+      <SiteHeader />
       <Hero isLoggedIn={isLoggedIn} />
-      <Features />
-      <Steps isLoggedIn={isLoggedIn} />
-      <Communities />
-      <Values />
-      <FinalCta isLoggedIn={isLoggedIn} />
-      <Footer />
+      <div className="bg-[#fbfcff]">
+        <Features />
+        <Steps isLoggedIn={isLoggedIn} />
+        <Communities />
+        <Values />
+        <FinalCta isLoggedIn={isLoggedIn} />
+        <Footer />
+      </div>
     </div>
   )
 }
@@ -95,10 +101,6 @@ function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <section className="relative bg-[#f4f7ff]">
       <div className="pointer-events-none absolute -top-56 -right-48 size-[550px] rounded-full bg-[#dce6ff] blur-3xl" />
-
-      <div className="relative z-20 px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
 
       <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-6 pt-14 pb-20 lg:grid-cols-[1.05fr_.95fr] lg:px-10 lg:pt-20 lg:pb-28">
         <div>

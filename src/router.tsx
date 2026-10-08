@@ -25,7 +25,9 @@ import ConfirmEmailChangePage from './pages/ConfirmEmailChangePage'
 import SettingsPage from './pages/SettingsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import MyProductsPage from './pages/MyProductsPage'
+import CreateProductPage from './pages/CreateProductPage'
 import TagProductsPage from './pages/TagProductsPage'
+import UserProfilePage from './pages/UserProfilePage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
 
 /**
@@ -105,6 +107,19 @@ const productDetailRoute = createRoute({
   component: ProductDetailPage,
 })
 
+/**
+ * Publicar un producto (solo vendedores). Con ?community=<slug> la comunidad
+ * queda fija (viene del botón "Publicar en esta comunidad").
+ */
+const createProductRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/products/new',
+  component: CreateProductPage,
+  validateSearch: (search: Record<string, unknown>): { community?: string } => ({
+    community: typeof search.community === 'string' && search.community ? search.community : undefined,
+  }),
+})
+
 /** Panel del vendedor: sus productos publicados, con edición y cambio de estado. */
 const myProductsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -159,6 +174,16 @@ const messagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/messages',
   component: MessagesPage,
+})
+
+/**
+ * Perfil público de otra persona. Por ahora solo se llega escribiendo la ruta
+ * (/users/<id>); cuando haya buscador de personas se enlazará desde ahí.
+ */
+const userProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/users/$userId',
+  component: UserProfilePage,
 })
 
 const profileRoute = createRoute({
@@ -244,6 +269,7 @@ const routeTree = rootRoute.addChildren([
   resetPasswordRoute,
   exploreRoute,
   shopTagRoute,
+  createProductRoute,
   productDetailRoute,
   myProductsRoute,
   communitiesRoute,
@@ -255,6 +281,7 @@ const routeTree = rootRoute.addChildren([
   favoritesRoute,
   messagesRoute,
   profileRoute,
+  userProfileRoute,
   settingsRoute,
   confirmEmailChangeRoute,
   privacyPolicyRoute,

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { CommunitiesForTagSection } from '@/features/community/components/sections/CommunitiesForTagSection'
+import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { useProduct, useRecommendedProducts } from '@/features/products/hooks/useProductQueries'
 import type { ProductCondition, ProductDetail, ProductListItem } from '@/features/products/models/product'
@@ -46,9 +47,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
         {isLoadingUser || (isLoggedIn && product.isPending) ? (
@@ -160,15 +159,7 @@ function Detail({ product }: { product: ProductDetail }) {
           >
             {t('itemDetail.contactSeller')}
           </Link>
-          {/* Favoritos todavía no existen en el backend: el botón queda deshabilitado. */}
-          <Button
-            variant="secondary"
-            disabled
-            aria-label={t('itemDetail.save')}
-            className="size-12 rounded-[10px] text-lg"
-          >
-            ♡
-          </Button>
+          <ProductFavoriteButton productId={product.id} variant="outline" />
         </div>
       </div>
     </ScrollReveal>

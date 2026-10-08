@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ChevronDown, LayoutAlt01, LogOut01, Settings01, Package, ShoppingBag01, User01 } from '@untitledui/icons'
 import {
   Button as AriaButton,
@@ -11,30 +10,27 @@ import { GooseIcon } from '../ui/GooseIcon'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { MenuItem } from './menuPrimitives'
 import { useAccountActions } from './useAccountActions'
 
 export function AccountMenu({ userName }: { userName: string }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToMyProducts, goToAdmin, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
   // Un superadmin no usa perfil ni ajustes de cuenta normal: su única opción
   // es el panel de administración (ver AdminPage).
   const role = useCurrentUser().data?.role
   const isSuperAdmin = role === 'superadmin'
   const isSeller = role === 'seller'
-  // El diálogo vive acá (no dentro del popover) para que no se desmonte al cerrar el menú.
-  const [isSellOpen, setIsSellOpen] = useState(false)
 
   return (
     <>
     <AriaDialogTrigger>
       <AriaButton className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-mynted-border bg-mynted-orange py-1.5 pr-3.5 pl-1.5 outline-none transition-colors hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-orange-hover">
-        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/25">
-          <GooseIcon className="size-[22px] text-mynted-white" />
+        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/40">
+          <GooseIcon className="size-[22px] text-mynted-ink" />
         </span>
-        <span className="text-sm font-semibold whitespace-nowrap text-mynted-white">{userName}</span>
-        <ChevronDown className="size-3.5 shrink-0 text-mynted-white/80" aria-hidden="true" />
+        <span className="text-sm font-semibold whitespace-nowrap text-mynted-ink">{userName}</span>
+        <ChevronDown className="size-3.5 shrink-0 text-mynted-ink/70" aria-hidden="true" />
       </AriaButton>
 
       <AriaPopover placement="bottom right" offset={8} className={popoverAnimationClass}>
@@ -70,7 +66,7 @@ export function AccountMenu({ userName }: { userName: string }) {
                       label={t('header.sell')}
                       onPress={() => {
                         close()
-                        setIsSellOpen(true)
+                        goToCreateProduct()
                       }}
                     />
                   )}
@@ -89,7 +85,6 @@ export function AccountMenu({ userName }: { userName: string }) {
         </AriaDialog>
       </AriaPopover>
     </AriaDialogTrigger>
-    {isSeller && <CreateProductDialog isOpen={isSellOpen} onClose={() => setIsSellOpen(false)} />}
     </>
   )
 }

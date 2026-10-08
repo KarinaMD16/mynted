@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { PackageCheck, PauseCircle, Pencil, Plus } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog, CONDITION_LABEL } from '@/features/products/components/CreateProductDialog'
+import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
 import { EditProductDialog } from '@/features/products/components/EditProductDialog'
 import { useUpdateProductStatusMutation } from '@/features/products/hooks/useProductMutations'
-import { useMyProductsCount, useMyProductsDashboard } from '@/features/products/hooks/useProductQueries'
+import { useMyProductsDashboard, useMyProductsStats } from '@/features/products/hooks/useProductQueries'
 import type { MyProductCard, MyProductsFilters, ProductStatus, ProductType } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
@@ -57,6 +57,7 @@ function formatPrice(price: number, currency: string, language: AppLanguage): st
  */
 export default function MyProductsPage() {
   const { t } = useLanguage()
+  const navigate = useNavigate()
   const { data: user, isLoggedIn, isLoading: isLoadingUser } = useCurrentUser()
   const isSeller = user?.role === 'seller'
 
@@ -67,7 +68,6 @@ export default function MyProductsPage() {
   const query = useMyProductsDashboard(filters, isSeller)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [pendingChange, setPendingChange] = useState<{ product: MyProductCard; status: 'sold' | 'inactive' } | null>(null)
 
@@ -89,9 +89,7 @@ export default function MyProductsPage() {
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
         <ScrollReveal className="flex flex-wrap items-end justify-between gap-4">
@@ -100,7 +98,7 @@ export default function MyProductsPage() {
             <p className="text-sm text-mynted-gray">{t('myProducts.subtitle')}</p>
           </div>
           {isSeller && (
-            <Button type="button" variant="primary" size="md" onClick={() => setIsCreateOpen(true)}>
+            <Button type="button" variant="primary" size="md" onClick={() => void navigate({ to: '/products/new' })}>
               <Plus className="size-4" aria-hidden="true" />
               {t('myProducts.publish')}
             </Button>
@@ -188,8 +186,6 @@ export default function MyProductsPage() {
           </>
         )}
       </main>
-
-      {isSeller && <CreateProductDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />}
       <EditProductDialog productId={editingId} onClose={() => setEditingId(null)} />
       <StatusConfirmDialog change={pendingChange} onClose={() => setPendingChange(null)} />
     </div>
@@ -212,16 +208,14 @@ function MessageCard({ text, action }: { text: string; action: { to: '/login' | 
 
 function Stats() {
   const { t } = useLanguage()
-  const total = useMyProductsCount(undefined)
-  const active = useMyProductsCount('active')
-  const sold = useMyProductsCount('sold')
-  const paused = useMyProductsCount('inactive')
+  // Totales calculados por el backend (GET /products/me/stats).
+  const stats = useMyProductsStats()
 
   const items: { label: TranslationKey; value: number | undefined }[] = [
-    { label: 'myProducts.stats.total', value: total.data },
-    { label: 'myProducts.stats.active', value: active.data },
-    { label: 'myProducts.stats.sold', value: sold.data },
-    { label: 'myProducts.stats.paused', value: paused.data },
+    { label: 'myProducts.stats.total', value: stats.data?.total },
+    { label: 'myProducts.stats.active', value: stats.data?.active },
+    { label: 'myProducts.stats.sold', value: stats.data?.sold },
+    { label: 'myProducts.stats.paused', value: stats.data?.inactive },
   ]
 
   return (
@@ -231,7 +225,8 @@ function Stats() {
           <div key={item.label} className="flex flex-col gap-1 rounded-2xl border border-mynted-border bg-white px-5 py-4">
             <dt className="text-xs font-medium text-mynted-gray">{t(item.label)}</dt>
             <dd className="font-heading text-[28px] leading-none font-semibold text-mynted-ink">
-              {item.value ?? <span className="inline-block h-7 w-10 animate-pulse rounded bg-mynted-bg align-middle" />}
+              {item.value ??
+                (stats.isError ? '—' : <span className="inline-block h-7 w-10 animate-pulse rounded bg-mynted-bg align-middle" />)}
             </dd>
           </div>
         ))}

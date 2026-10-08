@@ -5,6 +5,7 @@ import {
   DialogTrigger as AriaDialogTrigger,
   Popover as AriaPopover,
 } from 'react-aria-components'
+import { useChangeLanguage } from '@/features/auth/hooks/useAccountLanguage'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { BlurAppear } from '@/components/ui/BlurAppear'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
@@ -19,7 +20,8 @@ import { LANGUAGE_NATIVE_NAMES, SUPPORTED_LANGUAGES } from '@/utils/locale'
  * pronuncie bien.
  */
 export function LanguageSwitcher({ className = '' }: { className?: string }) {
-  const { language, setLanguage, t } = useLanguage()
+  const { language, t } = useLanguage()
+  const changeLanguage = useChangeLanguage()
 
   return (
     <AriaDialogTrigger>
@@ -49,7 +51,7 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
                         lang={code}
                         aria-pressed={isActive}
                         onClick={() => {
-                          setLanguage(code)
+                          changeLanguage(code)
                           close()
                         }}
                         className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors outline-none hover:bg-mynted-bg focus-visible:bg-mynted-bg ${

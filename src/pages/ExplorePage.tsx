@@ -9,7 +9,7 @@ import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
-import { CONDITION_LABEL } from '@/features/products/components/CreateProductDialog'
+import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { useExploreProducts } from '@/features/products/hooks/useProductQueries'
 import {
@@ -19,6 +19,7 @@ import {
   type ProductType,
 } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useDisplayCurrency } from '@/features/auth/hooks/useDisplayCurrency'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { INTL_LOCALES } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
@@ -96,9 +97,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
         <ScrollReveal>
@@ -168,7 +167,7 @@ export default function ExplorePage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:items-start lg:gap-8">
-            <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-6 lg:block`}>
+            <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
               <aside
                 aria-label={t('explore.filters.title')}
                 className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5"
@@ -263,6 +262,7 @@ export default function ExplorePage() {
                             price: product.price,
                             currency: product.currency,
                             tags: product.productTags?.map((item) => item.tag) ?? [],
+                            type: product.type,
                           }}
                         />
                       </StaggerItem>
@@ -302,7 +302,7 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
 
 function PriceSlider({ value, onChange }: { value: [number, number]; onChange: (value: [number, number]) => void }) {
   const { t, language } = useLanguage()
-  const currency = useCurrentUser().data?.currency ?? 'CRC'
+  const currency = useDisplayCurrency()
   // Mientras se arrastra solo cambia el texto; el filtro se aplica al soltar.
   const [draft, setDraft] = useState<[number, number]>(value)
   const [lastValue, setLastValue] = useState(value)

@@ -20,7 +20,10 @@ import type { AdminUser } from '../models/admin'
  * lista, y se cierra sola al salir. Al hacer clic:
  *
  * - usuario: abre el panel de revisión completo (UserReviewDrawer);
- * - comunidad: abre la página de la comunidad en una pestaña nueva.
+ * - comunidad: abre la página de la comunidad en una pestaña nueva;
+ * - categoría: solo informa (el panel de categorías es de solo lectura).
+ *
+ * Se usan en Resumen y también en Gestionar, para ver el dato sin salir de la tabla.
  */
 
 const ROLE_LABEL: Record<UserRole, TranslationKey> = {
@@ -36,7 +39,7 @@ const CLOSE_DELAY_MS = 120
 const nameClass =
   'max-w-full cursor-pointer truncate rounded text-left text-sm font-medium text-mynted-ink underline decoration-mynted-border decoration-dotted underline-offset-4 outline-none transition-colors hover:text-mynted-orange hover:decoration-mynted-orange focus-visible:outline-2 focus-visible:outline-mynted-blue-mid'
 
-function SummaryCard({ children, footer }: { children: ReactNode; footer: ReactNode }) {
+function SummaryCard({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
   return (
     <AriaTooltip
       placement="right"
@@ -52,9 +55,11 @@ function SummaryCard({ children, footer }: { children: ReactNode; footer: ReactN
       }
     >
       <div className="p-4">{children}</div>
-      <div className="flex items-center gap-1.5 border-t border-mynted-border bg-mynted-bg/60 px-4 py-2 text-xs text-mynted-gray">
-        {footer}
-      </div>
+      {footer && (
+        <div className="flex items-center gap-1.5 border-t border-mynted-border bg-mynted-bg/60 px-4 py-2 text-xs text-mynted-gray">
+          {footer}
+        </div>
+      )}
     </AriaTooltip>
   )
 }
@@ -181,3 +186,29 @@ export function CommunityHoverName({ community }: { community: CommunityListItem
   )
 }
 
+
+/** Categoría con su tarjeta de datos; no hay nada que abrir, así que el clic no hace nada. */
+export function CategoryHoverName({
+  name,
+  categoryId,
+  communityCount,
+}: {
+  name: string
+  categoryId: number
+  communityCount: number
+}) {
+  const { t, language } = useLanguage()
+
+  return (
+    <AriaTooltipTrigger delay={OPEN_DELAY_MS} closeDelay={CLOSE_DELAY_MS}>
+      <AriaButton className={nameClass.replace('cursor-pointer', 'cursor-help')}>{name}</AriaButton>
+      <SummaryCard>
+        <p className="truncate font-heading text-base font-semibold text-mynted-ink">{name}</p>
+        <dl className="mt-3 flex flex-col gap-1.5">
+          <Row label={t('admin.categories.columns.id')}>#{categoryId}</Row>
+          <Row label={t('admin.categories.columns.communities')}>{communityCount.toLocaleString(language)}</Row>
+        </dl>
+      </SummaryCard>
+    </AriaTooltipTrigger>
+  )
+}

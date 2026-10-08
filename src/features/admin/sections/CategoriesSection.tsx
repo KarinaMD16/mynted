@@ -11,6 +11,7 @@ import {
   ReadOnlyNotice,
   StatCard,
 } from '../components/AdminUi'
+import { CategoryHoverName } from '../components/HoverSummary'
 import { useAdminCommunities } from '../hooks/useAdminQueries'
 import type { AdminTab } from '../models/admin'
 import { ManageLink, OverviewSkeleton } from './UsersSection'
@@ -103,7 +104,9 @@ function CategoriesManage({ rows, isLoading, error, refetch }: ReturnType<typeof
       id: 'name',
       header: t('admin.categories.columns.category'),
       sortValue: (row) => row.name,
-      render: (row) => <span className="font-medium text-mynted-ink">{row.name}</span>,
+      render: (row) => (
+        <CategoryHoverName name={row.name} categoryId={row.categoryId} communityCount={row.communityCount} />
+      ),
     },
     {
       id: 'id',

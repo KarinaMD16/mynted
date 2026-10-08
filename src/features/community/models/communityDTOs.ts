@@ -134,3 +134,87 @@ export interface CommunityJoinRequest {
     photoUrl: string | null
   }
 }
+
+// --------------------------------------------------------------------------
+// Foro: posts de los feeds (GET /posts, GET /forums/me, GET /posts/me).
+// Los tres devuelven la misma tarjeta de post (ver buildPostCards y
+// mapFeedPosts en forum.service.ts del backend).
+// --------------------------------------------------------------------------
+
+export type PostVote = 'UP' | 'DOWN'
+
+export interface FeedPostAuthor extends ForumPostAuthor {
+  photoUrl: string | null
+}
+
+export interface FeedPostImage {
+  id: number
+  url: string
+  order: number
+}
+
+export interface FeedPostTag {
+  tagId: number
+  name: string
+}
+
+export interface FeedPostCommunity {
+  id: number
+  name: string
+  slug: string
+  imageUrl: string | null
+}
+
+export interface FeedPost {
+  id: number
+  title: string
+  body: string
+  postedAt: string
+  communityProfileId: number
+  author: FeedPostAuthor | null
+  tags: FeedPostTag[]
+  /** Ya vienen ordenadas por `order`. */
+  images: FeedPostImage[]
+  upVotes: number
+  downVotes: number
+  timesSaved: number
+  /** Voto del usuario autenticado sobre este post, si votó. */
+  myVote: PostVote | null
+  isSaved: boolean
+  replyCount: number
+  community: FeedPostCommunity | null
+}
+
+/** Criterios de orden de GET /forums/me (MyPostsSortBy en el backend). */
+export type MyPostsSortBy = 'date' | 'upvotes' | 'downvotes' | 'saves'
+
+export interface FeedPageQuery {
+  page?: number
+  limit?: number
+}
+
+export interface MyForumPostsQuery extends FeedPageQuery {
+  sortBy?: MyPostsSortBy
+  order?: 'asc' | 'desc'
+}
+
+/** Producto dentro de GET /posts/me (buildProductCards en el backend). */
+export interface MyContentProduct {
+  id: number
+  title: string
+  price: number | string
+  currency: string
+  imageUrl: string
+  status: 'active' | 'sold' | 'inactive'
+  type: 'sale' | 'exchange'
+  condition: 'new' | 'like_new' | 'good_condition' | 'used_with_details'
+  tags: FeedPostTag[]
+  community: { id: number; name: string }
+  seller: { sellerId: number; displayName: string; photoUrl: string | null; isVerified: boolean }
+  isSaved: boolean
+}
+
+/** GET /posts/me mezcla posts y productos del usuario, ordenados por fecha. */
+export type MyContentEntry =
+  | { type: 'post'; date: string; post: FeedPost }
+  | { type: 'product'; date: string; product: MyContentProduct }
