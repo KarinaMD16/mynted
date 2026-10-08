@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import {
@@ -8,11 +9,7 @@ import {
   useMyCommunities,
 } from '@/features/community/hooks/useCommunitiesQueries'
 import { CreatePostDialog } from '@/features/community/components/create/CreatePostDialog'
-import {
-  MY_COMMUNITIES_QUERY,
-  inputClasses,
-  labelClasses,
-} from '@/features/community/types/DEFAULT_VALUES'
+import { MY_COMMUNITIES_QUERY, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
 
 /**
  * Caja de "¿Que tienes en mente?" del feed global. Publicar siempre ocurre
@@ -96,19 +93,13 @@ export function GlobalPostComposer() {
             <label htmlFor="composer-community" className={labelClasses}>
               {t('talk.composer.communityLabel')}
             </label>
-            <select
+            <Select
               id="composer-community"
-              className={inputClasses(false)}
               value={slug}
-              onChange={(event) => setSlug(event.target.value)}
-            >
-              <option value="">{t('talk.composer.communityPlaceholder')}</option>
-              {communities.map((community) => (
-                <option key={community.id} value={community.slug}>
-                  {community.name}
-                </option>
-              ))}
-            </select>
+              options={communities.map((community) => ({ value: community.slug, label: community.name }))}
+              placeholder={t('talk.composer.communityPlaceholder')}
+              onChange={setSlug}
+            />
           </div>
         }
       />

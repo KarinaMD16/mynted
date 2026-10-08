@@ -32,9 +32,13 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
   const imageAlt = t('communities.card.imageAlt', { name: community.name })
 
   // En una comunidad privada el backend no une: deja una solicitud pendiente.
-  // El detalle todavia no dice si ya hay una, asi que se sabe al responder.
+  // El detalle ya trae la ultima solicitud, asi que el boton sale bien desde el
+  // primer render; la respuesta de la mutacion cubre el rato hasta que refresca.
   const joinResult = joinMutation.data?.result
-  const hasPendingRequest = joinResult === 'requested' || joinResult === 'already_requested'
+  const hasPendingRequest =
+    community.joinRequestStatus === 'pending' ||
+    joinResult === 'requested' ||
+    joinResult === 'already_requested'
 
   const handleMembershipClick = () => {
     if (community.isMember) {

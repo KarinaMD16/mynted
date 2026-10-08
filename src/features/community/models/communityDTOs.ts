@@ -100,6 +100,12 @@ export interface CommunityDetail {
   popularityScore: number
   isMember: boolean
   membershipRole: string | null
+  /**
+   * Estado de la ultima solicitud del usuario de la sesion, para que el boton
+   * salga bien ya en el primer render. En una comunidad publica es null: ahi
+   * uno se une directo y no se crean solicitudes.
+   */
+  joinRequestStatus: 'pending' | 'accepted' | 'rejected' | null
   forumPosts: ForumPost[]
 }
 

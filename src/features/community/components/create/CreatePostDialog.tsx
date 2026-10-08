@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog'
 import type { ChangeEvent, ReactNode } from 'react'
 import { ImagePlus, X } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
@@ -14,11 +15,12 @@ import {
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useForumActions } from '@/features/community/hooks/useForum'
 import type { CommunityDetail } from '@/features/community/models/communityDTOs'
-import { errorClasses, hintClasses, inputClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
+import { MAX_TAGS, errorClasses, hintClasses, inputClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
 
 /** Limites del backend (ver CreatePostDto y el interceptor de archivos). */
 const MAX_TITLE = 200
 const MAX_IMAGES = 10
+const MIN_TAGS = 1
 
 interface CreatePostDialogProps {
   /** Sin comunidad el formulario queda listo pero no deja publicar todavia. */
@@ -64,6 +66,8 @@ function CreatePostForm({
   const [body, setBody] = useState('')
   const [tagIds, setTagIds] = useState<number[]>([])
   const [images, setImages] = useState<{ file: File; previewUrl: string }[]>([])
+  // Indice de la imagen abierta en grande; null con el visor cerrado.
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
 
   // Las vistas previas son object URLs: se liberan al cambiar la lista o cerrar
   useEffect(() => () => { images.forEach((image) => URL.revokeObjectURL(image.previewUrl)) }, [images])
@@ -104,7 +108,11 @@ function CreatePostForm({
   }
 
   const canSubmit =
-    community !== undefined && title.trim().length > 0 && body.trim().length > 0 && !publishPost.isPending
+    community !== undefined &&
+    title.trim().length > 0 &&
+    body.trim().length > 0 &&
+    tagIds.length >= MIN_TAGS &&
+    !publishPost.isPending
 
   return (
     <>
@@ -155,7 +163,7 @@ function CreatePostForm({
         {community && community.tags.length > 0 && (
           <fieldset className="flex flex-col gap-1.5">
             <legend className={labelClasses}>{t('forum.create.tagsLabel')}</legend>
-            <p className={hintClasses}>{t('forum.create.tagsHint')}</p>
+            <p className={hintClasses}>{t('forum.create.tagsHint', { max: MAX_TAGS })}</p>
             <div className="mt-1.5 flex flex-wrap gap-2">
               {community.tags.map((tag) => {
                 const isSelected = tagIds.includes(tag.tagId)
@@ -166,6 +174,9 @@ function CreatePostForm({
                     size="sm"
                     shape="pill"
                     aria-pressed={isSelected}
+                    // Con el tope alcanzado hay que soltar uno antes de cambiarlo:
+                    // el backend rechaza mas de tres y el error llegaria al publicar.
+                    disabled={!isSelected && tagIds.length >= MAX_TAGS}
                     onClick={() =>
                       setTagIds((current) =>
                         isSelected ? current.filter((id) => id !== tag.tagId) : [...current, tag.tagId],
@@ -188,12 +199,22 @@ function CreatePostForm({
             <ul className="flex flex-wrap gap-2">
               {images.map((image, index) => (
                 <li key={image.previewUrl} className="relative">
-                  <img src={image.previewUrl} alt="" className="size-20 rounded-lg object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setPreviewIndex(index)}
+                    aria-label={t('forum.create.viewImage')}
+                    className="block size-20 overflow-hidden rounded-lg outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+                  >
+                    <img src={image.previewUrl} alt="" className="size-full cursor-zoom-in object-cover" />
+                  </button>
                   <Button
                     variant="overlay"
                     size="icon-sm"
                     shape="pill"
-                    onClick={() => setImages((current) => current.filter((_, position) => position !== index))}
+                    onClick={() => {
+                      setImages((current) => current.filter((_, position) => position !== index))
+                      setPreviewIndex(null)
+                    }}
                     aria-label={t('forum.create.removeImage')}
                     className="absolute -top-1.5 -right-1.5 size-6"
                   >
@@ -233,6 +254,14 @@ function CreatePostForm({
           </p>
         )}
       </div>
+
+      <ImagePreviewDialog
+        src={previewIndex === null ? null : (images[previewIndex]?.previewUrl ?? null)}
+        alt=""
+        title={t('forum.create.viewImage')}
+        isOpen={previewIndex !== null}
+        onClose={() => setPreviewIndex(null)}
+      />
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>

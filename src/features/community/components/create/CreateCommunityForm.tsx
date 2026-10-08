@@ -455,15 +455,15 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                             const error = ruleField.state.meta.isTouched ? getFieldErrorMessage(ruleField.state.meta.errors) : undefined;
                                                             return (
                                                                 <li className="flex flex-col gap-1">
-                                                                    <div className={`group flex items-center gap-3 rounded-xl bg-mynted-bg px-3.5 py-2.5 focus-within:ring-2 ${error ? 'ring-2 ring-red-300' : 'focus-within:ring-mynted-orange/20'}`}>
+                                                                    <div className={`group flex items-start gap-3 rounded-xl bg-mynted-bg px-3.5 py-2.5 focus-within:ring-2 ${error ? 'ring-2 ring-red-300' : 'focus-within:ring-mynted-orange/20'}`}>
                                                                         <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-mynted-border bg-white text-xs text-mynted-ink">
                                                                             {index + 1}
                                                                         </span>
-                                                                        <input
-                                                                            type="text"
+                                                                        <textarea
+                                                                            rows={2}
                                                                             aria-label={t('communities.create.ruleAriaLabel', { number: index + 1 })}
                                                                             placeholder={t('communities.create.rulePlaceholder')}
-                                                                            className="min-w-0 flex-1 bg-transparent text-[13px] text-mynted-ink outline-none placeholder:text-mynted-gray-light"
+                                                                            className="min-w-0 flex-1 resize-y bg-transparent text-[13px] text-mynted-ink outline-none placeholder:text-mynted-gray-light"
                                                                             value={ruleField.state.value}
                                                                             onBlur={ruleField.handleBlur}
                                                                             onChange={(event) => ruleField.handleChange(event.target.value)}
