@@ -1,5 +1,7 @@
 import { Outlet } from '@tanstack/react-router'
 import { CookieBanner } from './components/ui/CookieBanner'
+import { ShipToDialog } from './features/region/components/ShipToDialog'
+import { useAdoptAccountLanguage } from './features/auth/hooks/useAccountLanguage'
 import { LanguageProvider } from './i18n/LanguageContext'
 
 /**
@@ -10,11 +12,19 @@ import { LanguageProvider } from './i18n/LanguageContext'
  * LanguageProvider tiene que estar por encima de <Outlet /> porque cualquier
  * página (y el propio CookieBanner) puede llamar a useLanguage().
  */
+/** Vive dentro del LanguageProvider: adopta el idioma guardado en la cuenta (ver useAdoptAccountLanguage). */
+function AccountLanguageSync() {
+  useAdoptAccountLanguage()
+  return null
+}
+
 function App() {
   return (
     <LanguageProvider>
+      <AccountLanguageSync />
       <Outlet />
       <CookieBanner />
+      <ShipToDialog />
     </LanguageProvider>
   )
 }

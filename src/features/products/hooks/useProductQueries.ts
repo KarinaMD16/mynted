@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { getCommunityProducts, getMyProducts, getProducts, getMyProductsDashboard, getProduct, getProductsByTag, getRecommendedProducts, getShop, getTag } from '../services/productService'
+import { getCommunityProducts, getMyProducts, getProducts, getMyProductsDashboard, getMyProductsStats, getProduct, getProductsByTag, getRecommendedProducts, getShop, getTag } from '../services/productService'
 import type { ExploreFilters, MyProductsFilters, MyProductsPage, ProductPage, ShopPage } from '../models/product'
 import { productKeys } from './useProductMutations'
 
@@ -101,12 +101,11 @@ export function useMyProductsDashboard(filters: MyProductsFilters, enabled = tru
   })
 }
 
-/** Solo el total (`totalProducts`) de los productos del vendedor con un filtro de estado. */
-export function useMyProductsCount(status: MyProductsFilters['status'], enabled = true) {
+/** Contadores del vendedor por estado (GET /products/me/stats). Cualquier mutación de productos los invalida. */
+export function useMyProductsStats(enabled = true) {
   return useQuery({
-    queryKey: [...productKeys.all, 'dashboard-count', status ?? 'all'],
-    queryFn: () => getMyProductsDashboard(1, 1, 1, status ? { status } : {}),
-    select: (data) => data.totalProducts,
+    queryKey: productKeys.stats(),
+    queryFn: getMyProductsStats,
     enabled,
   })
 }

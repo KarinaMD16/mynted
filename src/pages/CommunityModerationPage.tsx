@@ -50,9 +50,7 @@ export default function CommunityModerationPage() {
 
   return (
     <section className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 sm:px-10">
         <Link

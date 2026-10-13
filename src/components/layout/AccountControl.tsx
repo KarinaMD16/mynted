@@ -42,10 +42,10 @@ export function AccountControl({ isLoading, isLoggedIn, userName }: AccountContr
         to="/login"
         className="flex shrink-0 items-center gap-1.5 rounded-full border border-mynted-border bg-mynted-orange py-1.5 pr-3.5 pl-1.5 outline-none transition-colors hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
       >
-        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/25">
-          <GooseIcon className="size-[22px] text-mynted-white" />
+        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/40">
+          <GooseIcon className="size-[22px] text-mynted-ink" />
         </span>
-        <span className="text-sm font-semibold whitespace-nowrap text-mynted-white">{t('header.login')}</span>
+        <span className="text-sm font-semibold whitespace-nowrap text-mynted-ink">{t('header.login')}</span>
       </Link>
     )
   }

@@ -5,6 +5,7 @@ import {
   deactivateUser,
   getAllActiveCommunities,
   getAllUsers,
+  getPendingSellerRequests,
   getSellerRequest,
   updateSellerStatus,
 } from '../services/adminService'
@@ -12,6 +13,7 @@ import {
 export const adminKeys = {
   users: ['admin', 'users'] as const,
   communities: ['admin', 'communities'] as const,
+  pendingSellerRequests: ['admin', 'seller-requests', 'pending'] as const,
   sellerRequest: (userId: string) => ['admin', 'seller-request', userId] as const,
 }
 
@@ -27,6 +29,11 @@ export function useSellerRequest(userId: string | null) {
 
 export function useAdminUsers(enabled = true) {
   return useQuery({ queryKey: adminKeys.users, queryFn: getAllUsers, enabled })
+}
+
+/** Solicitudes de vendedor pendientes (GET /users/seller-requests), más antiguas primero. */
+export function usePendingSellerRequests(enabled = true) {
+  return useQuery({ queryKey: adminKeys.pendingSellerRequests, queryFn: getPendingSellerRequests, enabled })
 }
 
 export function useAdminCommunities(enabled = true) {
@@ -70,6 +77,7 @@ export function useSellerDecisionMutation() {
       })
       // Ya no está pendiente: el detalle en cache quedaría desactualizado.
       queryClient.removeQueries({ queryKey: adminKeys.sellerRequest(userId) })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.pendingSellerRequests })
     },
   })
 }

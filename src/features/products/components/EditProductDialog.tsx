@@ -21,16 +21,8 @@ import {
   type ProductType,
 } from '../models/product'
 import { makeCreateProductSchema } from '../schema/createProductSchema'
-import {
-  CONDITION_LABEL,
-  ChoiceChip,
-  CoverPicker,
-  GalleryPicker,
-  ProductTagPicker,
-  errorClass,
-  hintClass,
-  labelClass,
-} from './CreateProductDialog'
+import { ChoiceChip, CoverPicker, GalleryPicker, ProductTagPicker } from './ProductFormParts'
+import { CONDITION_LABEL, errorClass, hintClass, labelClass } from './productFormShared'
 
 interface EditProductDialogProps {
   /** Producto a editar; `null` mantiene el diálogo cerrado. */

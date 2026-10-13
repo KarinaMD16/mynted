@@ -127,7 +127,7 @@ function ReviewBody({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
           </div>
         </div>
 
-        <ReviewSection title={t('admin.review.publicProfile')} hint={t('admin.review.publicHint')}>
+        <ReviewSection title={t('admin.review.publicProfile')}>
           <Field label={t('admin.review.bio')}>
             {user.bio ? (
               <p className="whitespace-pre-line text-mynted-ink">{user.bio}</p>
@@ -150,7 +150,7 @@ function ReviewBody({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
           </Field>
         </ReviewSection>
 
-        <ReviewSection title={t('admin.review.account')} hint={t('admin.review.accountHint')}>
+        <ReviewSection title={t('admin.review.account')}>
           <Field label={t('admin.review.email')}>
             <a href={`mailto:${user.email}`} className="break-all text-mynted-blue-mid hover:underline">
               {user.email}

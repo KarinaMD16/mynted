@@ -11,7 +11,7 @@ import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
 import { makeCreateCommunitySchema } from '@/features/community/schemas/createCommunitySchema';
 import type { CreateCommunityValues } from '@/features/community/schemas/createCommunitySchema';
 import type { CreateCommunityFormProps, SelectedImage } from '@/features/community/types/CommunityTypes';
-import { BANNER_CROP, DEFAULT_RULES, IMAGE_CROP, hintClasses, labelClasses, inputClasses, errorClasses } from '@/features/community/types/DEFAULT_VALUES';
+import { BANNER_CROP, DEFAULT_RULE_KEYS, IMAGE_CROP, hintClasses, labelClasses, inputClasses, errorClasses } from '@/features/community/types/DEFAULT_VALUES';
 import {
   Dialog,
   DialogContent,
@@ -74,7 +74,7 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
         isPrivate: false,
         categoryId: 0,
         tagIds: [],
-        rules: DEFAULT_RULES,
+        rules: DEFAULT_RULE_KEYS.map((key) => t(key)),
     };
 
     const form = useForm({
@@ -371,23 +371,20 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                 {categoriesQuery.data?.map((category) => {
                                                     const isSelected = field.state.value === category.categoryId;
                                                     return (
-                                                        <button
+                                                        <Button
                                                             key={category.categoryId}
-                                                            type="button"
+                                                            variant={isSelected ? 'primary' : 'secondary'}
+                                                            size="sm"
+                                                            shape="pill"
                                                             aria-pressed={isSelected}
                                                             onClick={() => {
                                                                 if (isSelected) return;
                                                                 field.handleChange(category.categoryId);
                                                                 form.setFieldValue('tagIds', []);
                                                             }}
-                                                            className={`rounded-full border px-4 py-1.5 text-[13px] font-medium transition-colors hover:cursor-pointer ${
-                                                                isSelected
-                                                                    ? 'border-mynted-orange bg-mynted-orange text-white'
-                                                                    : 'border-mynted-border bg-white text-mynted-ink hover:border-mynted-orange'
-                                                            }`}
                                                         >
                                                             {category.name}
-                                                        </button>
+                                                        </Button>
                                                     );
                                                 })}
                                             </div>
@@ -458,15 +455,15 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                                             const error = ruleField.state.meta.isTouched ? getFieldErrorMessage(ruleField.state.meta.errors) : undefined;
                                                             return (
                                                                 <li className="flex flex-col gap-1">
-                                                                    <div className={`group flex items-center gap-3 rounded-xl bg-mynted-bg px-3.5 py-2.5 focus-within:ring-2 ${error ? 'ring-2 ring-red-300' : 'focus-within:ring-mynted-orange/20'}`}>
+                                                                    <div className={`group flex items-start gap-3 rounded-xl bg-mynted-bg px-3.5 py-2.5 focus-within:ring-2 ${error ? 'ring-2 ring-red-300' : 'focus-within:ring-mynted-orange/20'}`}>
                                                                         <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-mynted-border bg-white text-xs text-mynted-ink">
                                                                             {index + 1}
                                                                         </span>
-                                                                        <input
-                                                                            type="text"
+                                                                        <textarea
+                                                                            rows={2}
                                                                             aria-label={t('communities.create.ruleAriaLabel', { number: index + 1 })}
                                                                             placeholder={t('communities.create.rulePlaceholder')}
-                                                                            className="min-w-0 flex-1 bg-transparent text-[13px] text-mynted-ink outline-none placeholder:text-mynted-gray-light"
+                                                                            className="min-w-0 flex-1 resize-y bg-transparent text-[13px] text-mynted-ink outline-none placeholder:text-mynted-gray-light"
                                                                             value={ruleField.state.value}
                                                                             onBlur={ruleField.handleBlur}
                                                                             onChange={(event) => ruleField.handleChange(event.target.value)}

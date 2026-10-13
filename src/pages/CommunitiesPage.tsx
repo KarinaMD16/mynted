@@ -10,9 +10,7 @@ export default function CommunitiesPage() {
 
   return (
     <section className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="flex flex-col gap-10 px-6 py-10 sm:px-14 sm:py-15">
         <MyCommunitiesSection onCreateCommunity={() => setIsCreateCommunityFormOpen(true)} />

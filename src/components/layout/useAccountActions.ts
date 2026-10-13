@@ -29,6 +29,10 @@ export function useAccountActions() {
     void navigate({ to: '/settings', search: { tab: 'account' } })
   }
 
+  function goToCreateProduct() {
+    void navigate({ to: '/products/new' })
+  }
+
   function goToMyProducts() {
     void navigate({ to: '/my-products' })
   }
@@ -37,5 +41,5 @@ export function useAccountActions() {
     void navigate({ to: '/admin', search: { section: 'communities', tab: 'overview' } })
   }
 
-  return { logout, goToProfile, goToSettings, goToMyProducts, goToAdmin, isLoggingOut: logoutMutation.isPending }
+  return { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut: logoutMutation.isPending }
 }

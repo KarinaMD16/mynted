@@ -24,3 +24,8 @@ export function getApiErrorMessage(error: unknown, fallback = DEFAULT_ERROR_MESS
 
   return fallback
 }
+
+/** `true` si la petición falló con 401: no hay sesión, o venció y no se pudo refrescar. */
+export function isUnauthorizedError(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 401
+}

@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Plus, Shield, ShoppingBag } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityDetailHeader } from '@/features/community/components/detail/CommunityDetailHeader'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { CommunitySidebar } from '@/features/community/components/detail/CommunitySidebar'
+import { CreatePostDialog } from '@/features/community/components/create/CreatePostDialog'
 import { ForumPostCard } from '@/features/community/components/cards/ForumPostCard'
 import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
+import { useCommunityPosts } from '@/features/community/hooks/useForum'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { ProductGrid } from '@/features/products/components/ProductGrid'
 import { useCommunityProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -20,9 +21,10 @@ type CommunityTab = 'talk' | 'shop'
 export default function CommunityDetailPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug' })
+  const navigate = useNavigate()
   const { isLoggedIn, isLoading: isLoadingSession, data: currentUser } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
-  const [isCreateProductOpen, setIsCreateProductOpen] = useState(false)
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   // Publicar productos es exclusivo de vendedores (el backend lo exige con SellerGuard).
   const isSeller = currentUser?.role === 'seller'
 
@@ -30,12 +32,20 @@ export default function CommunityDetailPage() {
   // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
   const community = isLoggedIn ? communityQuery.data : undefined
   const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
+  // En una comunidad privada el foro es solo para miembros: el backend responde
+  // 403, asi que aca ni se pide y se explica en vez de mostrar un error.
+  const canSeeForum = Boolean(community && (!community.isPrivate || community.isMember))
+  // El foro ya no sale del detalle: tiene su propio endpoint paginado
+  const postsQuery = useCommunityPosts(
+    community?.id ?? 0,
+    { limit: 20 },
+    isLoggedIn && activeTab === 'talk' && canSeeForum,
+  )
+  const posts = isLoggedIn && canSeeForum ? (postsQuery.data?.data ?? []) : []
 
   return (
     <section className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 sm:px-10">
         <div className="flex items-center justify-between gap-4">
@@ -124,14 +134,44 @@ export default function CommunityDetailPage() {
             {activeTab === 'talk' ? (
               <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
                 <div className="flex flex-col gap-4">
-                  {community.forumPosts.length > 0 ? (
-                    community.forumPosts.map((post, index) => (
-                      <ForumPostCard key={post.id} post={post} index={index} />
-                    ))
-                  ) : (
+                  {/* Publicar exige ser miembro (lo valida CommunityRoleGuard) */}
+                  {community.isMember && (
+                    <Button
+                      type="button"
+                      onClick={() => setIsCreatePostOpen(true)}
+                      variant="primary"
+                      size="md"
+                      className="w-fit self-end"
+                    >
+                      <Plus className="size-4" aria-hidden="true" />
+                      {t('forum.create.cta')}
+                    </Button>
+                  )}
+
+                  {!canSeeForum ? (
                     <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                      {t('community.detail.noPosts')}
+                      {t('community.detail.privateForum')}
                     </p>
+                  ) : (
+                    <>
+                      {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
+
+                      {postsQuery.isError && (
+                        <p className="text-sm text-red-500" role="alert">
+                          {t('forum.loadError')} {getApiErrorMessage(postsQuery.error)}
+                        </p>
+                      )}
+
+                      {posts.length > 0
+                        ? posts.map((post, index) => (
+                            <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
+                          ))
+                        : postsQuery.isSuccess && (
+                            <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
+                              {t('community.detail.noPosts')}
+                            </p>
+                          )}
+                    </>
                   )}
                 </div>
 
@@ -142,7 +182,7 @@ export default function CommunityDetailPage() {
                 {isSeller && (productsQuery.data?.pages[0]?.data.length ?? 0) > 0 && (
                   <Button
                     type="button"
-                    onClick={() => setIsCreateProductOpen(true)}
+                    onClick={() => void navigate({ to: '/products/new', search: { community: slug } })}
                     variant="primary"
                     size="md"
                     className="w-fit self-end"
@@ -161,7 +201,7 @@ export default function CommunityDetailPage() {
                       {isSeller && (
                         <Button
                           type="button"
-                          onClick={() => setIsCreateProductOpen(true)}
+                          onClick={() => void navigate({ to: '/products/new', search: { community: slug } })}
                           variant="primary"
                           size="md"
                           className="mt-1"
@@ -176,17 +216,11 @@ export default function CommunityDetailPage() {
               </div>
             )}
 
-            {isSeller && (
-              <CreateProductDialog
-                isOpen={isCreateProductOpen}
-                onClose={() => setIsCreateProductOpen(false)}
-                community={{
-                  id: community.id,
-                  name: community.name,
-                  categoryId: community.category?.categoryId ?? null,
-                }}
-              />
-            )}
+            <CreatePostDialog
+              community={community}
+              isOpen={isCreatePostOpen}
+              onClose={() => setIsCreatePostOpen(false)}
+            />
           </>
         )}
       </main>

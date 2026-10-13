@@ -1,34 +1,29 @@
 import { useState } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Calendar, Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
-import { Clock, Info, LayoutGrid, type LucideIcon, Link2, MapPin, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
+import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
+import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
+import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
+import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
+import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
+import { MyThreadsTab } from '@/features/community/components/profile/MyThreadsTab'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useMyInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
-import { CreateProductDialog } from '@/features/products/components/CreateProductDialog'
 import { ProductGrid } from '@/features/products/components/ProductGrid'
 import { useMyProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
+import type { AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
 import type { Interest } from '@/features/auth/models/interests'
+import { AboutCard, CoverBanner } from '@/features/profile/components/ProfileParts'
+import { getInitials } from '@/features/profile/utils/profileFormat'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
 import { Button } from '@/components/ui/Button'
 
 type ProfileTab = 'posts' | 'threads' | 'products' | 'favorites' | 'info'
-
-function getInitials(username: string): string {
-  return username.slice(0, 2).toUpperCase()
-}
-
-function formatMemberSince(createdAt: string, language: AppLanguage): string {
-  const date = new Date(createdAt)
-  if (Number.isNaN(date.getTime())) return '—'
-  return date.toLocaleDateString(INTL_LOCALES[language], { month: 'long', year: 'numeric' })
-}
 
 export default function ProfilePage() {
   const { t, language } = useLanguage()
@@ -37,15 +32,12 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
   const navigate = useNavigate()
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
-  const [isCreateProductOpen, setIsCreateProductOpen] = useState(false)
 
   const isSeller = user?.role === 'seller'
 
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="mx-auto max-w-[1320px] px-4 pt-6 pb-16 sm:px-6">
         {!isLoggedIn && <SignedOutState />}
@@ -66,7 +58,7 @@ export default function ProfilePage() {
               // Los formularios de edición viven en /settings (pestaña Perfil).
               onEditProfile={() => void navigate({ to: '/settings', search: { tab: 'profile' } })}
               onBecomeSeller={() => setIsBecomeSellerOpen(true)}
-              onCreateProduct={() => setIsCreateProductOpen(true)}
+              onCreateProduct={() => void navigate({ to: '/products/new' })}
             />
 
             <ProfileTabsBar activeTab={activeTab} onChange={setActiveTab} isSeller={isSeller} />
@@ -84,19 +76,19 @@ export default function ProfilePage() {
               </div>
 
               <div className={`${activeTab === 'info' ? 'hidden' : ''} lg:order-2 lg:block`}>
-                {activeTab === 'products' && isSeller ? (
-                  <MyProductsTab onCreateProduct={() => setIsCreateProductOpen(true)} />
-                ) : (
+                {activeTab === 'posts' && <MyPublicationsTab />}
+                {activeTab === 'threads' && <MyThreadsTab />}
+                {activeTab === 'products' && isSeller && (
+                  <MyProductsTab onCreateProduct={() => void navigate({ to: '/products/new' })} />
+                )}
+                {activeTab === 'favorites' && <MyFavoritesTab />}
+                {(activeTab === 'info' || (activeTab === 'products' && !isSeller)) && (
                   <TabContent activeTab={activeTab} />
                 )}
               </div>
             </div>
 
             <BecomeSellerForm isOpen={isBecomeSellerOpen} onClose={() => setIsBecomeSellerOpen(false)} />
-            {/* Solo los vendedores pueden publicar (el backend lo exige con SellerGuard). */}
-            {isSeller && (
-              <CreateProductDialog isOpen={isCreateProductOpen} onClose={() => setIsCreateProductOpen(false)} />
-            )}
           </>
         )}
       </main>
@@ -126,19 +118,6 @@ function LoadErrorState() {
     <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-mynted-white py-24 text-center">
       <h1 className="font-heading text-xl font-semibold text-mynted-ink">{t('profile.loadErrorTitle')}</h1>
       <p className="max-w-sm text-sm text-mynted-gray">{t('profile.loadErrorSubtitle')}</p>
-    </div>
-  )
-}
-
-function CoverBanner() {
-  return (
-    <div
-      aria-hidden="true"
-      className="relative h-[110px] overflow-hidden rounded-2xl bg-gradient-to-br from-mynted-blue-mid to-mynted-orange sm:h-[140px]"
-    >
-      <div className="absolute -top-10 right-[8%] size-40 rounded-full bg-white/10" />
-      <div className="absolute -bottom-12 left-[6%] size-32 rounded-full bg-white/10" />
-      <div className="absolute top-1/3 left-[42%] size-16 rounded-full bg-white/10" />
     </div>
   )
 }
@@ -215,7 +194,13 @@ function ProfileHeader({
 
         <span className="absolute -top-14 left-1/2 z-20 flex size-28 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
           {user.photoUrl ? (
-            <img src={user.photoUrl} alt={user.username} className="size-full object-cover" />
+            // Las fotos de Google se sirven solo sin Referer; con el de la app dan 429.
+            <img
+              src={user.photoUrl}
+              alt={user.username}
+              referrerPolicy="no-referrer"
+              className="size-full object-cover"
+            />
           ) : (
             getInitials(user.username)
           )}
@@ -292,22 +277,18 @@ function ProfileTabsBar({
   const visibleTabs = PROFILE_TABS.filter((tab) => !tab.sellerOnly || isSeller)
 
   return (
-    <div className="mt-6 flex items-center gap-2 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]">
-      {visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onChange(id)}
-          aria-pressed={activeTab === id}
-          className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${
-            mobileOnly ? 'lg:hidden' : ''
-          } ${activeTab === id ? 'bg-mynted-orange text-white' : 'text-mynted-gray hover:text-mynted-ink'}`}
-        >
-          <Icon className="size-4" aria-hidden="true" />
-          {t(labelKey)}
-        </button>
-      ))}
-    </div>
+    <AnimatedTabs
+      items={visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => ({
+        id,
+        label: t(labelKey),
+        icon: <Icon className="size-4" aria-hidden="true" />,
+        className: mobileOnly ? 'lg:hidden' : undefined,
+      }))}
+      value={activeTab}
+      onChange={onChange}
+      semantics="pressed"
+      className="mt-6 flex items-center gap-1.5 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]"
+    />
   )
 }
 
@@ -329,31 +310,6 @@ function TabContent({ activeTab }: { activeTab: ProfileTab }) {
     <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
       <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t(title)}</h2>
       <p className="max-w-sm text-sm text-mynted-gray">{t(subtitle)}</p>
-    </div>
-  )
-}
-
-function AboutCard({ user, language }: { user: AuthUser; language: AppLanguage }) {
-  const { t } = useLanguage()
-  return (
-    <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
-      <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('profile.about.title')}</h2>
-      <p className="mt-2 text-sm text-mynted-gray">{user.bio?.trim() ? user.bio : t('profile.about.noBio')}</p>
-
-      <div className="mt-4 flex flex-col gap-2.5 border-t border-mynted-border pt-4 text-sm text-mynted-gray">
-        <span className="flex items-center gap-2">
-          <MapPin className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />
-          {user.location?.trim() ? user.location : t('profile.about.noLocation')}
-        </span>
-        <span className="flex items-center gap-2">
-          <Calendar className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />
-          {t('profile.about.memberSinceLabel', { date: formatMemberSince(user.createdAt, language) })}
-        </span>
-        <span className="flex items-center gap-2">
-          <Clock className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />
-          {t('profile.about.respondsInPlaceholder')}
-        </span>
-      </div>
     </div>
   )
 }

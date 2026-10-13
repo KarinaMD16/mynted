@@ -4,6 +4,7 @@ import type {
   ExploreFilters,
   MyProductsFilters,
   MyProductsPage,
+  MyProductsStats,
   ProductDetail,
   ProductListItem,
   ProductPage,
@@ -117,6 +118,12 @@ export async function getMyProductsDashboard(
   const { data } = await myntedAPI.get<MyProductsPage>('/products/me', {
     params: { page, limit, productsLimit, ...filters },
   })
+  return data
+}
+
+/** GET /products/me/stats — contadores de los productos del vendedor por estado (JWT + vendedor). */
+export async function getMyProductsStats(): Promise<MyProductsStats> {
+  const { data } = await myntedAPI.get<MyProductsStats>('/products/me/stats')
   return data
 }
 

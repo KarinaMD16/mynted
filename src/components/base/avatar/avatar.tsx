@@ -98,7 +98,18 @@ export const Avatar = ({
 
     const renderMainContent = () => {
         if (canShowImage) {
-            return <img data-avatar-img className="size-full object-cover" src={src} alt={alt} onError={() => setIsFailed(true)} />;
+            // referrerPolicy: las fotos de Google (lh3.googleusercontent.com) se
+            // sirven solo sin Referer; con el de la app responden 429.
+            return (
+                <img
+                    data-avatar-img
+                    className="size-full object-cover"
+                    src={src}
+                    alt={alt}
+                    referrerPolicy="no-referrer"
+                    onError={() => setIsFailed(true)}
+                />
+            );
         }
 
         if (initials) {

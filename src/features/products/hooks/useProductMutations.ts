@@ -11,6 +11,7 @@ export const productKeys = {
   byTag: (tagId: number) => [...productKeys.all, 'tag', tagId] as const,
   explore: (filters: object) => [...productKeys.all, 'explore', filters] as const,
   mine: () => [...productKeys.all, 'mine'] as const,
+  stats: () => [...productKeys.all, 'stats'] as const,
   dashboard: (filters: object) => [...productKeys.all, 'dashboard', filters] as const,
   community: (communityId: number) => [...productKeys.all, 'community', communityId] as const,
 }

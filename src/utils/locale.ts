@@ -37,6 +37,53 @@ const REGION_CURRENCY: Record<string, string> = {
 }
 
 /**
+ * Zona horaria IANA → región, para los mercados de REGION_CURRENCY. Sirve
+ * cuando el locale del navegador no trae país (p. ej. "es" a secas).
+ */
+const TIMEZONE_REGION: Record<string, string> = {
+  'America/Costa_Rica': 'CR',
+  'America/New_York': 'US',
+  'America/Chicago': 'US',
+  'America/Denver': 'US',
+  'America/Phoenix': 'US',
+  'America/Los_Angeles': 'US',
+  'America/Anchorage': 'US',
+  'Pacific/Honolulu': 'US',
+  'America/Mexico_City': 'MX',
+  'America/Cancun': 'MX',
+  'America/Merida': 'MX',
+  'America/Monterrey': 'MX',
+  'America/Tijuana': 'MX',
+  'America/Panama': 'PA',
+  'America/Guatemala': 'GT',
+  'America/Tegucigalpa': 'HN',
+  'America/El_Salvador': 'SV',
+  'America/Managua': 'NI',
+  'America/Bogota': 'CO',
+  'America/Lima': 'PE',
+  'America/Santiago': 'CL',
+  'America/Guayaquil': 'EC',
+  'Europe/Madrid': 'ES',
+  'Atlantic/Canary': 'ES',
+  'Europe/Berlin': 'DE',
+  'Europe/Vienna': 'AT',
+  'Europe/Zurich': 'CH',
+  'Europe/Paris': 'FR',
+  'Europe/Brussels': 'BE',
+  'Europe/Luxembourg': 'LU',
+  'Europe/Monaco': 'MC',
+  'America/Sao_Paulo': 'BR',
+  'America/Fortaleza': 'BR',
+  'America/Manaus': 'BR',
+  'America/Bahia': 'BR',
+  'America/Recife': 'BR',
+  'Europe/Lisbon': 'PT',
+  'Africa/Luanda': 'AO',
+  'Africa/Maputo': 'MZ',
+  'Asia/Seoul': 'KR',
+}
+
+/**
  * Monedas que se pueden elegir en /settings (pestaña Perfil, vendedores):
  * las mismas de REGION_CURRENCY, sin repetir y en orden alfabético.
  */
@@ -122,6 +169,14 @@ const REGION_LANGUAGE: Record<string, AppLanguage> = {
 
 const DEFAULT_LOCALE = 'es-CR'
 const DEFAULT_CURRENCY = 'CRC'
+const DEFAULT_REGION = 'CR'
+
+/**
+ * Moneda en la que el backend guarda un producto cuando la cuenta del vendedor
+ * no tiene una (DEFAULT_CURRENCY de products.service). Ojo: es distinta de
+ * DEFAULT_CURRENCY de arriba, que solo sirve para detectar la moneda local.
+ */
+export const PUBLISH_FALLBACK_CURRENCY = 'USD'
 const DEFAULT_LANGUAGE: AppLanguage = 'es'
 
 export function detectLocale(): string {
@@ -142,13 +197,65 @@ function detectLocales(): string[] {
   }
 }
 
-export function detectCurrency(locale: string = detectLocale()): string {
-  try {
-    const region = new Intl.Locale(locale).maximize().region
-    return (region && REGION_CURRENCY[region]) || DEFAULT_CURRENCY
-  } catch {
-    return DEFAULT_CURRENCY
+/**
+ * Región (país) más probable de la persona, solo con pistas reales — nunca
+ * "adivinando" a partir del idioma. `new Intl.Locale('es').maximize()` da
+ * "es-ES", así que alguien con el navegador en español a secas terminaba con
+ * España (euro) aunque estuviera en Costa Rica. En orden:
+ *
+ * 1. Región explícita del locale ("es-CR" → CR).
+ * 2. Región explícita de otro idioma preferido del navegador.
+ * 3. Zona horaria del sistema (America/Costa_Rica → CR), que sí dice dónde está.
+ * 4. Ninguna: se usa el mercado de lanzamiento (ver DEFAULT_CURRENCY).
+ */
+function detectRegion(locale: string, preferred: string[]): string | null {
+  for (const candidate of [locale, ...preferred]) {
+    try {
+      const region = new Intl.Locale(candidate).region
+      if (region) return region.toUpperCase()
+    } catch {
+      // locale inválido: se prueba con el siguiente
+    }
   }
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return TIMEZONE_REGION[zone] ?? (zone.startsWith('America/Argentina/') ? 'AR' : null)
+  } catch {
+    return null
+  }
+}
+
+/** Países entre los que se puede elegir "dónde recibo mis compras" (los mismos de REGION_CURRENCY). */
+export const SHIPPING_REGIONS: string[] = Object.keys(REGION_CURRENCY)
+
+/** País para el que arranca el selector de envío: el detectado si es uno de los nuestros, si no el mercado de lanzamiento. */
+export function detectShippingRegion(locale: string = detectLocale(), preferred: string[] = detectLocales()): string {
+  const region = detectRegion(locale, preferred)
+  return region && region in REGION_CURRENCY ? region : DEFAULT_REGION
+}
+
+/** Moneda de un país de SHIPPING_REGIONS (o la local por defecto si no se conoce). */
+export function currencyOfRegion(region: string): string {
+  return REGION_CURRENCY[region] ?? DEFAULT_CURRENCY
+}
+
+/** Nombre del país en el idioma de la app ("CR" → "Costa Rica"); si Intl no lo conoce, el código. */
+export function regionName(region: string, language: AppLanguage): string {
+  try {
+    return new Intl.DisplayNames(INTL_LOCALES[language], { type: 'region' }).of(region) ?? region
+  } catch {
+    return region
+  }
+}
+
+/** Bandera del país como emoji (los dos indicadores regionales de su código). */
+export function regionFlag(region: string): string {
+  return [...region.toUpperCase()].map((char) => String.fromCodePoint(0x1f1e6 + char.charCodeAt(0) - 65)).join('')
+}
+
+export function detectCurrency(locale: string = detectLocale(), preferred: string[] = detectLocales()): string {
+  const region = detectRegion(locale, preferred)
+  return (region && REGION_CURRENCY[region]) || DEFAULT_CURRENCY
 }
 
 /** Idioma soportado de un locale ("pt-BR" → "pt", "ko" → "ko"), o null si no es uno de los nuestros. */
@@ -204,11 +311,13 @@ export function detectLanguage(locale: string = detectLocale(), preferred: strin
  * de perder esa elección la próxima vez que el backend/algún reporte lea su
  * locale.
  */
-export function buildLocaleTag(language: AppLanguage, baseLocale: string = detectLocale()): string {
-  try {
-    const region = new Intl.Locale(baseLocale).maximize().region
-    return region ? `${language}-${region}` : language
-  } catch {
-    return language
-  }
+export function buildLocaleTag(
+  language: AppLanguage,
+  baseLocale: string = detectLocale(),
+  preferred: string[] = detectLocales(),
+): string {
+  // Misma idea que detectCurrency: solo una región real (del locale o de la zona horaria), nunca
+  // la que Intl "adivina" a partir del idioma (maximize('es') da España).
+  const region = detectRegion(baseLocale, preferred)
+  return region ? `${language}-${region}` : language
 }

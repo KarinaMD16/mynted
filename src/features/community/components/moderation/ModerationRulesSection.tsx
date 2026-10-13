@@ -44,18 +44,18 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
           return (
             <li
               key={rule.communityRuleId}
-              className="flex items-center gap-3 rounded-xl border border-mynted-border bg-white px-3.5 py-2.5"
+              className="flex items-start gap-3 rounded-xl border border-mynted-border bg-white px-3.5 py-2.5"
             >
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-mynted-bg text-xs text-mynted-ink">
+              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-mynted-bg text-xs text-mynted-ink">
                 {index + 1}
               </span>
 
               {isEditing ? (
                 <>
-                  <input
-                    type="text"
+                  <textarea
+                    rows={3}
                     aria-label={t('moderation.rules.editAriaLabel', { number: index + 1 })}
-                    className={`${inputClasses(false)} flex-1 py-1.5`}
+                    className={`${inputClasses(false)} flex-1 resize-y py-1.5`}
                     value={editingText}
                     onChange={(event) => setEditingText(event.target.value)}
                   />
@@ -123,16 +123,17 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
         <label htmlFor="new-rule" className={labelClasses}>
           {t('moderation.rules.addLabel')}
         </label>
-        <div className="flex gap-2">
-          <input
+        <div className="flex flex-col gap-2">
+          <textarea
             id="new-rule"
-            type="text"
+            rows={3}
             placeholder={t('communities.create.rulePlaceholder')}
-            className={inputClasses(false)}
+            className={`${inputClasses(false)} resize-y`}
             value={newRule}
             onChange={(event) => setNewRule(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              // Enter agrega la regla; para partirla en varias lineas, Shift+Enter.
+              if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault()
                 handleAdd()
               }
@@ -144,6 +145,7 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
             disabled={addRules.isPending || newRule.trim().length === 0}
             variant="primary"
             size="md"
+            className="w-fit"
           >
             {addRules.isPending ? (
               <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />

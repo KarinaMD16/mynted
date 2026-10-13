@@ -10,9 +10,7 @@ import { SiteHeader } from './SiteHeader'
 export function PlaceholderPage({ title, description }: { title: string; description: ReactNode }) {
   return (
     <div className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
       <main className="flex flex-col items-center justify-center gap-3 px-4 py-24 text-center">
         <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{title}</h1>

@@ -1,17 +1,14 @@
-import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import {
-  EXPLORE_DOT_COLORS,
   MY_COMMUNITIES_BENTO_LIMIT,
   MY_COMMUNITIES_QUERY,
 } from '@/features/community/types/DEFAULT_VALUES'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
-import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
 import { MyCommunityCard } from '@/features/community/components/cards/MyCommunityCard'
 import { Button } from '@/components/ui/Button'
 
@@ -19,7 +16,6 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
   const { t } = useLanguage()
   const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
   const myCommunitiesQuery = useMyCommunities(MY_COMMUNITIES_QUERY, isLoggedIn)
-  const [showAll, setShowAll] = useState(false)
   // Sin sesion no se usa lo que haya quedado en cache de la cuenta anterior
   const communities = isLoggedIn ? (myCommunitiesQuery.data?.data ?? []) : []
   const bentoCommunities = communities.slice(0, MY_COMMUNITIES_BENTO_LIMIT)
@@ -34,18 +30,13 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
 
         <div className="flex items-center gap-4">
           {restCommunities.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowAll((current) => !current)}
-              className="flex items-center gap-1 text-sm font-semibold text-mynted-blue hover:cursor-pointer hover:underline"
+            <Link
+              to="/my-communities"
+              className="flex items-center gap-1 text-sm font-semibold text-mynted-blue hover:underline"
             >
-              {showAll ? t('communities.list.showLess') : t('communities.list.showAll')}
-              {showAll ? (
-                <ChevronUp className="size-4" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="size-4" aria-hidden="true" />
-              )}
-            </button>
+              {t('communities.list.showAll')}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           )}
 
           {showHeaderCreateButton && (
@@ -130,17 +121,6 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
           </div>
         )}
 
-        {showAll && restCommunities.length > 0 && (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            {restCommunities.map((community, index) => (
-              <ExploreCommunityCard
-                key={community.id}
-                community={community}
-                dotClassName={EXPLORE_DOT_COLORS[index % EXPLORE_DOT_COLORS.length]}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   )
