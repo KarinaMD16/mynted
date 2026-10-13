@@ -40,3 +40,9 @@ body {
 #root {
   min-height: 100svh;
 }
+
+/* Scrollbars delgados y sin fondo en toda la app (Chrome, Edge, Firefox y Safari 18.2+). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(120 120 130 / 0.45) transparent;
+}

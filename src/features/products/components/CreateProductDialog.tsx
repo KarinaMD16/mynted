@@ -3,6 +3,7 @@ import { useForm } from '@tanstack/react-form'
 import { Link } from '@tanstack/react-router'
 import { CircleCheck, ImagePlus, Repeat, Tag, Trash2, X } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
+import { Select } from '@/components/ui/Select'
 import { TextField } from '@/components/ui/TextField'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -21,6 +22,7 @@ import {
 } from '../models/product'
 import { makeCreateProductSchema } from '../schema/createProductSchema'
 import { Button } from '@/components/ui/Button'
+import { BlurAppear } from '@/components/ui/BlurAppear'
 
 /** Comunidad ya elegida (cuando se abre desde la tienda de una comunidad). */
 export interface ProductTargetCommunity {
@@ -36,16 +38,16 @@ interface CreateProductDialogProps {
   community?: ProductTargetCommunity
 }
 
-const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
+export const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
   new: 'products.condition.new',
   like_new: 'products.condition.likeNew',
   good_condition: 'products.condition.good',
   used_with_details: 'products.condition.usedWithDetails',
 }
 
-const labelClass = 'text-[13px] font-medium text-mynted-ink'
-const hintClass = 'text-xs text-mynted-gray'
-const errorClass = 'text-xs text-red-500'
+export const labelClass = 'text-[13px] font-medium text-mynted-ink'
+export const hintClass = 'text-xs text-mynted-gray'
+export const errorClass = 'text-xs text-red-500'
 
 /**
  * Formulario para publicar un producto (POST communities/:id/products). Solo
@@ -56,7 +58,10 @@ export function CreateProductDialog({ isOpen, onClose, community }: CreateProduc
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl">
-        <CreateProductBody onClose={onClose} community={community} />
+        {/* Misma animación de entrada (blur + fade + sube) que usan los demás menús/diálogos. */}
+        <BlurAppear>
+          <CreateProductBody onClose={onClose} community={community} />
+        </BlurAppear>
       </DialogContent>
     </Dialog>
   )
@@ -220,29 +225,20 @@ function CreateProductBody({ onClose, community }: { onClose: () => void; commun
                       <label htmlFor="product-community" className={labelClass}>
                         {t('products.create.communityLabel')}
                       </label>
-                      <select
+                      <Select
                         id="product-community"
-                        value={field.state.value || ''}
+                        value={field.state.value}
+                        options={communityOptions.map((option) => ({ value: option.id, label: option.name }))}
+                        placeholder={myCommunitiesQuery.isPending ? t('loader.default') : t('products.create.communityPlaceholder')}
                         disabled={myCommunitiesQuery.isPending}
+                        invalid={Boolean(error)}
                         onBlur={field.handleBlur}
-                        onChange={(event) => {
-                          field.handleChange(Number(event.target.value))
+                        onChange={(id) => {
+                          field.handleChange(id)
                           // Los tags dependen de la categoría de la comunidad: se reinician.
                           form.setFieldValue('tagIds', [])
                         }}
-                        className={`w-full cursor-pointer rounded-[10px] border bg-white px-3.5 py-2.5 text-sm text-mynted-ink outline-none focus:ring-2 focus:ring-mynted-orange/20 ${
-                          error ? 'border-red-400' : 'border-mynted-border focus:border-mynted-orange'
-                        }`}
-                      >
-                        <option value="" disabled>
-                          {myCommunitiesQuery.isPending ? t('loader.default') : t('products.create.communityPlaceholder')}
-                        </option>
-                        {communityOptions.map((option) => (
-                          <option key={option.id} value={option.id}>
-                            {option.name}
-                          </option>
-                        ))}
-                      </select>
+                      />
                       <span className={hintClass}>{t('products.create.communityHint')}</span>
                       {error && <span className={errorClass}>{error}</span>}
                     </div>
@@ -447,7 +443,7 @@ function CreateProductBody({ onClose, community }: { onClose: () => void; commun
 // Piezas del formulario
 // ---------------------------------------------------------------------------
 
-function ChoiceChip({
+export function ChoiceChip({
   selected,
   onSelect,
   icon,
@@ -483,7 +479,7 @@ function ChoiceChip({
  * montar/desmontar de StrictMode no deje la imagen apuntando a una URL ya
  * revocada. Las imágenes pesan como máximo 5 MB, así que no es un problema.
  */
-function useObjectUrl(file: File | null) {
+export function useObjectUrl(file: File | null) {
   const [entry, setEntry] = useState<{ file: File; url: string } | null>(null)
   useEffect(() => {
     if (!file) return
@@ -497,7 +493,7 @@ function useObjectUrl(file: File | null) {
   return file && entry?.file === file ? entry.url : null
 }
 
-function CoverPicker({ file, error, onChange }: { file: File | null; error?: string; onChange: (file: File | null) => void }) {
+export function CoverPicker({ file, error, onChange }: { file: File | null; error?: string; onChange: (file: File | null) => void }) {
   const { t } = useLanguage()
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -562,7 +558,7 @@ function CoverPicker({ file, error, onChange }: { file: File | null; error?: str
   )
 }
 
-function GalleryThumb({ file, index, onRemove }: { file: File; index: number; onRemove: () => void }) {
+export function GalleryThumb({ file, index, onRemove }: { file: File; index: number; onRemove: () => void }) {
   const { t } = useLanguage()
   const preview = useObjectUrl(file)
   return (
@@ -580,7 +576,7 @@ function GalleryThumb({ file, index, onRemove }: { file: File; index: number; on
   )
 }
 
-function GalleryPicker({
+export function GalleryPicker({
   files,
   onAdd,
   onRemove,
@@ -636,15 +632,18 @@ function GalleryPicker({
  * categoría de la comunidad elegida (mismo criterio que TagPicker al crear
  * una comunidad).
  */
-function ProductTagPicker({
+export function ProductTagPicker({
   hasCommunity,
   categoryId,
   selected,
   onChange,
   error,
+  showAllCategories = false,
 }: {
   hasCommunity: boolean
   categoryId: number | null
+  /** Sin categoría conocida: muestra todos los tags en vez de solo los generales. */
+  showAllCategories?: boolean
   selected: number[]
   onChange: (ids: number[]) => void
   error?: string
@@ -653,7 +652,7 @@ function ProductTagPicker({
   const tagsQuery = useTags()
   // Los tags dependen de la categoría de la comunidad: sin comunidad elegida no se muestran.
   const tags = hasCommunity
-    ? tagsQuery.data?.filter((tag) => tag.categoryId === null || tag.categoryId === categoryId)
+    ? tagsQuery.data?.filter((tag) => showAllCategories || tag.categoryId === null || tag.categoryId === categoryId)
     : []
 
   return (

@@ -20,6 +20,9 @@ import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ConfirmEmailChangePage from './pages/ConfirmEmailChangePage'
 import SettingsPage from './pages/SettingsPage'
+import ProductDetailPage from './pages/ProductDetailPage'
+import MyProductsPage from './pages/MyProductsPage'
+import TagProductsPage from './pages/TagProductsPage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
 
 /**
@@ -83,6 +86,27 @@ const exploreRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore',
   component: ExplorePage,
+})
+
+/** "Ver todo" de una sección de la tienda: todos los productos de un tag. */
+const shopTagRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shop/tag/$tagId',
+  component: TagProductsPage,
+})
+
+/** Detalle de un producto (Marketplace — Item Detail). */
+const productDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/products/$productId',
+  component: ProductDetailPage,
+})
+
+/** Panel del vendedor: sus productos publicados, con edición y cambio de estado. */
+const myProductsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-products',
+  component: MyProductsPage,
 })
 
 const communitiesRoute = createRoute({
@@ -197,6 +221,9 @@ const routeTree = rootRoute.addChildren([
   forgotPasswordRoute,
   resetPasswordRoute,
   exploreRoute,
+  shopTagRoute,
+  productDetailRoute,
+  myProductsRoute,
   communitiesRoute,
   communityDetailRoute,
   communityModerationRoute,
