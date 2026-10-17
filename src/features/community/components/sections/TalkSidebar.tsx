@@ -46,7 +46,9 @@ function SuggestedProducts() {
 
   const items = (products.data?.pages[0]?.data ?? []).slice(0, SIDEBAR_PRODUCTS)
 
-  if (products.isPending) return <SidebarSkeleton rows={SIDEBAR_PRODUCTS} />
+  // `isLoading` solo es true
+  // mientras de verdad esta pidiendo.
+  if (products.isLoading) return <SidebarSkeleton rows={SIDEBAR_PRODUCTS} />
   if (items.length === 0) return <p className="text-xs text-mynted-gray">{t('talk.sidebar.noProducts')}</p>
 
   return (
@@ -86,7 +88,7 @@ function SuggestedCommunities() {
 
   const items = recommended.data?.data ?? []
 
-  if (recommended.isPending) return <SidebarSkeleton rows={SIDEBAR_COMMUNITIES} />
+  if (recommended.isLoading) return <SidebarSkeleton rows={SIDEBAR_COMMUNITIES} />
   if (items.length === 0) return <p className="text-xs text-mynted-gray">{t('talk.sidebar.noCommunities')}</p>
 
   return (
