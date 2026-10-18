@@ -9,6 +9,9 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useUserInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
 import { useUserByIdQuery, useUserByUsernameQuery } from '@/features/auth/hooks/useAuthMutations'
 import type { PublicUser } from '@/features/auth/models/auth'
+import { ErrorState } from '@/components/errors/ErrorState'
+import { BadgesCard } from '@/features/badges/components/BadgesCard'
+import { useUserBadges } from '@/features/badges/hooks/useBadgesQueries'
 import { ContentBentoGrid } from '@/features/community/components/feed/ContentBentoGrid'
 import { ProfilePostCard } from '@/features/community/components/cards/ProfilePostCard'
 import { ProfileFeedFrame } from '@/features/community/components/profile/ProfileFeedFrame'
@@ -69,7 +72,14 @@ export default function UserProfilePage() {
             </Link>
           </StateCard>
         ) : notFound ? (
-          <StateCard title={t('userProfile.notFoundTitle')} subtitle={t('userProfile.notFoundSubtitle')} />
+          <ErrorState kind="notFound" title={t('userProfile.notFoundTitle')} description={t('userProfile.notFoundSubtitle')}>
+            <Link
+              to="/"
+              className="rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
+            >
+              {t('errors.actions.home')}
+            </Link>
+          </ErrorState>
         ) : userQuery.isError || !user ? (
           <StateCard title={t('profile.loadErrorTitle')} subtitle={t('profile.loadErrorSubtitle')} />
         ) : (
@@ -85,6 +95,7 @@ function PublicProfile({ user, language }: { user: PublicUser; language: AppLang
   const isSeller = user.role === 'seller'
   const [activeTab, setActiveTab] = useState<PublicTab>('posts')
   const interests = useUserInterestsQuery(user.id)
+  const badges = useUserBadges(user.id)
 
   const tabs: { id: PublicTab; label: string; icon: React.ReactNode }[] = [
     { id: 'posts', label: t('profile.tabs.posts'), icon: <LayoutGrid className="size-4" aria-hidden="true" /> },
@@ -109,6 +120,7 @@ function PublicProfile({ user, language }: { user: PublicUser; language: AppLang
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
         <div className="flex flex-col gap-6">
           <AboutCard user={user} language={language} />
+          <BadgesCard query={badges} emptyKey="userProfile.badges.empty" />
           <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
             <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-mynted-ink">
               <HeartOutline className="size-5 text-mynted-orange" aria-hidden="true" />

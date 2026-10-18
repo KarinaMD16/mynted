@@ -2,6 +2,7 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import App from './App'
 import { ADMIN_SECTIONS, ADMIN_TABS, type AdminSection, type AdminTab } from './features/admin/models/admin'
 import { Loader } from './components/ui/Loader'
+import { NotFoundPage, RouteErrorPage } from './components/errors/ErrorPages'
 import { useLanguage } from './i18n/LanguageContext'
 import AdminPage from './pages/AdminPage'
 import CommunitiesPage from './pages/CommunitiesPage'
@@ -50,6 +51,8 @@ import { SEARCH_MAX_LENGTH, SEARCH_TYPES, type SearchType } from './features/sea
  */
 const rootRoute = createRootRoute({
   component: App,
+  // Ruta inexistente: se dibuja dentro del <Outlet /> de App, con idioma y header.
+  notFoundComponent: NotFoundPage,
 })
 
 const homeRoute = createRoute({
@@ -333,6 +336,10 @@ export const router = createRouter({
   // Loader oficial de la app (el gansito) mientras se resuelve la
   // navegación entre rutas o la carga de datos de una ruta.
   defaultPendingComponent: DefaultPending,
+  // Pantallas de error por defecto (ver components/errors/ErrorPages.tsx):
+  // 404 "not quaound" para rutas que no existen y "honk" si una ruta revienta.
+  defaultNotFoundComponent: NotFoundPage,
+  defaultErrorComponent: RouteErrorPage,
 })
 
 declare module '@tanstack/react-router' {

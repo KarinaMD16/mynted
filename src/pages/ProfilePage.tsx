@@ -5,6 +5,8 @@ import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
 import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
+import { BadgesCard } from '@/features/badges/components/BadgesCard'
+import { useUserBadges } from '@/features/badges/hooks/useBadgesQueries'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
 import { MyThreadsTab } from '@/features/community/components/profile/MyThreadsTab'
@@ -29,6 +31,7 @@ export default function ProfilePage() {
   const { t, language } = useLanguage()
   const { isLoggedIn, data: user, isLoading, isError } = useCurrentUser()
   const interestsQuery = useMyInterestsQuery(isLoggedIn)
+  const badgesQuery = useUserBadges(user?.id)
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
   const navigate = useNavigate()
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
@@ -71,7 +74,7 @@ export default function ProfilePage() {
                   izquierda, sin depender de qué tab esté activa. */}
               <div className={`${activeTab === 'info' ? 'flex' : 'hidden'} flex-col gap-6 lg:order-1 lg:flex`}>
                 <AboutCard user={user} language={language} />
-                <BadgesCard />
+                <BadgesCard query={badgesQuery} emptyKey="profile.badges.empty" />
                 <InterestsCard interestsQuery={interestsQuery} />
               </div>
 
@@ -310,39 +313,6 @@ function TabContent({ activeTab }: { activeTab: ProfileTab }) {
     <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
       <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t(title)}</h2>
       <p className="max-w-sm text-sm text-mynted-gray">{t(subtitle)}</p>
-    </div>
-  )
-}
-
-const PLACEHOLDER_BADGES: { emoji: string; labelKey: TranslationKey; className: string }[] = [
-  { emoji: '🏆', labelKey: 'profile.badges.topSeller', className: 'bg-mynted-orange/10 text-mynted-orange' },
-  { emoji: '⚡', labelKey: 'profile.badges.fastResponder', className: 'bg-mynted-blue/10 text-mynted-blue' },
-  { emoji: '📦', labelKey: 'profile.badges.sales100', className: 'bg-mynted-bg text-mynted-ink' },
-  { emoji: '⭐', labelKey: 'profile.badges.rating5', className: 'bg-green-400/10 text-green-600' },
-  { emoji: '🚚', labelKey: 'profile.badges.secureShipping', className: 'bg-mynted-blue/10 text-mynted-blue-dark' },
-  { emoji: '🛡️', labelKey: 'profile.badges.trusted', className: 'bg-mynted-yellow/20 text-amber-600' },
-]
-
-
-function BadgesCard() {
-  const { t } = useLanguage()
-  return (
-    <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
-      <h2 className="font-heading text-lg font-semibold text-mynted-ink">
-        {t('profile.badges.title', { count: PLACEHOLDER_BADGES.length })}
-      </h2>
-      <p className="mt-1 text-xs text-mynted-gray">{t('profile.badges.previewNote')}</p>
-
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        {PLACEHOLDER_BADGES.map((badge) => (
-          <div key={badge.labelKey} className="flex flex-col items-center gap-1.5 text-center">
-            <span className={`flex size-12 items-center justify-center rounded-full text-xl ${badge.className}`}>
-              {badge.emoji}
-            </span>
-            <span className="text-xs font-medium text-mynted-gray">{t(badge.labelKey)}</span>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }

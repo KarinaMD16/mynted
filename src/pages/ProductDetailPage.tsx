@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
-import { isAxiosError } from 'axios'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, isNotFoundError } from '@/api/apiError'
+import { ErrorState } from '@/components/errors/ErrorState'
 import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
@@ -89,19 +89,19 @@ export default function ProductDetailPage() {
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
         {product.isPending && productId !== undefined ? (
           <div className="h-[440px] animate-pulse rounded-[18px] bg-white" aria-busy="true" />
-        ) : product.isError || productId === undefined ? (
+        ) : productId === undefined || isNotFoundError(product.error) ? (
+          <ErrorState kind="notFound" title={t('itemDetail.notFound')}>
+            <Link to="/explore" className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
+              {t('explore.title')}
+            </Link>
+          </ErrorState>
+        ) : product.isError ? (
           <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-            <p className="text-sm font-semibold text-mynted-ink">
-              {productId === undefined || (isAxiosError(product.error) && product.error.response?.status === 404)
-                ? t('itemDetail.notFound')
-                : t('products.list.loadError')}
-            </p>
-            {product.error && <p className="text-sm text-mynted-gray">{getApiErrorMessage(product.error)}</p>}
-            {productId !== undefined && (
-              <Button type="button" onClick={() => void product.refetch()} variant="secondary" size="sm" className="mt-2">
-                {t('communities.list.retry')}
-              </Button>
-            )}
+            <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
+            <p className="text-sm text-mynted-gray">{getApiErrorMessage(product.error)}</p>
+            <Button type="button" onClick={() => void product.refetch()} variant="secondary" size="sm" className="mt-2">
+              {t('communities.list.retry')}
+            </Button>
           </div>
         ) : product.data ? (
           <>

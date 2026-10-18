@@ -1,6 +1,6 @@
 import { Link, useParams } from '@tanstack/react-router'
-import { isAxiosError } from 'axios'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, isNotFoundError } from '@/api/apiError'
+import { ErrorState } from '@/components/errors/ErrorState'
 import { Button } from '@/components/ui/Button'
 import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import {
@@ -37,18 +37,25 @@ function EditProductContent({ productId }: { productId: number | undefined }) {
   const related = useRelatedProducts(productId, product.isSuccess && !isDraft)
   const communities = useMyCommunities({ limit: 100 })
 
-  if (productId === undefined || product.isError) {
-    const notFound = productId === undefined || (isAxiosError(product.error) && product.error.response?.status === 404)
+  if (productId === undefined || isNotFoundError(product.error)) {
+    return (
+      <ErrorState kind="notFound" title={t('itemDetail.notFound')}>
+        <Link to="/my-products" className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
+          {t('header.myProducts')}
+        </Link>
+      </ErrorState>
+    )
+  }
+
+  if (product.isError) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-        <p className="text-sm font-semibold text-mynted-ink">{t(notFound ? 'itemDetail.notFound' : 'products.list.loadError')}</p>
-        {product.error && <p className="text-sm text-mynted-gray">{getApiErrorMessage(product.error)}</p>}
+        <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
+        <p className="text-sm text-mynted-gray">{getApiErrorMessage(product.error)}</p>
         <div className="mt-2 flex gap-2">
-          {productId !== undefined && !notFound && (
-            <Button type="button" onClick={() => void product.refetch()} variant="secondary" size="sm">
-              {t('communities.list.retry')}
-            </Button>
-          )}
+          <Button type="button" onClick={() => void product.refetch()} variant="secondary" size="sm">
+            {t('communities.list.retry')}
+          </Button>
           <Link
             to="/my-products"
             className="rounded-lg bg-mynted-orange px-3 py-1.5 text-sm font-semibold text-white hover:bg-mynted-orange-hover"

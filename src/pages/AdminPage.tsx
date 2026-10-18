@@ -7,6 +7,7 @@ import { CommunitiesSection } from '@/features/admin/sections/CommunitiesSection
 import { SellerRequestsSection } from '@/features/admin/sections/SellerRequestsSection'
 import { UsersSection } from '@/features/admin/sections/UsersSection'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
+import { ForbiddenPage } from '@/components/errors/ErrorPages'
 import { Loader } from '@/components/ui/Loader'
 import { useLanguage } from '@/i18n/LanguageContext'
 
@@ -36,19 +37,23 @@ export default function AdminPage() {
     )
   }
 
-  if (!isLoggedIn || !isSuperAdmin) {
+  if (isLoggedIn && !isSuperAdmin) {
+    return <ForbiddenPage title={t('admin.access.forbiddenTitle')} description={t('admin.access.forbiddenDescription')} />
+  }
+
+  if (!isLoggedIn || !user) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-mynted-bg px-4">
         <div className="w-full max-w-lg">
           <CommunityNotice
-            title={isLoggedIn ? t('admin.access.forbiddenTitle') : t('admin.access.signedOutTitle')}
-            description={isLoggedIn ? t('admin.access.forbiddenDescription') : t('admin.access.signedOutDescription')}
+            title={t('admin.access.signedOutTitle')}
+            description={t('admin.access.signedOutDescription')}
           >
             <Link
-              to={isLoggedIn ? '/' : '/login'}
+              to="/login"
               className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange-hover"
             >
-              {isLoggedIn ? t('admin.access.backHome') : t('communities.list.signIn')}
+              {t('communities.list.signIn')}
             </Link>
           </CommunityNotice>
         </div>

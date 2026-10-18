@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Plus, Shield, ShoppingBag } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, isNotFoundError } from '@/api/apiError'
+import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityDetailHeader } from '@/features/community/components/detail/CommunityDetailHeader'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
@@ -111,7 +112,15 @@ export default function CommunityDetailPage() {
           </div>
         )}
 
-        {isLoggedIn && communityQuery.isError && (
+        {isLoggedIn && communityQuery.isError && isNotFoundError(communityQuery.error) && (
+          <ErrorState kind="notFound" description={t('errors.notFound.community')}>
+            <Link to="/communities" className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
+              {t('communities.explore.title')}
+            </Link>
+          </ErrorState>
+        )}
+
+        {isLoggedIn && communityQuery.isError && !isNotFoundError(communityQuery.error) && (
           <CommunityNotice
             title={t('community.detail.loadError')}
             description={getApiErrorMessage(communityQuery.error)}
