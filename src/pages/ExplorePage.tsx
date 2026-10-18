@@ -186,7 +186,7 @@ export default function ExplorePage() {
         </ScrollReveal>
 
         {activeTab === 'talk' ? (
-          <TalkFeed source="all" />
+          <TalkFeed />
         ) : (
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:items-start lg:gap-8">
             <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>

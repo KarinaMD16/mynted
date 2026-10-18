@@ -8,7 +8,7 @@ import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, Shopping
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { BadgesCard } from '@/features/badges/components/BadgesCard'
-import { useUserBadges } from '@/features/badges/hooks/useBadgesQueries'
+import { useBadgeCatalog, useMyBadges } from '@/features/badges/hooks/useBadgesQueries'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
 import { MyThreadsTab } from '@/features/community/components/profile/MyThreadsTab'
@@ -33,7 +33,9 @@ export default function ProfilePage() {
   const { t, language } = useLanguage()
   const { isLoggedIn, data: user, isLoading, isError } = useCurrentUser()
   const interestsQuery = useMyInterestsQuery(isLoggedIn)
-  const badgesQuery = useUserBadges(user?.id)
+  const badgesQuery = useMyBadges(isLoggedIn)
+  // Catálogo de badges de cuenta: en el perfil propio también se muestran los que faltan por ganar.
+  const badgeCatalogQuery = useBadgeCatalog('user', isLoggedIn)
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
   const navigate = useNavigate()
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
@@ -76,7 +78,7 @@ export default function ProfilePage() {
                   izquierda, sin depender de qué tab esté activa. */}
               <div className={`${activeTab === 'info' ? 'flex' : 'hidden'} flex-col gap-6 lg:order-1 lg:flex`}>
                 <AboutCard user={user} language={language} />
-                <BadgesCard query={badgesQuery} emptyKey="profile.badges.empty" />
+                <BadgesCard query={badgesQuery} catalogQuery={badgeCatalogQuery} emptyKey="profile.badges.empty" />
                 <InterestsCard interestsQuery={interestsQuery} />
               </div>
 

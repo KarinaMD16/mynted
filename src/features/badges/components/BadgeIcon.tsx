@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Award } from 'lucide-react'
 import { cx } from '@/utils/cx'
-import type { BadgeRarity } from '../models/badges'
-import { getBadgeIconUrl, RARITY_STYLES } from '../utils/badgeDisplay'
+import { getBadgeIconUrl, getRarityStyles } from '../utils/badgeDisplay'
 
 interface BadgeIconProps {
   code: string
-  rarity: BadgeRarity
+  rarity: string
+  /** Badge todavía no ganado: se pinta en gris y transparente. */
+  locked?: boolean
   /** Clases de tamaño, p. ej. "size-14". */
   className?: string
 }
@@ -16,15 +17,16 @@ interface BadgeIconProps {
  * (un badge nuevo o un SVG que todavía no se subió), muestra un ícono genérico
  * coloreado según la rareza en vez de una imagen rota.
  */
-export function BadgeIcon({ code, rarity, className = 'size-14' }: BadgeIconProps) {
+export function BadgeIcon({ code, rarity, locked = false, className = 'size-14' }: BadgeIconProps) {
   const [failedCode, setFailedCode] = useState<string | null>(null)
-  const styles = RARITY_STYLES[rarity] ?? RARITY_STYLES.low
+  const styles = getRarityStyles(rarity)
+  const lockedClass = locked && 'opacity-40 grayscale'
 
   if (failedCode === code) {
     return (
       <span
         aria-hidden="true"
-        className={cx('flex shrink-0 items-center justify-center rounded-full ring-2', styles.ring, styles.fallback, className)}
+        className={cx('flex shrink-0 items-center justify-center rounded-full ring-2', styles.ring, styles.fallback, lockedClass, className)}
       >
         <Award className="size-1/2" />
       </span>
@@ -40,7 +42,7 @@ export function BadgeIcon({ code, rarity, className = 'size-14' }: BadgeIconProp
       decoding="async"
       draggable={false}
       onError={() => setFailedCode(code)}
-      className={cx('shrink-0 object-contain', className)}
+      className={cx('shrink-0 object-contain', lockedClass, className)}
     />
   )
 }

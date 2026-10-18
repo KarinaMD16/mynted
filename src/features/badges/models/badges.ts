@@ -1,38 +1,41 @@
-/** Rareza de un badge (BadgeRarity en el backend). */
-export type BadgeRarity = 'low' | 'medium' | 'high'
+/** Rareza de un badge (BadgeRarity en el backend), de menor a mayor. */
+export type BadgeRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
 
-/** user: se otorga a la cuenta. community_profile: al perfil dentro de una comunidad. */
-export type BadgeScope = 'user' | 'community_profile'
+/** user: se otorga a la cuenta. community: al perfil de la persona dentro de una comunidad. */
+export type BadgeScope = 'user' | 'community'
 
 /**
- * Badge ya ganado, tal como lo devuelven GET /users/:id/badges y
- * GET /community-profiles/:id/badges (AwardedBadge en el backend).
- * `icon` llega siempre en null: el ícono vive en /public/badges/<code>.svg.
+ * Badge tal como lo devuelven GET /badges (catálogo), GET /users/me/badges,
+ * GET /users/:id/badges y GET /community-profiles/:id/badges (BadgeItem en el backend).
+ * - `awardedAt`: null en el catálogo y en los derivados.
+ * - `derived`: community_founder / moderator salen del rol actual en la comunidad
+ *   (no se guardan; si cambia el rol, desaparecen solos).
+ * El ícono vive en /public/badges/<code>.svg.
  */
 export interface AwardedBadge {
   code: string
   name: string
   description: string
-  criteria: string
-  icon: string | null
-  rarity: BadgeRarity
   scope: BadgeScope
-  awardedAt: string
+  rarity: BadgeRarity
+  awardedAt: string | null
+  derived: boolean
 }
 
-/** Códigos que el backend siembra (BADGE_CODES). Los que tienen traducción en i18n. */
+/** Códigos que siembra el backend (BADGE_CODES): los que tienen traducción e ícono. */
 export const KNOWN_BADGE_CODES = [
-  'first_post',
-  'community_voice',
-  'conversationalist',
-  'franchise_collector',
-  'community_founder',
-  'moderator',
   'verified_seller',
-  'founding_member',
-  'anniversary',
   'trusted_seller',
   'successful_exchange',
+  'founding_member',
+  'anniversary',
+  'first_post',
+  'talkative',
+  'community_voice',
+  'community_collector',
+  'community_founding_member',
+  'community_founder',
+  'moderator',
 ] as const
 
 export type KnownBadgeCode = (typeof KNOWN_BADGE_CODES)[number]

@@ -18,8 +18,9 @@ import { SiteHeader } from '../components/layout/SiteHeader'
  * 1. Hero (solo sin sesión): explica qué es Mynted en una pantalla y lleva a crear cuenta o
  *    a la tienda. Con sesión se omite, para que quien vuelve llegue directo a los productos.
  * 2. Shop: productos agrupados por tag, con scroll infinito (visible también sin sesión).
- * 3. Talk (solo con sesión): las publicaciones que coinciden con los intereses del usuario
- *    (GET /users/me/recommended-posts). El feed de todas las comunidades vive en /explore.
+ * 3. Talk: lo más reciente de las comunidades del usuario (GET /home/posts). Sin sesión, o si
+ *    todavía no está en ninguna comunidad, lo más reciente de comunidades públicas. El feed
+ *    "para ti" completo vive en la pestaña Foro de /explore.
  * 4. Comunidades más populares (GET /communities es público).
  * 5. Llamado a vender.
  */
@@ -44,11 +45,15 @@ export default function HomePage() {
           <ShopFeed />
         </section>
 
-        {/* Pide sesión: sin ella no se muestra, en vez de dejar un bloque pidiendo entrar. */}
-        {isLoggedIn && (
+        {/* Mientras se resuelve la sesión no se muestra, para no pedir primero el feed público y luego el personal. */}
+        {!isLoading && (
           <section id="talk" aria-labelledby="home-talk-title" className="flex scroll-mt-28 flex-col gap-8">
             <ScrollReveal className="flex flex-wrap items-end justify-between gap-4">
-              <SectionHeading id="home-talk-title" eyebrow={t('home.talk.eyebrow')} title={t('home.talk.title')} />
+              <SectionHeading
+                id="home-talk-title"
+                eyebrow={t('home.talk.eyebrow')}
+                title={t(isLoggedIn ? 'home.talk.titleJoined' : 'home.talk.title')}
+              />
               <Link
                 to="/explore"
                 className="flex items-center gap-1 text-sm font-semibold text-mynted-blue hover:underline"
@@ -59,10 +64,11 @@ export default function HomePage() {
             </ScrollReveal>
 
             <div
-              className={`grid gap-6 ${showsSellCta ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''}`}
+              className={`grid gap-6 ${showsSellCta && isLoggedIn ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''}`}
             >
               <TalkHighlights />
-              {showsSellCta && <SellCta layout="column" />}
+              {/* Sin sesión el llamado a vender ya va al final de la página. */}
+              {showsSellCta && isLoggedIn && <SellCta layout="column" />}
             </div>
           </section>
         )}

@@ -4,15 +4,18 @@ import {
   createReply,
   getCommunityPosts,
   getGlobalPosts,
+  getExplorePosts,
+  getHomePosts,
   getPost,
-  getRecommendedPosts,
   getPostReplies,
   setPostFavorite,
   setReplyFavorite,
   votePost,
   voteReply,
 } from '../services/forumService'
-import type { ForumPostsQuery, GlobalPostsPage, GlobalPostsQuery, VoteType } from '../models/forumDTOs'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import type { PaginatedResponse } from '../models/communityDTOs'
+import type { FeedSort, ForumPostsQuery, GlobalPostsPage, GlobalPostsQuery, VoteType } from '../models/forumDTOs'
 
 /** Filtros del feed global; la pagina y el limite los pone el scroll infinito. */
 export type GlobalPostsFilters = Omit<GlobalPostsQuery, 'page' | 'limit'>
@@ -21,22 +24,61 @@ export const forumKeys = {
   all: ['forum'] as const,
   posts: (communityId: number, query: ForumPostsQuery) => ['forum', 'posts', communityId, query] as const,
   globalPosts: (filters: GlobalPostsFilters) => ['forum', 'global-posts', filters] as const,
-  recommendedPosts: () => ['forum', 'recommended-posts'] as const,
+  // El usuario va en la clave: estos feeds cambian segun la sesion (comunidades, intereses).
+  homePosts: (viewer: string | null, sort: FeedSort) => ['forum', 'home-posts', viewer, sort] as const,
+  explorePosts: (viewer: string | null) => ['forum', 'explore-posts', viewer] as const,
   post: (postId: number) => ['forum', 'post', postId] as const,
   replies: (postId: number) => ['forum', 'replies', postId] as const,
 }
 
 const GLOBAL_POSTS_PAGE_SIZE = 10
 
-/** Feed por intereses del home, con scroll infinito. No admite filtros. */
-export const useRecommendedPosts = (enabled = true) => {
+const nextPage = (last: PaginatedResponse<unknown>) =>
+  last.pagination.page < last.pagination.totalPages ? last.pagination.page + 1 : undefined
+
+/**
+ * Une las paginas de un feed quitando repetidos: el orden depende de los votos
+ * del momento, asi que entre una pagina y la siguiente un post puede moverse y
+ * volver a aparecer (ver GUIA_FRONTEND 1.5).
+ */
+export function flattenUniquePosts<T extends { id: number }>(pages: { data: T[] }[] | undefined): T[] {
+  const seen = new Set<number>()
+  const items: T[] = []
+  for (const page of pages ?? []) {
+    for (const post of page.data) {
+      if (seen.has(post.id)) continue
+      seen.add(post.id)
+      items.push(post)
+    }
+  }
+  return items
+}
+
+/**
+ * Home (GET /home/posts): posts de las comunidades del usuario, o de
+ * comunidades publicas si no hay sesion o todavia no se unio a ninguna.
+ */
+export const useHomePosts = (sort: FeedSort = 'hot', enabled = true) => {
+  const { userId, isLoading } = useCurrentUser()
   return useInfiniteQuery({
-    queryKey: forumKeys.recommendedPosts(),
-    queryFn: ({ pageParam }) => getRecommendedPosts(pageParam, GLOBAL_POSTS_PAGE_SIZE),
+    queryKey: forumKeys.homePosts(userId, sort),
+    queryFn: ({ pageParam }) => getHomePosts(pageParam, GLOBAL_POSTS_PAGE_SIZE, sort),
     initialPageParam: 1,
-    getNextPageParam: (last: GlobalPostsPage) =>
-      last.pagination.page < last.pagination.totalPages ? last.pagination.page + 1 : undefined,
-    enabled,
+    getNextPageParam: nextPage,
+    // Espera a saber si hay sesion, para no pedir el feed publico y luego el personal.
+    enabled: enabled && !isLoading,
+  })
+}
+
+/** "Para ti" de Explorar (GET /explore/forums/posts): intereses + votos + comunidades nuevas. Sin filtros. */
+export const useExplorePosts = (enabled = true) => {
+  const { userId, isLoading } = useCurrentUser()
+  return useInfiniteQuery({
+    queryKey: forumKeys.explorePosts(userId),
+    queryFn: ({ pageParam }) => getExplorePosts(pageParam, GLOBAL_POSTS_PAGE_SIZE),
+    initialPageParam: 1,
+    getNextPageParam: nextPage,
+    enabled: enabled && !isLoading,
   })
 }
 
