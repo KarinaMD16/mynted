@@ -1,8 +1,8 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
-import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
@@ -62,17 +62,9 @@ export default function TagProductsPage() {
             ))}
           </div>
         ) : products.isError ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-            <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-            <p className="text-sm text-mynted-gray">{getApiErrorMessage(products.error)}</p>
-            <Button type="button" onClick={() => void products.refetch()} variant="secondary" size="sm" className="mt-2">
-              {t('communities.list.retry')}
-            </Button>
-          </div>
+          <QueryErrorState error={products.error} onRetry={() => void products.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
         ) : items.length === 0 ? (
-          <p className="rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-            {t('shop.tag.empty')}
-          </p>
+          <ErrorState kind="empty" description={t('shop.tag.empty')} />
         ) : (
           <>
             <ul className={SHOP_GRID_CLASS}>

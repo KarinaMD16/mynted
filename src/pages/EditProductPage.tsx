@@ -1,7 +1,7 @@
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { Link, useParams } from '@tanstack/react-router'
-import { getApiErrorMessage, isNotFoundError } from '@/api/apiError'
+import { isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
-import { Button } from '@/components/ui/Button'
 import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import {
   ProductEditorForm,
@@ -49,21 +49,11 @@ function EditProductContent({ productId }: { productId: number | undefined }) {
 
   if (product.isError) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-        <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-        <p className="text-sm text-mynted-gray">{getApiErrorMessage(product.error)}</p>
-        <div className="mt-2 flex gap-2">
-          <Button type="button" onClick={() => void product.refetch()} variant="secondary" size="sm">
-            {t('communities.list.retry')}
-          </Button>
-          <Link
-            to="/my-products"
-            className="rounded-lg bg-mynted-orange px-3 py-1.5 text-sm font-semibold text-white hover:bg-mynted-orange-hover"
-          >
-            {t('header.myProducts')}
-          </Link>
-        </div>
-      </div>
+      <QueryErrorState error={product.error} onRetry={() => void product.refetch()}>
+        <Link to="/my-products" className="rounded-lg px-4 py-2 text-sm font-semibold text-mynted-ink hover:bg-mynted-bg">
+          {t('header.myProducts')}
+        </Link>
+      </QueryErrorState>
     )
   }
 

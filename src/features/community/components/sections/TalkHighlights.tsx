@@ -1,5 +1,5 @@
-import { getApiErrorMessage } from '@/api/apiError'
-import { Button } from '@/components/ui/Button'
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { StaggerItem } from '@/components/ui/ScrollReveal'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useRecommendedPosts } from '@/features/community/hooks/useForum'
@@ -31,25 +31,13 @@ export function TalkHighlights() {
 
   if (posts.isError) {
     return (
-      <div
-        className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-10 text-center"
-        role="alert"
-      >
-        <p className="text-sm font-semibold text-mynted-ink">{t('talk.loadError')}</p>
-        <p className="text-sm text-mynted-gray">{getApiErrorMessage(posts.error)}</p>
-        <Button variant="secondary" size="sm" className="mt-2" onClick={() => void posts.refetch()}>
-          {t('communities.list.retry')}
-        </Button>
-      </div>
+      <QueryErrorState error={posts.error} onRetry={() => void posts.refetch()} variant="compact" texts={{ error: { description: t('talk.loadError') } }} />
     )
   }
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-10 text-center">
-        <p className="text-sm font-semibold text-mynted-ink">{t('talk.empty.title')}</p>
-        <p className="max-w-sm text-sm text-mynted-gray">{t('talk.empty.interests')}</p>
-      </div>
+      <ErrorState kind="empty" variant="compact" title={t('talk.empty.title')} description={t('talk.empty.interests')} />
     )
   }
 

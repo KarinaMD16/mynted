@@ -1,8 +1,8 @@
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
-import { getApiErrorMessage, isNotFoundError } from '@/api/apiError'
+import { isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
-import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -96,13 +96,7 @@ export default function ProductDetailPage() {
             </Link>
           </ErrorState>
         ) : product.isError ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-            <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-            <p className="text-sm text-mynted-gray">{getApiErrorMessage(product.error)}</p>
-            <Button type="button" onClick={() => void product.refetch()} variant="secondary" size="sm" className="mt-2">
-              {t('communities.list.retry')}
-            </Button>
-          </div>
+          <QueryErrorState error={product.error} onRetry={() => void product.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
         ) : product.data ? (
           <>
             <Breadcrumb title={product.data.title} />

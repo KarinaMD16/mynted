@@ -1,7 +1,6 @@
-import { getApiErrorMessage } from '@/api/apiError'
-import { Button } from '@/components/ui/Button'
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { CommunityGridPage } from '@/features/community/components/sections/CommunityGridPage'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import {
   useCommunities,
   useMyCommunities,
@@ -44,21 +43,11 @@ export default function DiscoverCommunitiesPage() {
       notice={
         <>
           {query.isError && (
-            <CommunityNotice
-              title={t('communities.explore.loadError')}
-              description={getApiErrorMessage(query.error)}
-            >
-              <Button variant="secondary" size="sm" onClick={() => void query.refetch()}>
-                {t('communities.list.retry')}
-              </Button>
-            </CommunityNotice>
+            <QueryErrorState error={query.error} onRetry={() => void query.refetch()} texts={{ error: { description: t('communities.explore.loadError') } }} />
           )}
 
           {query.isSuccess && communities.length === 0 && (
-            <CommunityNotice
-              title={t('communities.explore.title')}
-              description={t('communities.explore.empty')}
-            />
+            <ErrorState kind="empty" variant="compact" description={t('communities.explore.empty')} />
           )}
         </>
       }

@@ -1,8 +1,7 @@
+import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
 import { Link, useParams, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { getApiErrorMessage, isNotFoundError } from '@/api/apiError'
-import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { CommunitySidebar } from '@/features/community/components/detail/CommunitySidebar'
@@ -68,17 +67,7 @@ export default function PostDetailPage() {
         )}
 
         {!isLoadingSession && !isLoggedIn && (
-          <CommunityNotice
-            title={t('community.detail.signedOutTitle')}
-            description={t('community.detail.signedOutDescription')}
-          >
-            <Link
-              to="/login"
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-            >
-              {t('communities.list.signIn')}
-            </Link>
-          </CommunityNotice>
+          <SignedOutState description={t('community.detail.signedOutDescription')} />
         )}
 
         {(isLoadingSession || (isLoggedIn && postQuery.isPending)) && (
@@ -103,20 +92,16 @@ export default function PostDetailPage() {
           </CommunityNotice>
         )}
 
-        {isLoggedIn && canSeePost && postQuery.isError && isNotFoundError(postQuery.error) && (
-          <ErrorState kind="notFound" description={t('errors.notFound.post')}>
+        {isLoggedIn && canSeePost && postQuery.isError && (
+          <QueryErrorState
+            error={postQuery.error}
+            onRetry={() => void postQuery.refetch()}
+            texts={{ notFound: { description: t('errors.notFound.post') }, error: { description: t('forum.loadError') } }}
+          >
             <Link to="/communities/$slug" params={{ slug }} className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
               {t('forum.backToCommunity', { slug })}
             </Link>
-          </ErrorState>
-        )}
-
-        {isLoggedIn && canSeePost && postQuery.isError && !isNotFoundError(postQuery.error) && (
-          <CommunityNotice title={t('forum.loadError')} description={getApiErrorMessage(postQuery.error)}>
-            <Button variant="secondary" size="sm" onClick={() => void postQuery.refetch()}>
-              {t('communities.list.retry')}
-            </Button>
-          </CommunityNotice>
+          </QueryErrorState>
         )}
 
         {post && (

@@ -1,3 +1,5 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
@@ -282,14 +284,9 @@ export function ProductReviews({ productId, isOwnProduct = false }: { productId:
       {query.isPending ? (
         <div className="h-24 animate-pulse rounded-2xl bg-white" aria-busy="true" />
       ) : query.isError ? (
-        <div className="flex flex-col items-start gap-2" role="alert">
-          <p className="text-sm text-red-500">{t('reviews.loadError')}</p>
-          <Button type="button" variant="secondary" size="sm" onClick={() => void query.refetch()}>
-            {t('communities.list.retry')}
-          </Button>
-        </div>
+        <QueryErrorState error={query.error} onRetry={() => void query.refetch()} variant="compact" texts={{ error: { description: t('reviews.loadError') } }} />
       ) : reviews.length === 0 ? (
-        <p className="text-sm text-mynted-gray">{t('reviews.empty')}</p>
+        <ErrorState kind="empty" variant="compact" description={t('reviews.empty')} />
       ) : (
         <>
           <ul className="flex flex-col gap-3">

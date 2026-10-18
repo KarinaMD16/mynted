@@ -1,3 +1,4 @@
+import { ErrorState } from '@/components/errors/ErrorState'
 import { Check, LoaderCircle, X } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -45,9 +46,7 @@ export function ModerationJoinRequestsSection({ community }: { community: Commun
       )}
 
       {requestsQuery.isSuccess && requests.length === 0 && (
-        <p className="rounded-xl border border-dashed border-mynted-border px-6 py-10 text-center text-sm text-mynted-gray">
-          {t('moderation.requests.empty')}
-        </p>
+        <ErrorState kind="empty" variant="compact" description={t('moderation.requests.empty')} />
       )}
 
       {requests.length > 0 && (

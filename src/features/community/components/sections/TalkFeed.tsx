@@ -1,6 +1,8 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
-import { getApiErrorMessage, isUnauthorizedError } from '@/api/apiError'
+import { isUnauthorizedError } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { LoginPrompt } from '@/components/ui/LoginPrompt'
 import { StaggerItem } from '@/components/ui/ScrollReveal'
@@ -130,28 +132,19 @@ export function TalkFeed({ source }: TalkFeedProps) {
           ) : posts.isError && isUnauthorizedError(posts.error) ? (
             <LoginPrompt message={t('talk.loginPrompt')} />
           ) : posts.isError ? (
-            <div
-              className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"
-              role="alert"
-            >
-              <p className="text-sm font-semibold text-mynted-ink">{t('talk.loadError')}</p>
-              <p className="text-sm text-mynted-gray">{getApiErrorMessage(posts.error)}</p>
-              <Button variant="secondary" size="sm" className="mt-2" onClick={() => void posts.refetch()}>
-                {t('communities.list.retry')}
-              </Button>
-            </div>
+            <QueryErrorState error={posts.error} onRetry={() => void posts.refetch()} texts={{ error: { description: t('talk.loadError') } }} />
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-              <p className="text-sm font-semibold text-mynted-ink">{t('talk.empty.title')}</p>
-              <p className="max-w-sm text-sm text-mynted-gray">
-                {t(showsFilters ? 'talk.empty.body' : 'talk.empty.interests')}
-              </p>
+            <ErrorState
+              kind={activeCount > 0 ? 'noResults' : 'empty'}
+              title={t('talk.empty.title')}
+              description={t(showsFilters ? 'talk.empty.body' : 'talk.empty.interests')}
+            >
               {activeCount > 0 && (
                 <Button variant="secondary" size="sm" className="mt-2" onClick={clearFilters}>
                   {t('explore.filters.clear')}
                 </Button>
               )}
-            </div>
+            </ErrorState>
           ) : (
             <>
               <ul className="flex flex-col gap-4">

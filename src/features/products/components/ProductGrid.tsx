@@ -1,8 +1,8 @@
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import type { ReactNode } from 'react'
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Repeat, Tag, UsersRound } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { ProductPrice } from './ProductPrice'
@@ -50,19 +50,7 @@ export function ProductGrid({
 
   if (query.isError) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-        <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-        <p className="text-sm text-mynted-gray">{getApiErrorMessage(query.error)}</p>
-        <Button
-          type="button"
-          onClick={() => void query.refetch()}
-          variant="secondary"
-          size="sm"
-          className="mt-2"
-        >
-          {t('communities.list.retry')}
-        </Button>
-      </div>
+      <QueryErrorState error={query.error} onRetry={() => void query.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
     )
   }
 

@@ -1,3 +1,5 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PackageCheck, PauseCircle, Pencil, Play, Plus, Rocket, Search, Trash2 } from 'lucide-react'
@@ -175,21 +177,13 @@ export default function MyProductsPage() {
                 ))}
               </div>
             ) : query.isError ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-mynted-border bg-white px-6 py-12 text-center">
-                <p className="text-sm text-red-500">{getApiErrorMessage(query.error)}</p>
-                <Button type="button" variant="secondary" size="md" onClick={() => void query.refetch()}>
-                  {t('myProducts.retry')}
-                </Button>
-              </div>
+              <QueryErrorState error={query.error} onRetry={() => void query.refetch()} />
             ) : sections.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-                <p className="text-sm font-semibold text-mynted-ink">
-                  {status || type || searchQuery ? t('myProducts.emptyFiltered.title') : t('myProducts.empty.title')}
-                </p>
-                <p className="max-w-sm text-sm text-mynted-gray">
-                  {status || type || searchQuery ? t('myProducts.emptyFiltered.body') : t('myProducts.empty.body')}
-                </p>
-              </div>
+              status || type || searchQuery ? (
+              <ErrorState kind="noResults" title={t('myProducts.emptyFiltered.title')} description={t('myProducts.emptyFiltered.body')} />
+            ) : (
+              <ErrorState kind="empty" title={t('myProducts.empty.title')} description={t('myProducts.empty.body')} />
+            )
             ) : (
               <div className="flex flex-col gap-8">
                 {sections.map((section) => (

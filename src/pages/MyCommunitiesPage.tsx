@@ -1,8 +1,6 @@
-import { Link } from '@tanstack/react-router'
-import { Button } from '@/components/ui/Button'
-import { getApiErrorMessage } from '@/api/apiError'
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
 import { CommunityGridPage } from '@/features/community/components/sections/CommunityGridPage'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
 import { MY_COMMUNITIES_QUERY } from '@/features/community/types/DEFAULT_VALUES'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -25,35 +23,15 @@ export default function MyCommunitiesPage() {
       notice={
         <>
           {!isLoadingSession && !isLoggedIn && (
-            <CommunityNotice
-              title={t('communities.list.signedOutTitle')}
-              description={t('communities.list.signedOutDescription')}
-            >
-              <Link
-                to="/login"
-                className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-              >
-                {t('communities.list.signIn')}
-              </Link>
-            </CommunityNotice>
+            <SignedOutState description={t('communities.list.signedOutDescription')} />
           )}
 
           {isLoggedIn && query.isError && (
-            <CommunityNotice
-              title={t('communities.list.loadError')}
-              description={getApiErrorMessage(query.error)}
-            >
-              <Button variant="secondary" size="sm" onClick={() => void query.refetch()}>
-                {t('communities.list.retry')}
-              </Button>
-            </CommunityNotice>
+            <QueryErrorState error={query.error} onRetry={() => void query.refetch()} texts={{ error: { description: t('communities.list.loadError') } }} />
           )}
 
           {isLoggedIn && query.isSuccess && communities.length === 0 && (
-            <CommunityNotice
-              title={t('communities.list.emptyTitle')}
-              description={t('communities.list.emptyDescription')}
-            />
+            <ErrorState kind="empty" variant="compact" title={t('communities.list.emptyTitle')} description={t('communities.list.emptyDescription')} />
           )}
         </>
       }

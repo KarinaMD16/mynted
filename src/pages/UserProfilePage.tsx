@@ -10,6 +10,7 @@ import { useUserInterestsQuery } from '@/features/auth/hooks/useInterestsMutatio
 import { useUserByIdQuery, useUserByUsernameQuery } from '@/features/auth/hooks/useAuthMutations'
 import type { PublicUser } from '@/features/auth/models/auth'
 import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
 import { BadgesCard } from '@/features/badges/components/BadgesCard'
 import { useUserBadges } from '@/features/badges/hooks/useBadgesQueries'
 import { ContentBentoGrid } from '@/features/community/components/feed/ContentBentoGrid'
@@ -63,14 +64,7 @@ export default function UserProfilePage() {
             <Loader label={t('profile.loadingProfile')} />
           </div>
         ) : !isLoggedIn ? (
-          <StateCard title={t('userProfile.signedOutTitle')} subtitle={t('userProfile.signedOutSubtitle')}>
-            <Link
-              to="/login"
-              className="mt-2 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-            >
-              {t('profile.goToLogin')}
-            </Link>
-          </StateCard>
+          <SignedOutState description={t('userProfile.signedOutSubtitle')} />
         ) : notFound ? (
           <ErrorState kind="notFound" title={t('userProfile.notFoundTitle')} description={t('userProfile.notFoundSubtitle')}>
             <Link
@@ -81,7 +75,11 @@ export default function UserProfilePage() {
             </Link>
           </ErrorState>
         ) : userQuery.isError || !user ? (
-          <StateCard title={t('profile.loadErrorTitle')} subtitle={t('profile.loadErrorSubtitle')} />
+          <QueryErrorState
+            error={userQuery.error}
+            onRetry={() => void userQuery.refetch()}
+            texts={{ error: { description: t('profile.loadErrorSubtitle') } }}
+          />
         ) : (
           <PublicProfile key={user.id} user={user} language={language} />
         )}
@@ -204,16 +202,6 @@ function ProductsTab({ userId }: { userId: string }) {
     >
       <ContentBentoGrid entries={entries} />
     </ProfileFeedFrame>
-  )
-}
-
-function StateCard({ title, subtitle, children }: { title: string; subtitle: string; children?: React.ReactNode }) {
-  return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-mynted-white py-24 text-center">
-      <h1 className="font-heading text-xl font-semibold text-mynted-ink">{title}</h1>
-      <p className="max-w-sm text-sm text-mynted-gray">{subtitle}</p>
-      {children}
-    </div>
   )
 }
 

@@ -1,6 +1,7 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { ArrowRight } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
-import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import {
@@ -63,13 +64,11 @@ export function ExploreCommunitiesSection() {
         )}
 
         {exploreQuery.isError && (
-          <p className="text-sm text-red-500" role="alert">
-            {t('communities.explore.loadError')} {getApiErrorMessage(exploreQuery.error)}
-          </p>
+          <QueryErrorState error={exploreQuery.error} onRetry={() => void exploreQuery.refetch()} variant="compact" texts={{ error: { description: t('communities.explore.loadError') } }} />
         )}
 
         {exploreQuery.isSuccess && visibleCommunities.length === 0 && (
-          <p className="text-sm text-mynted-gray">{t('communities.explore.empty')}</p>
+          <ErrorState kind="empty" variant="compact" description={t('communities.explore.empty')} />
         )}
 
         {visibleCommunities.length > 0 && (

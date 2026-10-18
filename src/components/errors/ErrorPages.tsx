@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { useLanguage, type TranslateFn } from '@/i18n/LanguageContext'
 import { es, type TranslationKey } from '@/i18n/translations/es'
 import { ErrorState, ErrorStateView } from './ErrorState'
+import { getErrorKind } from './errorKind'
 
 /** Estilo de los enlaces de salida, igual al botón primario del resto de la app. */
 export const errorPrimaryLinkClass =
@@ -87,6 +88,8 @@ function useSafeTranslate(): TranslateFn {
 export function RouteErrorPage({ error, reset }: ErrorComponentProps) {
   const t = useSafeTranslate()
   const router = useRouter()
+  // Si la ruta falló por falta de internet (p. ej. no se pudo descargar la página), se muestra el ganso sin wifi.
+  const isOffline = getErrorKind(error) === 'offline'
 
   const retry = () => {
     reset()
@@ -95,7 +98,12 @@ export function RouteErrorPage({ error, reset }: ErrorComponentProps) {
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-mynted-bg px-4">
-      <ErrorStateView kind="error" variant="page" title={t('errors.generic.title')} description={t('errors.generic.description')}>
+      <ErrorStateView
+        kind={isOffline ? 'offline' : 'error'}
+        variant="page"
+        title={t(isOffline ? 'errors.offline.title' : 'errors.generic.title')}
+        description={t(isOffline ? 'errors.offline.description' : 'errors.generic.description')}
+      >
         <Button type="button" onClick={retry}>
           {t('errors.actions.retry')}
         </Button>

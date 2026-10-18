@@ -1,8 +1,8 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { getApiErrorMessage } from '@/api/apiError'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
-import { Button } from '@/components/ui/Button'
 import { StaggerItem } from '@/components/ui/ScrollReveal'
 import type { PublicUser } from '@/features/auth/models/auth'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
@@ -85,24 +85,13 @@ function Loading() {
 
 function ErrorBox({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useLanguage()
-  return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-      <p className="text-sm font-semibold text-mynted-ink">{t('search.error')}</p>
-      <p className="text-sm text-mynted-gray">{getApiErrorMessage(error)}</p>
-      <Button type="button" onClick={onRetry} variant="secondary" size="sm" className="mt-2">
-        {t('communities.list.retry')}
-      </Button>
-    </div>
-  )
+  return <QueryErrorState error={error} onRetry={onRetry} texts={{ error: { description: t('search.error') } }} />
 }
 
 function NoResults({ query }: { query: string }) {
   const { t } = useLanguage()
   return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-      <p className="text-sm font-semibold text-mynted-ink">{t('search.noResults', { query })}</p>
-      <p className="max-w-sm text-sm text-mynted-gray">{t('search.noResultsHint')}</p>
-    </div>
+    <ErrorState kind="noResults" title={t('search.noResults', { query })} description={t('search.noResultsHint')} />
   )
 }
 

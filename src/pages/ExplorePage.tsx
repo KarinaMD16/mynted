@@ -1,8 +1,9 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
-import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { FilterGroup } from '@/components/ui/FilterGroup'
 import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
@@ -256,26 +257,15 @@ export default function ExplorePage() {
                   ))}
                 </div>
               ) : products.isError ? (
-                <div
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"
-                  role="alert"
-                >
-                  <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-                  <p className="text-sm text-mynted-gray">{getApiErrorMessage(products.error)}</p>
-                  <Button type="button" onClick={() => void products.refetch()} variant="secondary" size="sm" className="mt-2">
-                    {t('communities.list.retry')}
-                  </Button>
-                </div>
+                <QueryErrorState error={products.error} onRetry={() => void products.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
               ) : items.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-                  <p className="text-sm font-semibold text-mynted-ink">{t('explore.empty.title')}</p>
-                  <p className="max-w-sm text-sm text-mynted-gray">{t('explore.empty.body')}</p>
+                <ErrorState kind={activeCount > 0 ? 'noResults' : 'empty'} title={t('explore.empty.title')} description={t('explore.empty.body')}>
                   {activeCount > 0 && (
                     <Button type="button" variant="secondary" size="sm" className="mt-2" onClick={clearFilters}>
                       {t('explore.filters.clear')}
                     </Button>
                   )}
-                </div>
+                </ErrorState>
               ) : (
                 <>
                   <ul className={EXPLORE_GRID_CLASS}>
