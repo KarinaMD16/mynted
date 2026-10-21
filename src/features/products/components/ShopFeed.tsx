@@ -8,7 +8,13 @@ import { useShopFeed } from '../hooks/useProductQueries'
 import type { ShopSection } from '../models/product'
 import { ShopProductCard } from './ShopProductCard'
 
-export const SHOP_GRID_CLASS = 'grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-4'
+/**
+ * Grilla de productos. En móvil van 2 columnas con tarjetas compactas, como en
+ * Vinted, Depop, Etsy o Wallapop: se ven 4–6 productos por pantalla en vez de 1.
+ */
+export const SHOP_GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4'
+/** Alto del placeholder de carga: más bajo en móvil, donde la tarjeta es compacta. */
+export const PRODUCT_CARD_SKELETON_CLASS = 'h-[250px] animate-pulse rounded-[14px] bg-white sm:h-[300px]'
 
 /**
  * Pantalla principal de la tienda ("Shop"): una sección por tag con sus
@@ -40,7 +46,7 @@ export function ShopFeed() {
         <div className="h-8 w-48 animate-pulse rounded-lg bg-white" />
         <div className={SHOP_GRID_CLASS}>
           {Array.from({ length: 4 }, (_, index) => (
-            <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
+            <div key={index} className={PRODUCT_CARD_SKELETON_CLASS} />
           ))}
         </div>
       </div>

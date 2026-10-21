@@ -384,7 +384,7 @@ function Detail({ product, contact, fitsContainer }: { product: ProductDetail; c
               {contact.isOpening ? t('chat.contact.opening') : t('itemDetail.contactSeller')}
             </button>
           )}
-          {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} variant="outline" />}
+          {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} isSold={product.status === 'sold'} variant="outline" />}
         </div>
         {contact.error && (
           <p role="alert" className="rounded-[10px] bg-[#fdecec] px-3.5 py-2 text-sm font-medium text-[#c62a2f]">

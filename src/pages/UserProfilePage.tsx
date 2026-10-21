@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { Link, Navigate, useParams } from '@tanstack/react-router'
 import { Calendar } from '@untitledui/icons'
-import { Heart as HeartOutline, LayoutGrid, MapPin, MessageCircle, ShoppingBag } from 'lucide-react'
+import { BadgeCheck, Heart as HeartOutline, LayoutGrid, MapPin, MessageCircle, ShoppingBag } from 'lucide-react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { Rating } from '@/components/ui/Rating'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -228,10 +228,18 @@ function PublicProfileHeader({ user, language }: { user: PublicUser; language: A
 
           {seller && (
             <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
-              <span className="flex items-center gap-1.5 rounded-full bg-[#e8faf2] px-3 py-1 text-xs font-semibold text-[#0d8c66]">
-                <ShoppingBag className="size-3.5" aria-hidden="true" />
-                {seller.isVerified ? `${t('userProfile.sellerBadge')} · ${t('itemDetail.verifiedSeller')}` : t('userProfile.sellerBadge')}
-              </span>
+              {/* Verificado: verde con check (como en el detalle de producto). Si no, solo "Vendedor", en neutro. */}
+              {seller.isVerified ? (
+                <span className="flex items-center gap-1.5 rounded-full bg-[#e8faf2] px-3 py-1 text-xs font-semibold text-[#0d8c66]">
+                  <BadgeCheck className="size-3.5" aria-hidden="true" />
+                  {t('itemDetail.verifiedSeller')}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 rounded-full bg-mynted-bg px-3 py-1 text-xs font-semibold text-mynted-gray ring-1 ring-mynted-border">
+                  <ShoppingBag className="size-3.5" aria-hidden="true" />
+                  {t('userProfile.sellerBadge')}
+                </span>
+              )}
               {seller.ratingAverage !== null ? (
                 <span className="flex items-center gap-2 text-sm text-mynted-gray">
                   <Rating value={seller.ratingAverage} size={14} />

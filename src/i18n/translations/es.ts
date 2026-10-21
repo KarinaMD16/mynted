@@ -255,6 +255,7 @@ export const es = {
   'favorites.empty.productsSubtitle': 'Los productos que guardes aparecerán aquí.',
   'favorites.button.add': 'Agregar a favoritos',
   'favorites.button.remove': 'Quitar de favoritos',
+  'favorites.button.sold': 'Este producto ya se vendió: no se puede agregar a favoritos',
   'favorites.confirm.title': '¿Quitar de favoritos?',
   'favorites.confirm.description': 'Este producto se eliminará de tus favoritos. Podrás volver a guardarlo cuando quieras.',
   'favorites.confirm.dontShowAgain': 'No volver a mostrar',
@@ -1306,6 +1307,16 @@ export const es = {
   'chat.contact.error': 'No pudimos abrir el chat. Inténtalo de nuevo.',
   'chat.sheet.title': 'Chat con el vendedor',
   'chat.launcher.seeAll': 'Ver todos',
+  'chat.ticket.label': 'De qué se trata',
+  'chat.ticket.available': 'Disponible',
+  'chat.ticket.unavailable': 'No disponible',
+  'chat.ticket.sold': 'Vendido',
+  'chat.ticket.view': 'Ver producto',
+  'chat.suggestions.label': 'Preguntas rápidas',
+  'chat.suggestions.available': '¿Sigue disponible?',
+  'chat.suggestions.box': '¿Incluye la caja original?',
+  'chat.suggestions.shipping': '¿Haces envíos a mi zona?',
+  'chat.suggestions.trade': '¿Aceptarías un intercambio?',
 } as const
 
 export type TranslationKey = keyof typeof es

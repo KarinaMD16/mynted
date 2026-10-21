@@ -9,8 +9,8 @@ interface MessageBubbleProps {
   type: MessageType
   content: string | null
   imageUrl: string | null
-  /** Último de un grupo de mensajes seguidos del mismo autor: lleva la "colita" y el pie. */
-  isLastInGroup: boolean
+  /** Primero de un grupo de mensajes seguidos del mismo autor: lleva la esquina recta. */
+  isFirstInGroup: boolean
   /** Se está enviando (se ve atenuado; las imágenes llevan un spinner encima). */
   isSending?: boolean
   /** Falló el envío (borde rojo). */
@@ -21,16 +21,35 @@ interface MessageBubbleProps {
 }
 
 /**
- * Burbuja de un mensaje. Las propias van a la derecha en azul (el mismo azul
- * de "Contactar vendedor"); las del otro, a la izquierda en blanco con borde,
- * como las tarjetas de la app, para que contrasten con el fondo gris del hilo.
+ * Color de TUS mensajes. Texto en tinta: sobre amarillo o naranja el blanco no
+ * llega a contraste legible (con naranja, ~2.3:1; con tinta, ~7:1).
+ */
+export const OWN_BUBBLE_CLASS = 'bg-mynted-orange text-mynted-white'
+
+/** Esquinas de "tarjeta" (como las de producto), no de globo. */
+export const BUBBLE_RADIUS = 'rounded-[14px]'
+/**
+ * La primera burbuja de cada grupo tiene recta la esquina de arriba del lado de
+ * quien escribe: como una ficha que "sale" de ese lado. (Prueba de diseño: para
+ * volver a burbujas sin esquina recta, que esto devuelva '').
+ */
+function firstCornerClass(own: boolean, isFirstInGroup: boolean) {
+  if (!isFirstInGroup) return ''
+  return own ? 'rounded-tr-[4px]' : 'rounded-tl-[4px]'
+}
+
+/**
+ * Burbuja de un mensaje. Las propias van a la derecha con el color de la marca
+ * (OWN_BUBBLE_CLASS); las del otro, a la izquierda en blanco con borde, como las
+ * tarjetas de la tienda. El azul queda para acciones, como en el resto de la
+ * app (y así no se parece al azul de Messenger).
  */
 export function MessageBubble({
   own,
   type,
   content,
   imageUrl,
-  isLastInGroup,
+  isFirstInGroup,
   isSending = false,
   isFailed = false,
   onOpenImage,
@@ -47,7 +66,9 @@ export function MessageBubble({
           disabled={isSending || !onOpenImage}
           aria-label={t('chat.message.openImage')}
           className={cx(
-            'relative h-[165px] w-[220px] max-w-[75%] cursor-zoom-in overflow-hidden rounded-2xl border bg-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid disabled:cursor-default',
+            'relative h-[165px] w-[220px] max-w-[75%] cursor-zoom-in overflow-hidden border bg-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid disabled:cursor-default',
+            BUBBLE_RADIUS,
+            firstCornerClass(own, isFirstInGroup),
             isFailed ? 'border-[#e5484d]' : 'border-mynted-border',
           )}
         >
@@ -66,9 +87,10 @@ export function MessageBubble({
       ) : (
         <p
           className={cx(
-            'max-w-[85%] rounded-[18px] px-3.5 py-2.5 text-[14px] leading-[1.45] break-words whitespace-pre-wrap sm:max-w-[75%]',
-            own ? 'bg-mynted-blue text-white' : 'border border-mynted-border bg-white text-mynted-ink',
-            isLastInGroup && (own ? 'rounded-br-md' : 'rounded-bl-md'),
+            'max-w-[85%] px-3.5 py-2.5 text-[14px] leading-[1.45] break-words whitespace-pre-wrap sm:max-w-[75%]',
+            BUBBLE_RADIUS,
+            firstCornerClass(own, isFirstInGroup),
+            own ? OWN_BUBBLE_CLASS : 'border border-mynted-border bg-white text-mynted-ink',
             isSending && 'opacity-70',
             isFailed && 'ring-2 ring-[#e5484d] ring-offset-1',
           )}

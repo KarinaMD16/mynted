@@ -11,6 +11,7 @@ import { useSendMessages } from '../hooks/useSendMessages'
 import { ChatComposer } from './ChatComposer'
 import { ChatHeader, chatIconButtonClass } from './ChatHeader'
 import { ChatProductCard } from './ChatProductCard'
+import { ChatProductTicket } from './ChatProductTicket'
 import { MessageThread } from './MessageThread'
 
 interface ChatPanelProps {
@@ -36,6 +37,13 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
   const { isOtherOnline } = useConversationRoom(conversationId)
   const { pending, sendText, sendImage, retry, discard } = useSendMessages(conversationId)
   const isConnected = useIsChatConnected()
+  const [isTicketVisible, setIsTicketVisible] = useState(true)
+  const suggestions = [
+    t('chat.suggestions.available'),
+    t('chat.suggestions.box'),
+    t('chat.suggestions.shipping'),
+    t('chat.suggestions.trade'),
+  ]
 
   const messages = useMemo(() => history.data?.pages.flatMap((page) => page.data) ?? [], [history.data])
   const context = history.data?.pages[0]?.conversation
@@ -88,7 +96,22 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
   return (
     <section className={shell} aria-label={context.otherParticipant.displayName}>
       <ChatHeader participant={context.otherParticipant} isOnline={isOtherOnline} onBack={onBack} onClose={onClose} />
-      <ChatProductCard product={context.product} linkToProduct={variant === 'page'} />
+      {/*
+        Mientras la ficha del producto (al principio del hilo) está a la vista, la tira fija
+        sobra; aparece al bajar por la conversación, para no perder de qué se habla.
+      */}
+      <div
+        className={cx(
+          'grid transition-[grid-template-rows,opacity] duration-300 ease-out',
+          isTicketVisible ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100',
+        )}
+        aria-hidden={isTicketVisible || undefined}
+        inert={isTicketVisible || undefined}
+      >
+        <div className="overflow-hidden">
+          <ChatProductCard product={context.product} linkToProduct={variant === 'page'} />
+        </div>
+      </div>
 
       {/* key: al cambiar de estado se reinicia la espera (ver OfflineNotice). */}
       <OfflineNotice key={String(isConnected)} isOffline={!isConnected} />
@@ -102,10 +125,18 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
         onLoadOlder={loadOlder}
         onRetry={retry}
         onDiscard={discard}
+        start={<ChatProductTicket product={context.product} linkToProduct={variant === 'page'} />}
+        onStartVisibilityChange={setIsTicketVisible}
       />
 
       {/* En el panel del producto se enfoca la caja al abrir, salvo en pantallas táctiles (abriría el teclado encima del chat). */}
-      <ChatComposer onSendText={sendText} onSendImage={sendImage} autoFocus={variant === 'sheet' && hasFinePointer()} />
+      <ChatComposer
+        onSendText={sendText}
+        onSendImage={sendImage}
+        autoFocus={variant === 'sheet' && hasFinePointer()}
+        // Al empezar (sin mensajes todavía): preguntas típicas de coleccionista.
+        suggestions={messages.length === 0 && pending.length === 0 ? suggestions : undefined}
+      />
     </section>
   )
 }

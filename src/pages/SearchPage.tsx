@@ -6,6 +6,7 @@ import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { StaggerItem } from '@/components/ui/ScrollReveal'
 import type { PublicUser } from '@/features/auth/models/auth'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
+import { PRODUCT_CARD_SKELETON_CLASS } from '@/features/products/components/ShopFeed'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import type { ProductListItem } from '@/features/products/models/product'
 import {
@@ -27,7 +28,8 @@ const TAB_LABEL: Record<SearchType | 'all', TranslationKey> = {
   posts: 'search.section.posts',
 }
 
-const GRID_CLASS = 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4'
+// 2 columnas también en móvil (tarjetas compactas), como en otros marketplaces.
+const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4'
 const LIST_CLASS = 'grid grid-cols-1 gap-2 rounded-2xl border border-mynted-border bg-white p-2 md:grid-cols-2'
 
 /**
@@ -77,7 +79,7 @@ function Loading() {
   return (
     <div className={GRID_CLASS} aria-busy="true">
       {Array.from({ length: 4 }, (_, index) => (
-        <div key={index} className="h-[260px] animate-pulse rounded-[14px] bg-white" />
+        <div key={index} className={PRODUCT_CARD_SKELETON_CLASS} />
       ))}
     </div>
   )

@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { GooseIcon } from '../ui/GooseIcon'
+import { GooseAvatar } from '../ui/GooseAvatar'
 import { AccountMenu } from './AccountMenu'
 
 interface AccountControlProps {
@@ -43,7 +43,7 @@ export function AccountControl({ isLoading, isLoggedIn, userName }: AccountContr
         className="flex shrink-0 items-center gap-1.5 rounded-full border border-mynted-border bg-mynted-orange py-1.5 pr-3.5 pl-1.5 outline-none transition-colors hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
       >
         <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/40">
-          <GooseIcon className="size-[22px] text-mynted-ink" />
+          <GooseAvatar className="size-[26px]" />
         </span>
         <span className="text-sm font-semibold whitespace-nowrap text-mynted-ink">{t('header.login')}</span>
       </Link>

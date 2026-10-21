@@ -5,7 +5,7 @@ import { Link, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
-import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
+import { PRODUCT_CARD_SKELETON_CLASS, SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 import { useTag, useTagProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { SiteHeader } from '../components/layout/SiteHeader'
@@ -58,7 +58,7 @@ export default function TagProductsPage() {
         {products.isPending ? (
           <div className={SHOP_GRID_CLASS} aria-busy="true">
             {Array.from({ length: 8 }, (_, index) => (
-              <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
+              <div key={index} className={PRODUCT_CARD_SKELETON_CLASS} />
             ))}
           </div>
         ) : products.isError ? (

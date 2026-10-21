@@ -6,7 +6,7 @@ import {
   Popover as AriaPopover,
 } from 'react-aria-components'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { GooseIcon } from '../ui/GooseIcon'
+import { GooseAvatar } from '../ui/GooseAvatar'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -27,7 +27,7 @@ export function AccountMenu({ userName }: { userName: string }) {
     <AriaDialogTrigger>
       <AriaButton className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-mynted-border bg-mynted-orange py-1.5 pr-3.5 pl-1.5 outline-none transition-colors hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-orange-hover">
         <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-mynted-white/40">
-          <GooseIcon className="size-[22px] text-mynted-ink" />
+          <GooseAvatar className="size-[26px]" />
         </span>
         <span className="text-sm font-semibold whitespace-nowrap text-mynted-ink">{userName}</span>
         <ChevronDown className="size-3.5 shrink-0 text-mynted-ink/70" aria-hidden="true" />
