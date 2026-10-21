@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, MessageCircle, Package, ShoppingBag, Sparkles, Users, Repeat2 } from 'lucide-react'
-import { motion } from 'motion/react'
+import { ArrowRight, Package, ShoppingBag, Sparkles, Users, Repeat2 } from 'lucide-react'
 import gooseMynted from '@/assets/goose-mynted.png'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -79,19 +78,11 @@ export default function HomePage() {
         {!isLoggedIn && <SellCta />}
       </main>
 
-      <motion.div
-        className="fixed right-6 bottom-6"
-        initial={{ opacity: 0, scale: 0.6 }}
-        animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ scale: 1.06 }}
-        whileTap={{ scale: 0.94 }}
-        transition={{ type: 'spring', stiffness: 380, damping: 22, delay: 0.4 }}
-      >
-        <HomeChatLink />
-      </motion.div>
     </div>
   )
 }
+
+// El botón flotante de mensajes ya no vive acá: es global (ChatLauncher en App).
 
 // ---------------------------------------------------------------------------
 // Piezas pequeñas
@@ -108,19 +99,6 @@ function SectionHeading({ id, eyebrow, title }: { id: string; eyebrow: string; t
         {title}
       </h2>
     </div>
-  )
-}
-
-function HomeChatLink() {
-  const { t } = useLanguage()
-  return (
-    <Link
-      to="/messages"
-      aria-label={t('shop.chat')}
-      className="flex size-[60px] items-center justify-center rounded-full bg-mynted-blue text-white shadow-[0_6px_18px_-2px_rgba(47,95,255,0.35)]"
-    >
-      <MessageCircle className="size-[26px]" aria-hidden="true" />
-    </Link>
   )
 }
 

@@ -13,7 +13,9 @@ import { SearchBar } from '../ui/SearchBar'
 import { Logo } from '../ui/Logo'
 import { LanguageSwitcher } from '../ui/LanguageSwitcher'
 import { Navigation } from '../ui/Navigation'
-import { NAV_ITEMS } from '../ui/navItems'
+import { NAV_ITEMS, isNavItemActive } from '../ui/navItems'
+import { UnreadBadge } from '@/features/chat/components/UnreadBadge'
+import { useUnreadBadge } from '@/features/chat/hooks/useUnreadBadge'
 import { popoverAnimationClass } from '@/utils/popoverAnimation'
 import { BlurAppear } from '@/components/ui/BlurAppear'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -98,6 +100,7 @@ function MobileMenuTrigger({
   const { t } = useLanguage()
   const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
   const role = useCurrentUser().data?.role
+  const unreadMessages = useUnreadBadge()
   const isSuperAdmin = role === 'superadmin'
   const isSeller = role === 'seller'
 
@@ -106,9 +109,13 @@ function MobileMenuTrigger({
     <AriaDialogTrigger>
       <AriaButton
         aria-label={t('header.openMenu')}
-        className="group flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-mynted-border text-mynted-ink outline-none transition-colors hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-bg"
+        className="group relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-mynted-border text-mynted-ink outline-none transition-colors hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-bg"
       >
         <Menu02 className="size-5 transition-opacity duration-150 ease-in-out group-aria-expanded:opacity-0" aria-hidden="true" />
+        {/* Punto de "hay mensajes sin leer": el nav vive dentro de este menú en pantallas chicas. */}
+        {unreadMessages > 0 && (
+          <span className="absolute top-1.5 right-1.5 size-2.5 rounded-full bg-mynted-blue ring-2 ring-mynted-white group-aria-expanded:opacity-0" aria-hidden="true" />
+        )}
         <CloseIcon
           className="absolute size-5 opacity-0 transition-opacity duration-150 ease-in-out group-aria-expanded:opacity-100"
           aria-hidden="true"
@@ -165,15 +172,16 @@ function MobileMenuTrigger({
               <nav className="px-3 pt-4">
                 <ul className="flex flex-col gap-1">
                   {NAV_ITEMS.map((item) => {
-                    const isActive = pathname === item.href
+                    const isActive = isNavItemActive(item.href, pathname)
                     return (
                       <li key={item.href}>
                         <Link
                           to={item.href}
                           onClick={() => state.close()}
-                          className={`block ${navItemBaseClass} ${isActive ? 'bg-mynted-orange font-semibold text-mynted-ink' : ''}`}
+                          className={`flex items-center justify-between ${navItemBaseClass} ${isActive ? 'bg-mynted-orange font-semibold text-mynted-ink' : ''}`}
                         >
                           {t(item.labelKey)}
+                          {item.href === '/messages' && <UnreadBadge count={unreadMessages} />}
                         </Link>
                       </li>
                     )
