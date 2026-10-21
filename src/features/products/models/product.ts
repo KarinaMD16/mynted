@@ -58,6 +58,12 @@ export interface CreateProductPayload {
 /** Vendedor tal como viene en el detalle de un producto. */
 export interface ProductSeller {
   sellerId: number
+  /**
+   * Id de USUARIO del dueño de la tienda, para enlazar a su perfil (/users/$userId).
+   * Todavía no lo manda GET /products/:id (pedido a backend); mientras falte,
+   * el nombre y la foto del vendedor no son clicables.
+   */
+  userId?: string
   displayName: string
   isVerified: boolean
   photoUrl: string | null

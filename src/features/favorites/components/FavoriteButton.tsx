@@ -21,17 +21,24 @@ const VARIANT_CLASS: Record<FavoriteButtonVariant, string> = {
  * Corazón de favoritos de un producto. Guardar es inmediato; quitar pide
  * confirmación (diálogo con "No volver a mostrar") salvo que el usuario ya
  * la haya desactivado.
+ *
+ * Un producto vendido no se puede AGREGAR a favoritos (el corazón queda
+ * desactivado). Si ya estaba guardado, sí se puede quitar: si no, quedaría
+ * pegado para siempre en la lista de favoritos.
  */
 export function FavoriteButton({
   productId,
   isSaved,
   isDisabled = false,
+  isSold = false,
   variant = 'overlay',
   className,
 }: {
   productId: number
   isSaved: boolean
   isDisabled?: boolean
+  /** Producto vendido: no se puede guardar (sí quitar si ya estaba guardado). */
+  isSold?: boolean
   variant?: FavoriteButtonVariant
   className?: string
 }) {
@@ -39,6 +46,8 @@ export function FavoriteButton({
   const toggle = useToggleProductFavorite()
   const { confirmUnfavorite, setConfirmUnfavorite } = useUnfavoriteConfirmation()
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const cannotAdd = isSold && !isSaved
+  const label = cannotAdd ? t('favorites.button.sold') : t(isSaved ? 'favorites.button.remove' : 'favorites.button.add')
 
   const handleClick = () => {
     if (!isSaved) {
@@ -61,14 +70,14 @@ export function FavoriteButton({
       <button
         type="button"
         onClick={handleClick}
-        disabled={isDisabled}
+        disabled={isDisabled || cannotAdd}
         aria-pressed={isSaved}
-        aria-label={t(isSaved ? 'favorites.button.remove' : 'favorites.button.add')}
-        title={t(isSaved ? 'favorites.button.remove' : 'favorites.button.add')}
+        aria-label={label}
+        title={label}
         className={cx(
           'flex shrink-0 cursor-pointer items-center justify-center transition-colors outline-none',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid',
-          'disabled:cursor-not-allowed disabled:opacity-60',
+          'disabled:cursor-not-allowed disabled:opacity-50',
           VARIANT_CLASS[variant],
           className,
         )}
@@ -91,10 +100,13 @@ export function FavoriteButton({
  */
 export function ProductFavoriteButton({
   productId,
+  isSold = false,
   variant,
   className,
 }: {
   productId: number
+  /** Producto vendido: ver FavoriteButton. */
+  isSold?: boolean
   variant?: FavoriteButtonVariant
   className?: string
 }) {
@@ -109,6 +121,7 @@ export function ProductFavoriteButton({
       isSaved={saved.data?.has(productId) ?? false}
       // Hasta saber si ya era favorito, un clic podría guardar de más o quitar lo que no era.
       isDisabled={saved.isPending}
+      isSold={isSold}
       variant={variant}
       className={className}
     />

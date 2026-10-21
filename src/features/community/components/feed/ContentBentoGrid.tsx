@@ -34,6 +34,17 @@ const BODY_CLASS: Record<TileSize, string> = {
 }
 
 /** Posts y productos propios mezclados (GET /posts/me) en un bento grid. */
+
+/**
+ * Chip sobre una FOTO (comunidad del post / del producto). Un blanco translúcido
+ * desaparece sobre fotos claras (texto blanco sobre fondo casi blanco). Esto es
+ * "vidrio oscuro": el blur y la saturación toman los colores de la foto que hay
+ * detrás, y el tinte negro + bajar el brillo del fondo garantizan que el texto
+ * blanco se lea incluso sobre blanco puro (~4.7:1). Sobre fotos oscuras casi no se nota.
+ */
+const IMAGE_CHIP_CLASS =
+  'bg-gray/40 text-white ring-1 ring-mynted-gray-light/20 backdrop-blur-md backdrop-saturate-150 backdrop-brightness-75 [text-shadow:0_1px_2px_rgb(0_0_0/0.3)]'
+
 export function ContentBentoGrid({ entries }: { entries: MyContentEntry[] }) {
   return (
     <ul className={BENTO_GRID_CLASS}>
@@ -100,8 +111,12 @@ function BentoTile({ post, size, index }: { post: FeedPost; size: TileSize; inde
           <Link
             to="/communities/$slug"
             params={{ slug: post.community.slug }}
-            className={`pointer-events-auto relative z-10 max-w-[70%] truncate rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm ${
-              onDark ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-mynted-ink/5 text-mynted-ink hover:bg-mynted-ink/10'
+            className={`pointer-events-auto relative z-10 max-w-[70%] truncate rounded-full px-3 py-1 text-xs font-semibold ${
+              cover
+                ? `${IMAGE_CHIP_CLASS} hover:bg-black/55`
+                : onDark
+                  ? 'bg-white/20 text-white hover:bg-white/30'
+                  : 'bg-mynted-ink/5 text-mynted-ink hover:bg-mynted-ink/10'
             }`}
           >
             {post.community.name}
@@ -227,9 +242,9 @@ function BentoProductTile({ product, size }: { product: MyContentProduct; size: 
             onDark
           />
         </span>
-        {/* Un producto sin comunidad (community: null) no pinta el chip. */}
+        {/* Un producto sin comunidad (community: null) no pinta el chip. Vidrio claro (como la pastilla "Venta"): texto oscuro legible sobre cualquier foto. */}
         {product.community && (
-          <span className="max-w-[50%] truncate rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          <span className="max-w-[50%] truncate rounded-full bg-white/75 px-3 py-1 text-xs font-semibold text-mynted-ink shadow-sm ring-1 ring-black/5 backdrop-blur-md backdrop-saturate-150">
             {product.community.name}
           </span>
         )}

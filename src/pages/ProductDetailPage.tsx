@@ -1,11 +1,14 @@
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
-import { useEffect, useMemo, useRef } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
-import { isNotFoundError } from '@/api/apiError'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router'
+import { getHttpStatus, isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
 import { Rating } from '@/components/ui/Rating'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { ChatDock, ChatSheet } from '@/features/chat/components/ChatSheet'
+import { useOpenConversation } from '@/features/chat/hooks/useChatMutations'
+import { CHAT_DOCK_CSS_TRANSITION } from '@/features/chat/utils/chatDock'
 import { CommunitiesForTagSection } from '@/features/community/components/sections/CommunitiesForTagSection'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
@@ -21,9 +24,11 @@ import type {
   RelatedProduct,
 } from '@/features/products/models/product'
 import { getInitials } from '@/features/profile/utils/profileFormat'
+import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { regionFlag, regionName } from '@/utils/locale'
+import { cx } from '@/utils/cx'
 import { readRecentProductIds, rememberRecentProduct } from '@/utils/recentProducts'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
@@ -39,6 +44,28 @@ const STATUS_NOTICE: Partial<Record<ProductStatus, TranslationKey>> = {
   draft: 'itemDetail.notice.draft',
   inactive: 'itemDetail.notice.inactive',
   sold: 'itemDetail.notice.sold',
+}
+
+/** Por qué no se pudo abrir el chat (POST /conversations), según el status. */
+function contactErrorKey(error: unknown): TranslationKey {
+  switch (getHttpStatus(error)) {
+    case 400:
+      return 'chat.contact.unavailable'
+    case 403:
+      return 'chat.contact.ownProduct'
+    case 404:
+      return 'chat.contact.notFound'
+    default:
+      return 'chat.contact.error'
+  }
+}
+
+/** Estado del botón "Contactar vendedor", que vive en la página y se pasa al detalle. */
+interface ContactState {
+  canContact: boolean
+  isOpening: boolean
+  error: TranslationKey | null
+  onContact: () => void
 }
 
 /**
@@ -82,36 +109,91 @@ export default function ProductDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.data?.id, product.data?.status, isLoggedIn, isLoadingUser])
 
+  // Chat con el vendedor: ?chat=<conversationId> lo deja abierto (ver productDetailRoute).
+  const navigate = useNavigate({ from: '/products/$productId' })
+  const { chat: chatId } = useSearch({ from: '/products/$productId' })
+  const isDesktop = useBreakpoint('xl')
+  const isDocked = chatId !== undefined && isDesktop
+  const openConversation = useOpenConversation()
+  const [contactError, setContactError] = useState<TranslationKey | null>(null)
+
+  function closeChat() {
+    void navigate({ search: (prev) => ({ ...prev, chat: undefined }), replace: true })
+  }
+
+  function handleContact() {
+    if (productId === undefined || chatId !== undefined || openConversation.isPending) return
+    if (!isLoggedIn) {
+      void navigate({ to: '/login' })
+      return
+    }
+    setContactError(null)
+    openConversation.mutate(productId, {
+      onSuccess: (conversation) => void navigate({ search: (prev) => ({ ...prev, chat: conversation.id }) }),
+      onError: (error) => {
+        if (getHttpStatus(error) === 401) void navigate({ to: '/login' })
+        else setContactError(contactErrorKey(error))
+      },
+    })
+  }
+
+  const contact: ContactState = {
+    // Al dueño no se le ofrece (el backend respondería 403 igual).
+    canContact: product.data?.status === 'active' && !isOwnProduct,
+    isOpening: openConversation.isPending,
+    error: contactError,
+    onContact: handleContact,
+  }
+
   return (
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
-        {product.isPending && productId !== undefined ? (
-          <div className="h-[440px] animate-pulse rounded-[18px] bg-white" aria-busy="true" />
-        ) : productId === undefined || isNotFoundError(product.error) ? (
-          <ErrorState kind="notFound" title={t('itemDetail.notFound')}>
-            <Link to="/explore" className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
-              {t('explore.title')}
-            </Link>
-          </ErrorState>
-        ) : product.isError ? (
-          <QueryErrorState error={product.error} onRetry={() => void product.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
-        ) : product.data ? (
-          <>
-            <Breadcrumb title={product.data.title} />
-            <Detail key={product.data.id} product={product.data} />
-            {isActive && <ProductReviews productId={product.data.id} isOwnProduct={isOwnProduct} />}
-            {related.data && related.data.length > 0 && (
-              <Related title={t('itemDetail.relatedBySeller')} items={related.data} horizontal />
-            )}
-            {recommended.data && recommended.data.length > 0 && (
-              <Related title={t('itemDetail.related')} items={recommended.data} />
-            )}
-            <CommunitiesForTagSection tags={product.data.productTags.map((item) => item.tag)} />
-          </>
-        ) : null}
-      </main>
+      {/*
+        Desde xl la página es siempre una fila (detalle + lugar para el chat), abierto o no:
+        así al abrir el chat no cambia el layout de golpe, solo se anima. El panel crece
+        (ChatDock) y el padding del <main> baja de 56px a 16px con la misma duración y curva.
+        Cerrado, el ancho útil es el mismo de siempre (1320px - 2×56px).
+      */}
+      <div className={cx(isDesktop && 'mx-auto flex w-full max-w-[1368px] items-start px-4 sm:px-6')}>
+        <main
+          className={cx(
+            'flex w-full flex-col gap-10 pt-7 pb-24',
+            isDesktop
+              ? cx('@container min-w-0 flex-1 transition-[padding]', CHAT_DOCK_CSS_TRANSITION, isDocked ? 'px-4' : 'px-14')
+              : 'mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-14',
+          )}
+        >
+          {product.isPending && productId !== undefined ? (
+            <div className="h-[440px] animate-pulse rounded-[18px] bg-white" aria-busy="true" />
+          ) : productId === undefined || isNotFoundError(product.error) ? (
+            <ErrorState kind="notFound" title={t('itemDetail.notFound')}>
+              <Link to="/explore" className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
+                {t('explore.title')}
+              </Link>
+            </ErrorState>
+          ) : product.isError ? (
+            <QueryErrorState error={product.error} onRetry={() => void product.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
+          ) : product.data ? (
+            <>
+              <Breadcrumb title={product.data.title} />
+              <Detail key={product.data.id} product={product.data} contact={contact} fitsContainer={isDesktop} />
+              {isActive && <ProductReviews productId={product.data.id} isOwnProduct={isOwnProduct} />}
+              {related.data && related.data.length > 0 && (
+                <Related title={t('itemDetail.relatedBySeller')} items={related.data} horizontal />
+              )}
+              {recommended.data && recommended.data.length > 0 && (
+                <Related title={t('itemDetail.related')} items={recommended.data} />
+              )}
+              <CommunitiesForTagSection tags={product.data.productTags.map((item) => item.tag)} />
+            </>
+          ) : null}
+        </main>
+
+      <ChatDock conversationId={chatId ?? null} onClose={closeChat} />
+      </div>
+
+      <ChatSheet conversationId={chatId ?? null} onClose={closeChat} />
     </div>
   )
 }
@@ -135,9 +217,56 @@ function Breadcrumb({ title }: { title: string }) {
   )
 }
 
+/**
+ * Foto + nombre + calificación del vendedor. Lleva a su perfil (/users/$userId)
+ * cuando el backend manda `seller.userId`; mientras no lo mande, no es clicable.
+ */
+function SellerIdentity({ seller }: { seller: ProductDetail['seller'] }) {
+  const { t } = useLanguage()
+  const content = (
+    <>
+      <SellerAvatar name={seller.displayName} photoUrl={seller.photoUrl} />
+      <span className="flex flex-col">
+        <span className="font-heading text-base font-semibold text-mynted-ink group-hover:underline">{seller.displayName}</span>
+        {seller.ratingAverage != null ? (
+          <span className="flex items-center gap-1.5 text-xs text-mynted-gray">
+            <Rating value={seller.ratingAverage} size={12} />
+            {seller.ratingAverage.toFixed(1)} ({seller.reviewsCount})
+          </span>
+        ) : (
+          <span className="text-xs text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
+        )}
+      </span>
+    </>
+  )
+
+  if (!seller.userId) return <div className="flex items-center gap-3.5">{content}</div>
+
+  return (
+    <Link
+      to="/users/$userId"
+      params={{ userId: seller.userId }}
+      aria-label={t('chat.header.viewProfile', { name: seller.displayName })}
+      className="group flex items-center gap-3.5 rounded-xl outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mynted-blue-mid"
+    >
+      {content}
+    </Link>
+  )
+}
+
 function SellerAvatar({ name, photoUrl }: { name: string; photoUrl: string | null }) {
-  if (photoUrl) {
-    return <img src={photoUrl} alt="" className="size-11 rounded-full bg-mynted-bg object-cover" />
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+  if (photoUrl && photoUrl !== failedUrl) {
+    return (
+      <img
+        src={photoUrl}
+        alt=""
+        // Las fotos de Google no cargan si se manda el Referer (ver avatar.tsx).
+        referrerPolicy="no-referrer"
+        onError={() => setFailedUrl(photoUrl)}
+        className="size-11 rounded-full bg-mynted-bg object-cover"
+      />
+    )
   }
   return (
     <span
@@ -155,17 +284,26 @@ function Chip({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Detail({ product }: { product: ProductDetail }) {
+function Detail({ product, contact, fitsContainer }: { product: ProductDetail; contact: ContactState; fitsContainer: boolean }) {
   const { t, language } = useLanguage()
   // La galería (si hay) viene ordenada; la portada va primero.
   const images = [product.imageUrl, ...product.images.map((image) => image.url)].filter((url): url is string => Boolean(url))
   const tags = product.productTags.map((item) => item.tag)
   const notice = STATUS_NOTICE[product.status]
-  const canContact = product.status === 'active'
   const shipsTo = product.shipsTo ?? []
 
   return (
-    <ScrollReveal className="flex flex-col gap-8 lg:flex-row lg:gap-14">
+    // Desde xl el ancho disponible cambia con el chat abierto/cerrado: galería y datos se ponen
+    // en fila según el ancho del <main> (container query), no de la pantalla. El gap también
+    // se anima para acompañar la compresión.
+    <ScrollReveal
+      className={cx(
+        'flex flex-col gap-8',
+        fitsContainer
+          ? cx('@min-[50rem]:flex-row @min-[50rem]:gap-10 @min-[66rem]:gap-14 transition-[gap]', CHAT_DOCK_CSS_TRANSITION)
+          : 'lg:flex-row lg:gap-14',
+      )}
+    >
       <ProductGallery images={images} title={product.title} />
 
       <div className="flex min-w-0 flex-1 flex-col items-start gap-4">
@@ -189,18 +327,7 @@ function Detail({ product }: { product: ProductDetail }) {
         {tags.length > 0 && <p className="text-sm text-mynted-gray">{tags.map((tag) => `#${tag.name}`).join(' ')}</p>}
 
         <div className="flex flex-wrap items-center gap-3.5">
-          <SellerAvatar name={product.seller.displayName} photoUrl={product.seller.photoUrl} />
-          <div className="flex flex-col">
-            <span className="font-heading text-base font-semibold text-mynted-ink">{product.seller.displayName}</span>
-            {product.seller.ratingAverage != null ? (
-              <span className="flex items-center gap-1.5 text-xs text-mynted-gray">
-                <Rating value={product.seller.ratingAverage} size={12} />
-                {product.seller.ratingAverage.toFixed(1)} ({product.seller.reviewsCount})
-              </span>
-            ) : (
-              <span className="text-xs text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
-            )}
-          </div>
+          <SellerIdentity seller={product.seller} />
           {product.seller.isVerified && (
             <span className="rounded-full bg-[#e8faf2] px-[11px] py-[5px] text-xs font-semibold text-[#0d8c66]">
               ✓ {t('itemDetail.verifiedSeller')}
@@ -246,16 +373,24 @@ function Detail({ product }: { product: ProductDetail }) {
         )}
 
         <div className="flex items-start gap-3">
-          {canContact && (
-            <Link
-              to="/messages"
-              className="rounded-[10px] bg-mynted-blue px-7 py-[13px] text-[15px] font-semibold text-white shadow-[0_4px_10px_-2px_rgba(47,95,255,0.25)] transition-opacity hover:opacity-90"
+          {contact.canContact && (
+            <button
+              type="button"
+              onClick={contact.onContact}
+              disabled={contact.isOpening}
+              aria-haspopup="dialog"
+              className="cursor-pointer rounded-[10px] bg-mynted-blue px-7 py-[13px] text-[15px] font-semibold text-white shadow-[0_4px_10px_-2px_rgba(47,95,255,0.25)] outline-none transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid disabled:cursor-wait disabled:opacity-70"
             >
-              {t('itemDetail.contactSeller')}
-            </Link>
+              {contact.isOpening ? t('chat.contact.opening') : t('itemDetail.contactSeller')}
+            </button>
           )}
-          {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} variant="outline" />}
+          {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} isSold={product.status === 'sold'} variant="outline" />}
         </div>
+        {contact.error && (
+          <p role="alert" className="rounded-[10px] bg-[#fdecec] px-3.5 py-2 text-sm font-medium text-[#c62a2f]">
+            {t(contact.error)}
+          </p>
+        )}
       </div>
     </ScrollReveal>
   )

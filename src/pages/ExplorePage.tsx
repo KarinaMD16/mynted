@@ -10,6 +10,7 @@ import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
+import { PRODUCT_CARD_SKELETON_CLASS } from '@/features/products/components/ShopFeed'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { useExploreProducts } from '@/features/products/hooks/useProductQueries'
 import {
@@ -32,7 +33,8 @@ const EXPLORE_TABS: { id: ExploreTab; labelKey: TranslationKey }[] = [
   { id: 'talk', labelKey: 'shop.tab.talk' },
 ]
 
-const EXPLORE_GRID_CLASS = 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'
+// 2 columnas también en móvil (tarjetas compactas), como en otros marketplaces.
+const EXPLORE_GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3'
 
 /** Conteo de resultados: entra con un fade y se anima otra vez cuando cambia el número (al filtrar). */
 function ResultsCount({ total }: { total: number }) {
@@ -253,7 +255,7 @@ export default function ExplorePage() {
               {products.isPending ? (
                 <div className={EXPLORE_GRID_CLASS} aria-busy="true">
                   {Array.from({ length: 6 }, (_, index) => (
-                    <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
+                    <div key={index} className={PRODUCT_CARD_SKELETON_CLASS} />
                   ))}
                 </div>
               ) : products.isError ? (

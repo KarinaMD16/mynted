@@ -117,11 +117,19 @@ const searchRoute = createRoute({
   }),
 })
 
-/** Detalle de un producto (Marketplace — Item Detail). */
+/**
+ * Detalle de un producto (Marketplace — Item Detail). `?chat=<id>` deja abierto
+ * el chat con el vendedor (botón "Contactar vendedor"): sobrevive a recargar y
+ * el botón "atrás" del navegador lo cierra.
+ */
 const productDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/products/$productId',
   component: ProductDetailPage,
+  validateSearch: (search: Record<string, unknown>): { chat?: number } => {
+    const chat = Number(search.chat)
+    return { chat: Number.isInteger(chat) && chat > 0 && chat <= 2147483647 ? chat : undefined }
+  },
 })
 
 /**
@@ -197,6 +205,13 @@ const favoritesRoute = createRoute({
 const messagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/messages',
+  component: MessagesPage,
+})
+
+/** Un chat abierto: en escritorio junto a la bandeja; en móvil a pantalla completa. */
+const conversationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/messages/$conversationId',
   component: MessagesPage,
 })
 
@@ -306,6 +321,7 @@ const routeTree = rootRoute.addChildren([
   discoverCommunitiesRoute,
   favoritesRoute,
   messagesRoute,
+  conversationRoute,
   profileRoute,
   userProfileRoute,
   settingsRoute,
