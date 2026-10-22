@@ -1584,4 +1584,11 @@ export const ko: Record<TranslationKey, string> = {
   'validation.card.holderLength': '카드 소유자 이름은 {{min}}자에서 {{max}}자 사이예요.',
   'validation.card.holderFormat': '이름에는 문자, 공백, 아포스트로피, 하이픈, 마침표만 쓸 수 있어요.',
   'receipt.holder': '카드 소유자',
+
+  // Home: carrusel de publicaciones
+  'home.talk.goToPost': '{{total}}개 중 {{position}}번째 게시물 보기',
+
+  // Home: flechas del carrusel
+  'home.talk.previousPost': '이전 게시물',
+  'home.talk.nextPost': '다음 게시물',
 }

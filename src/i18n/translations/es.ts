@@ -1587,6 +1587,13 @@ export const es = {
   'validation.card.holderLength': 'El nombre del titular va entre {{min}} y {{max}} caracteres.',
   'validation.card.holderFormat': 'El nombre solo puede tener letras, espacios, apóstrofes, guiones y puntos.',
   'receipt.holder': 'Titular',
+
+  // Home: carrusel de publicaciones
+  'home.talk.goToPost': 'Ver la publicación {{position}} de {{total}}',
+
+  // Home: flechas del carrusel
+  'home.talk.previousPost': 'Publicación anterior',
+  'home.talk.nextPost': 'Publicación siguiente',
 } as const
 
 export type TranslationKey = keyof typeof es

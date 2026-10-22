@@ -1602,4 +1602,11 @@ export const pt: Record<TranslationKey, string> = {
   'validation.card.holderLength': 'O nome do titular precisa ter entre {{min}} e {{max}} caracteres.',
   'validation.card.holderFormat': 'O nome só pode ter letras, espaços, apóstrofos, hifens e pontos.',
   'receipt.holder': 'Titular',
+
+  // Home: carrusel de publicaciones
+  'home.talk.goToPost': 'Ver a publicação {{position}} de {{total}}',
+
+  // Home: flechas del carrusel
+  'home.talk.previousPost': 'Publicação anterior',
+  'home.talk.nextPost': 'Próxima publicação',
 }

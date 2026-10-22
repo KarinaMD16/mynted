@@ -1583,4 +1583,11 @@ export const de: Record<TranslationKey, string> = {
   'validation.card.holderLength': 'Der Name muss zwischen {{min}} und {{max}} Zeichen lang sein.',
   'validation.card.holderFormat': 'Der Name darf nur Buchstaben, Leerzeichen, Apostrophe, Bindestriche und Punkte enthalten.',
   'receipt.holder': 'Karteninhaber',
+
+  // Home: carrusel de publicaciones
+  'home.talk.goToPost': 'Zu Beitrag {{position}} von {{total}}',
+
+  // Home: flechas del carrusel
+  'home.talk.previousPost': 'Vorheriger Beitrag',
+  'home.talk.nextPost': 'Nächster Beitrag',
 }

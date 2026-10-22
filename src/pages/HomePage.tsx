@@ -62,13 +62,13 @@ export default function HomePage() {
               </Link>
             </ScrollReveal>
 
-            <div
-              className={`grid items-start gap-6 ${showsSellCta && isLoggedIn ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''}`}
-            >
-              <TalkHighlights />
-              {/* Sin sesión el llamado a vender ya va al final de la página. */}
-              {showsSellCta && isLoggedIn && <SellCta layout="column" />}
-            </div>
+            {/*
+              La tarjeta de vender se pasa adentro: los controles del carrusel
+              van pegados debajo de ella, así que tienen que compartir caja
+              (ver TalkHighlights). Sin sesión el llamado a vender ya va al
+              final de la página.
+            */}
+            <TalkHighlights sellCta={showsSellCta && isLoggedIn ? <SellCta layout="column" /> : undefined} />
           </section>
         )}
 
@@ -277,7 +277,7 @@ function CommunityCard({ community, tone, language }: { community: CommunityList
  * Vendedor → publicar; con sesión pero sin rol de vendedor → ajustes de perfil, donde está
  * la solicitud para serlo; sin sesión → crear cuenta. El superadmin no vende, así que no lo ve.
  */
-function SellCta({ layout = 'row' }: { layout?: 'row' | 'column' }) {
+function SellCta({ layout = 'row', className }: { layout?: 'row' | 'column'; className?: string }) {
   const { t } = useLanguage()
   const { data: user, isLoggedIn, isLoading } = useCurrentUser()
 
@@ -294,7 +294,7 @@ function SellCta({ layout = 'row' }: { layout?: 'row' | 'column' }) {
   )
 
   return (
-    <ScrollReveal>
+    <ScrollReveal className={className}>
       <section
         className={`flex gap-6 rounded-[22px] bg-mynted-orange p-7 sm:p-9 ${
           isColumn

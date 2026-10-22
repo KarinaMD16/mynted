@@ -1609,4 +1609,11 @@ export const fr: Record<TranslationKey, string> = {
   'validation.card.holderLength': 'Le nom du titulaire doit faire entre {{min}} et {{max}} caractères.',
   'validation.card.holderFormat': 'Le nom ne peut contenir que des lettres, espaces, apostrophes, tirets et points.',
   'receipt.holder': 'Titulaire',
+
+  // Home: carrusel de publicaciones
+  'home.talk.goToPost': 'Aller à la publication {{position}} sur {{total}}',
+
+  // Home: flechas del carrusel
+  'home.talk.previousPost': 'Publication précédente',
+  'home.talk.nextPost': 'Publication suivante',
 }

@@ -1596,4 +1596,11 @@ export const en: Record<TranslationKey, string> = {
   'validation.card.holderLength': 'The cardholder name must be between {{min}} and {{max}} characters.',
   'validation.card.holderFormat': 'The name can only contain letters, spaces, apostrophes, hyphens and dots.',
   'receipt.holder': 'Cardholder',
+
+  // Home: carrusel de publicaciones
+  'home.talk.goToPost': 'Go to post {{position}} of {{total}}',
+
+  // Home: flechas del carrusel
+  'home.talk.previousPost': 'Previous post',
+  'home.talk.nextPost': 'Next post',
 }

@@ -47,8 +47,18 @@ body {
   color: var(--color-mynted-ink);
 }
 
-/* Scrollbars delgados y sin fondo en toda la app (Chrome, Edge, Firefox y Safari 18.2+). */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(120 120 130 / 0.45) transparent;
+/*
+ * Scrollbars delgados y sin fondo en toda la app (Chrome, Edge, Firefox y
+ * Safari 18.2+).
+ *
+ * Va en @layer base a proposito: sin capa, esta regla le gana a CUALQUIER
+ * utilidad de Tailwind (lo que no esta en una capa vence a lo que si), y
+ * entonces `scrollbar-hide` no podia ocultar la barra de nada — el selector
+ * universal se la volvia a poner. En base, una utilidad puede sobreescribirla.
+ */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(120 120 130 / 0.45) transparent;
+  }
 }
