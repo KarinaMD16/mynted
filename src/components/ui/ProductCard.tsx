@@ -1,10 +1,10 @@
 import { CheckIcon } from 'lucide-react'
 import { cn } from '@/cuicui/utils/cn'
-import type { Product } from '@/features/users/types/appTypes'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { AdvancedColorfulBadges } from './Badge'
 import { Rating } from './Rating'
 import { Button } from '@/components/ui/Button'
+import type { Product } from '@/features/app/types/appTypes'
 
 /** Tarjeta de publicación del marketplace (foto, título, rating, hashtags, verificación, precio y botón de contacto). */
 export function ProductCard({ product }: { product: Product }) {
