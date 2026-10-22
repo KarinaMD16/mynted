@@ -238,6 +238,7 @@ function BentoProductTile({ product, size }: { product: MyContentProduct; size: 
             finalPrice={product.finalPrice}
             discountPercent={product.discountPercent}
             currency={product.currency}
+            display={product}
             className="font-heading text-lg font-semibold text-white"
             onDark
           />

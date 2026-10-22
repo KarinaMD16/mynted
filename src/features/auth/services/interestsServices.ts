@@ -26,8 +26,10 @@ export interface SaveInterestsPayload {
   privacyPolicyVersion?: string
   /** Locale detectado del navegador (ej. "es-CR"). */
   locale?: string
-  /** Moneda detectada del navegador (ej. "CRC"). */
+  /** Moneda detectada del navegador (ej. "CRC"): moneda de venta si luego publica. */
   currency?: string
+  /** Moneda en la que ve los precios: la misma que veía antes de crear la cuenta. */
+  displayCurrency?: string
 }
 
 /**

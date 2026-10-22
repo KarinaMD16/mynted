@@ -1,3 +1,5 @@
+import type { DisplayPriceFields } from '@/utils/price'
+
 /** Espeja los enums de products/entities/product.entity.ts del backend. */
 export const PRODUCT_TYPES = ['sale', 'exchange'] as const
 export type ProductType = (typeof PRODUCT_TYPES)[number]
@@ -75,8 +77,9 @@ export interface ProductSeller {
 /**
  * Detalle de un producto (GET /products/:id, y respuesta de crear, editar y
  * cambiar de estado). En un borrador pueden faltar campos, por eso son null.
+ * Los campos `display*` solo vienen en GET /products/:id (no en crear/editar).
  */
-export interface ProductDetail {
+export interface ProductDetail extends DisplayPriceFields {
   id: number
   title: string
   description: string | null
@@ -110,7 +113,7 @@ export interface ProductDetail {
  * /products/:id/related, /search). El precio llega como número (el backend lo
  * transforma desde el decimal de Postgres).
  */
-export interface ProductListItem {
+export interface ProductListItem extends DisplayPriceFields {
   id: number
   title: string
   description: string
@@ -142,7 +145,7 @@ export interface RelatedProduct extends ProductListItem {
 }
 
 /** Tarjeta de producto de GET /products/shop (con todos sus tags y el vendedor). */
-export interface ShopProduct {
+export interface ShopProduct extends DisplayPriceFields {
   id: number
   title: string
   price: number
@@ -255,10 +258,13 @@ export interface ExploreFilters {
   category?: number
   type?: ProductType
   condition?: ProductCondition
-  /** Rango sobre el precio FINAL (con descuento). Conviene mandarlo junto con `currency`. */
+  /**
+   * Rango sobre el precio FINAL (con descuento), en la moneda de visualización
+   * (la del header X-Display-Currency, ver utils/displayCurrency.ts).
+   */
   priceMin?: number
   priceMax?: number
-  /** Solo productos en esta moneda (ISO 4217). */
+  /** FILTRO: solo productos publicados en esta moneda (ISO 4217). No cambia la moneda en que se muestran. */
   currency?: string
   /** Solo productos que envían a este país (ISO 3166-1 alfa-2). */
   shipTo?: string

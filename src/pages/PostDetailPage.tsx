@@ -10,6 +10,7 @@ import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetrics
 import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
 import { useForumActions, usePost, usePostReplies } from '@/features/community/hooks/useForum'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { useScrollToHash } from '@/hooks/useScrollToHash'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
@@ -32,6 +33,8 @@ export default function PostDetailPage() {
   const community = communityQuery.data
   const post = postQuery.data
   const replies = repliesQuery.data ?? []
+  // Desde una notificación de respuesta se llega con #reply-<id>.
+  useScrollToHash(Boolean(post) && repliesQuery.isSuccess)
 
   /** Votar, guardar y responder si piden sesion: sin ella se invita a entrar. */
   const goToLogin = () => void navigate({ to: '/login' })

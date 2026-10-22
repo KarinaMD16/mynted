@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getMyFavoriteIds, getMyFavorites } from '../services/favoritesService'
-import type { FavoritesFilter } from '../models/favorites'
+import type { FavoriteIdsResult, FavoritesFilter, SavedProductItem } from '../models/favorites'
 
 export const favoriteKeys = {
   all: ['favorites'] as const,
@@ -22,7 +22,16 @@ export function useMyFavorites(filter: FavoritesFilter, enabled = true) {
   })
 }
 
-const toIdSet = (ids: number[]) => new Set(ids)
+const toIdSet = (items: SavedProductItem[]) => new Set(items.map((item) => item.id))
+
+/** `items` trae los avisos; si no viniera, se arma con los ids y avisos apagados. */
+function toSavedItems(result: FavoriteIdsResult): SavedProductItem[] {
+  return result.items ?? result.ids.map((id) => ({ id, notifyPrice: false, notifyAvailability: false }))
+}
+
+async function fetchSavedProducts(): Promise<SavedProductItem[]> {
+  return toSavedItems(await getMyFavoriteIds('products'))
+}
 
 /**
  * Ids de los productos que el usuario tiene en favoritos, para pintar el
@@ -34,8 +43,22 @@ const toIdSet = (ids: number[]) => new Set(ids)
 export function useSavedProductIds(enabled: boolean) {
   return useQuery({
     queryKey: favoriteKeys.savedProducts(),
-    queryFn: async () => (await getMyFavoriteIds('products')).ids,
+    queryFn: fetchSavedProducts,
     select: toIdSet,
+    enabled,
+    staleTime: 1000 * 60,
+  })
+}
+
+/**
+ * Avisos de un producto guardado (misma consulta que useSavedProductIds, así
+ * no se pide nada más). `undefined` si no está guardado o todavía no cargó.
+ */
+export function useSavedProductAlerts(productId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: favoriteKeys.savedProducts(),
+    queryFn: fetchSavedProducts,
+    select: (items: SavedProductItem[]) => items.find((item) => item.id === productId),
     enabled,
     staleTime: 1000 * 60,
   })

@@ -1,5 +1,6 @@
 import type { PaginatedResponse } from '@/features/community/models/communityDTOs'
 import type { ProductStatus } from '@/features/products/models/product'
+import type { DisplayPriceFields } from '@/utils/price'
 
 /**
  * Modelos del chat comprador ↔ vendedor (módulo `conversations` del backend,
@@ -51,8 +52,11 @@ export interface ChatProductSummary {
   imageUrl: string | null
 }
 
-/** Producto en el historial: además dice si todavía se puede comprar. */
-export interface ChatProductContext extends ChatProductSummary {
+/**
+ * Producto en el historial: además dice si todavía se puede comprar. Trae los
+ * campos `display*`; el resumen de la bandeja (ChatProductSummary) no.
+ */
+export interface ChatProductContext extends ChatProductSummary, DisplayPriceFields {
   status: ProductStatus
   /** `false` si ya no está activo, está oculto o fue borrado. El chat sigue funcionando igual. */
   isAvailable: boolean

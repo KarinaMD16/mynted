@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { Link, Navigate, useParams } from '@tanstack/react-router'
 import { Calendar } from '@untitledui/icons'
-import { BadgeCheck, Heart as HeartOutline, LayoutGrid, MapPin, MessageCircle, ShoppingBag } from 'lucide-react'
+import { BadgeCheck, Heart as HeartOutline, LayoutGrid, MapPin, MessageCircle, ShoppingBag, Store } from 'lucide-react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { Rating } from '@/components/ui/Rating'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -248,6 +248,14 @@ function PublicProfileHeader({ user, language }: { user: PublicUser; language: A
               ) : (
                 <span className="text-sm text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
               )}
+              <Link
+                to="/sellers/$sellerId"
+                params={{ sellerId: String(seller.sellerId) }}
+                className="flex items-center gap-1.5 rounded-full bg-mynted-orange px-3 py-1 text-xs font-semibold text-white outline-none hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+              >
+                <Store className="size-3.5" aria-hidden="true" />
+                {t('store.visitShort')}
+              </Link>
             </div>
           )}
 

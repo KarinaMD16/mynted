@@ -3,7 +3,9 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/Button'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { visitorDisplayCurrency } from '@/utils/displayCurrency'
 import { buildLocaleTag, detectCurrency, detectLocale } from '@/utils/locale'
+import { useUserPreferences } from '@/utils/userPreferences'
 import { CURRENT_PRIVACY_POLICY_VERSION, PRIVACY_POLICY_PATH } from '../legal/privacyPolicy'
 import { useInterestsQuery, useSaveInterestsMutation } from '../hooks/useInterestsMutations'
 import type { SaveInterestsPayload } from '../services/interestsServices'
@@ -23,6 +25,7 @@ export function InterestsStep({ onContinue }: InterestsStepProps) {
 
   const interestsQuery = useInterestsQuery()
   const saveInterestsMutation = useSaveInterestsMutation()
+  const { shipTo } = useUserPreferences().preferences
 
   const goNext = () => {
     if (onContinue) {
@@ -47,6 +50,8 @@ export function InterestsStep({ onContinue }: InterestsStepProps) {
       // que la política de privacidad que acaba de aceptar en ese idioma.
       locale: isManuallySet ? buildLocaleTag(language) : detectLocale(),
       currency: detectCurrency(),
+      // Sigue viendo los precios en la moneda que veía como visitante (país de envío o navegador).
+      displayCurrency: visitorDisplayCurrency(shipTo),
     }
   }
 

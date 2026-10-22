@@ -1,3 +1,5 @@
+import type { ResponseTime } from '@/features/stores/models/store'
+
 export const OAUTH_PROVIDERS = ['google', 'facebook'] as const
 
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
@@ -45,6 +47,11 @@ export interface AuthUser {
    * Para publicar productos es OBLIGATORIA: ya no hay USD por defecto.
    */
   currency?: string | null
+  /**
+   * Moneda en la que la persona VE los precios (se elige en /settings). null si
+   * nunca la eligió: entonces se usa `currency`. Solo afecta la visualización.
+   */
+  displayCurrency?: string | null
   /** País de la persona (ISO 3166-1 alfa-2, p. ej. CR): "dónde recibo mis compras". */
   country?: string | null
   locale?: string | null
@@ -56,6 +63,24 @@ export interface AuthUser {
   /** Cuándo aceptó la Política de Privacidad y qué versión (ver /settings, pestaña Privacidad). */
   acceptedPrivacyPolicyAt?: string | null
   privacyPolicyVersion?: string
+  /**
+   * Su tienda, solo si es vendedor APROBADO (un pendiente o rechazado no lo
+   * trae). Con `sellerId` se abre /sellers/:sellerId.
+   */
+  seller?: PublicSeller
+}
+
+/** Objeto `seller` del perfil público y de GET /users/me: solo vendedores aprobados. */
+export interface PublicSeller {
+  /** Id de la tienda (no el User.id): para abrir /sellers/:sellerId. */
+  sellerId: number
+  displayName: string
+  isVerified: boolean
+  /** Promedio de las reseñas de sus productos; null si no tiene. */
+  ratingAverage: number | null
+  reviewsCount: number
+  /** null si tiene menos de 3 conversaciones respondidas. */
+  responseTime: ResponseTime | null
 }
 
 /**
@@ -71,14 +96,8 @@ export interface PublicUser {
   location: string | null
   role: UserRole
   createdAt: string
-  /** Solo si es vendedor. */
-  seller?: {
-    displayName: string
-    isVerified: boolean
-    /** Promedio de las reseñas de sus productos; null si no tiene. */
-    ratingAverage: number | null
-    reviewsCount: number
-  }
+  /** Solo si es vendedor aprobado. */
+  seller?: PublicSeller
 }
 
 export interface LogoutResponse {

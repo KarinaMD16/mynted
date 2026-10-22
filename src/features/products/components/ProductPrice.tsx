@@ -1,6 +1,6 @@
 import { useLanguage } from '@/i18n/LanguageContext'
 import { cx } from '@/utils/cx'
-import { formatPrice } from '@/utils/price'
+import { formatPrice, shownPrice, type DisplayPriceFields } from '@/utils/price'
 import { discountOf } from '../utils/discount'
 
 interface ProductPriceProps {
@@ -10,7 +10,15 @@ interface ProductPriceProps {
   finalPrice?: number | null
   /** 0–100 o null. */
   discountPercent?: number | string | null
+  /** Moneda en la que se publicó el producto (y en la que se cobra). */
   currency: string
+  /**
+   * Precio convertido a la moneda del usuario (campos `display*` del backend).
+   * Se puede pasar el producto entero. Sin esto, o si no hubo tipo de cambio,
+   * se muestra el precio original.
+   */
+  display?: DisplayPriceFields
+
   /** Clases del precio que se muestra (el final). */
   className?: string
   /** Pinta el precio tachado y el distintivo para fondos oscuros. */
@@ -20,31 +28,44 @@ interface ProductPriceProps {
 }
 
 /**
- * Precio de un producto: muestra `finalPrice` y, si hay descuento, tacha el
- * precio original (`price`). Sin descuento es solo el precio.
+ * Precio de un producto: muestra el precio final y, si hay descuento, tacha el
+ * precio antes del descuento. Si el backend lo convirtió a la moneda del
+ * usuario, se muestra solo ese monto con "≈" ("≈ ₡13 656,60"). El precio en la
+ * moneda en que se cobra no se muestra aquí: se deja para el checkout.
  */
 export function ProductPrice({
   price,
   finalPrice,
   discountPercent,
   currency,
+  display,
+
   className,
   onDark = false,
   showBadge = true,
 }: ProductPriceProps) {
   const { t, language } = useLanguage()
-  const original = Number(price)
+  const shown = shownPrice({ price, finalPrice, currency, ...display })
   const discount = discountOf(discountPercent)
-  const hasDiscount = discount !== null && finalPrice != null && finalPrice < original
+  const hasDiscount = discount !== null && shown.finalPrice < shown.price
+  const secondaryText = cx('text-xs', onDark ? 'text-white/70' : 'text-mynted-gray')
 
   return (
     <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-      <span className={className}>{formatPrice(hasDiscount ? finalPrice : price, currency, language)}</span>
+      <span className={className}>
+        {shown.isConverted && (
+          <>
+            <span className="sr-only">{t('products.price.approx')} </span>
+            <span aria-hidden="true">≈ </span>
+          </>
+        )}
+        {formatPrice(hasDiscount ? shown.finalPrice : shown.price, shown.currency, language)}
+      </span>
       {hasDiscount && (
         <>
-          <s className={cx('text-xs', onDark ? 'text-white/70' : 'text-mynted-gray')}>
+          <s className={secondaryText}>
             <span className="sr-only">{t('products.price.original')} </span>
-            {formatPrice(original, currency, language)}
+            {formatPrice(shown.price, shown.currency, language)}
           </s>
           {showBadge && (
             <span

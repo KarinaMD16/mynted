@@ -1,10 +1,12 @@
 import { Link } from '@tanstack/react-router'
+import { useContactSeller } from '@/features/chat/hooks/useContactSeller'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { ProductStatus, ProductType } from '@/features/products/models/product'
+import type { DisplayPriceFields } from '@/utils/price'
 import { ProductPrice } from './ProductPrice'
 
-export interface ShopProductCardData {
+export interface ShopProductCardData extends DisplayPriceFields {
   id: number
   title: string
   imageUrl: string
@@ -32,6 +34,9 @@ export interface ShopProductCardData {
  */
 export function ShopProductCard({ product }: { product: ShopProductCardData }) {
   const { t } = useLanguage()
+  const { contact, isOpening } = useContactSeller()
+  // Si el listado trae el estado y no está activo, no se puede abrir una conversación nueva (el backend da 400).
+  const canContact = product.status === undefined || product.status === 'active'
 
   return (
     <article className="relative flex h-full flex-col gap-1.5 overflow-hidden rounded-[14px] border border-mynted-border bg-white p-2 pb-2.5 shadow-[0_2px_8px_0_rgba(13,13,20,0.06)] sm:gap-2 sm:px-3 sm:pt-3 sm:pb-3.5">
@@ -94,14 +99,22 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
           finalPrice={product.finalPrice}
           discountPercent={product.discountPercent}
           currency={product.currency}
+          display={product}
           className="font-heading text-[15px] font-semibold text-mynted-ink sm:text-[17px]"
         />
-        <button
-          type="button"
-          className="hidden cursor-pointer rounded-full sm:block bg-mynted-blue px-[13px] py-1.5 text-[11px] font-semibold text-white transition-opacity outline-none hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue"
-        >
-          {t('product.contact')}
-        </button>
+        {canContact && (
+          // Igual que el CTA del detalle: abre el chat con el vendedor en la hoja de mensajes (ver useContactSeller).
+          <button
+            type="button"
+            onClick={() => contact(product.id)}
+            disabled={isOpening}
+            aria-busy={isOpening || undefined}
+            aria-haspopup="dialog"
+            className="hidden cursor-pointer rounded-full bg-mynted-blue px-[13px] py-1.5 text-[11px] font-semibold whitespace-nowrap text-white transition-opacity outline-none hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue disabled:cursor-wait disabled:opacity-70 sm:block"
+          >
+            {isOpening ? t('chat.contact.opening') : t('product.contact')}
+          </button>
+        )}
       </div>
     </article>
   )

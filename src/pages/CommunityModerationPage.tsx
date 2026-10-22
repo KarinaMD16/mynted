@@ -1,6 +1,6 @@
 import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
 import { useState } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useParams, useSearch } from '@tanstack/react-router'
 import { ArrowLeft, Flag, ScrollText, Settings, UserPlus, Users } from 'lucide-react'
 import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
@@ -29,8 +29,9 @@ const TABS: { id: ModerationTab; labelKey: TranslationKey; icon: typeof Flag; av
 export default function CommunityModerationPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug/moderacion' })
+  const { tab: initialTab } = useSearch({ from: '/communities/$slug/moderacion' })
   const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
-  const [activeTab, setActiveTab] = useState<ModerationTab>('rules')
+  const [activeTab, setActiveTab] = useState<ModerationTab>(initialTab ?? 'rules')
 
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
 

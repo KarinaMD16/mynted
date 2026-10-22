@@ -137,6 +137,7 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
               finalPrice={product.finalPrice}
               discountPercent={product.discountPercent}
               currency={product.currency}
+              display={product}
               className="font-heading text-lg font-semibold text-mynted-ink"
             />
           </span>

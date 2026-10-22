@@ -9,6 +9,7 @@ import type {
   MessageReadPayload,
   PresencePayload,
 } from '../models/chat'
+import type { NotificationNewPayload, NotificationUnreadCountPayload } from '@/features/notifications/models/notifications'
 
 /** Nombres de los eventos (mismos que ChatSocketEvents en el backend). */
 export const CHAT_EVENTS = {
@@ -29,6 +30,9 @@ interface ServerToClientEvents {
   'inbox:read': (payload: InboxReadPayload) => void
   'presence:online': (payload: PresencePayload) => void
   'presence:offline': (payload: PresencePayload) => void
+  // Notificaciones: viajan por esta misma conexión (ver useNotificationsSync).
+  'notification:new': (payload: NotificationNewPayload) => void
+  'notification:unread-count': (payload: NotificationUnreadCountPayload) => void
 }
 
 interface ClientToServerEvents {
@@ -43,7 +47,9 @@ const UNAUTHENTICATED_MESSAGE = 'No autenticado'
 const ACK_TIMEOUT_MS = 5000
 
 /**
- * Único socket del chat para toda la app. Se crea sin conectar
+ * Único socket de la app: lo comparten el chat y las notificaciones (el
+ * backend mete cada conexión en la sala del usuario, no hay que unirse a nada).
+ * Es el único socket del chat para toda la app. Se crea sin conectar
  * (`autoConnect: false`): lo conecta y desconecta `ChatRealtime` según haya
  * sesión o no, así un visitante sin cuenta nunca abre un socket.
  *

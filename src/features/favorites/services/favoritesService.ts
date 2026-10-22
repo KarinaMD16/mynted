@@ -1,6 +1,6 @@
 import myntedAPI from '@/api/apiConfig'
 import type { PaginatedResponse } from '@/features/community/models/communityDTOs'
-import type { FavoriteEntry, FavoriteIdsResult, FavoritesFilter, FavoriteToggleResult } from '../models/favorites'
+import type { FavoriteAlerts, FavoriteEntry, FavoriteIdsResult, FavoritesFilter, FavoriteToggleResult } from '../models/favorites'
 
 /** GET /favorites/me — posts y productos guardados, del guardado más reciente al más antiguo. */
 export async function getMyFavorites(
@@ -24,9 +24,22 @@ export async function getMyFavoriteIds(type: 'products' | 'posts'): Promise<Favo
   return data
 }
 
-/** PUT /products/:productId/favorite — idempotente: guardar dos veces no duplica. */
-export async function saveProductFavorite(productId: number): Promise<FavoriteToggleResult> {
-  const { data } = await myntedAPI.put<FavoriteToggleResult>(`/products/${productId}/favorite`)
+/**
+ * PUT /products/:productId/favorite — idempotente: guardar dos veces no duplica.
+ * Sin `alerts` guarda sin avisos (o deja los que ya tenía); con `alerts`,
+ * guarda y los activa en un paso.
+ */
+export async function saveProductFavorite(productId: number, alerts?: Partial<FavoriteAlerts>): Promise<FavoriteToggleResult> {
+  const { data } = await myntedAPI.put<FavoriteToggleResult>(`/products/${productId}/favorite`, alerts)
+  return data
+}
+
+/**
+ * PATCH /products/:productId/favorite — cambia los avisos de un producto ya
+ * guardado (no exige que siga activo). 404 si no está guardado; 400 sin campos.
+ */
+export async function updateProductFavoriteAlerts(productId: number, alerts: Partial<FavoriteAlerts>): Promise<FavoriteToggleResult> {
+  const { data } = await myntedAPI.patch<FavoriteToggleResult>(`/products/${productId}/favorite`, alerts)
   return data
 }
 

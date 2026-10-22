@@ -2,9 +2,9 @@ import { ErrorState } from '@/components/errors/ErrorState'
 import { useState } from 'react'
 import { SignedOutState } from '@/components/errors/QueryErrorState'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
-import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, Receipt, ShoppingBag, TrendingUp } from 'lucide-react'
+import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, Receipt, ShoppingBag, Store, TrendingUp } from 'lucide-react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { BadgesCard } from '@/features/badges/components/BadgesCard'
@@ -152,6 +152,19 @@ function ProfileHeader({
                 <span className="hidden sm:inline">{t('profile.becomeSeller.cta')}</span>
               </Button>
             ))}
+
+          {/* Su tienda pública: solo viene `seller` si el vendedor está aprobado. */}
+          {user.seller && (
+            <Link
+              to="/sellers/$sellerId"
+              params={{ sellerId: String(user.seller.sellerId) }}
+              aria-label={t('store.mine')}
+              className="flex h-10 items-center gap-2 rounded-xl border border-mynted-border bg-white px-4 text-sm font-semibold text-mynted-ink outline-none hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid max-sm:w-10 max-sm:justify-center max-sm:px-0"
+            >
+              <Store className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">{t('store.mine')}</span>
+            </Link>
+          )}
 
           {isSeller && (
             <Button

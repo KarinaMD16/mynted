@@ -1,4 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import { DISPLAY_CURRENCY_HEADER, getRequestDisplayCurrency } from '@/utils/displayCurrency'
 
 /**
  * URL del backend. Se usa de dos formas distintas:
@@ -14,6 +15,17 @@ const myntedAPI = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
+})
+
+// Moneda en la que el backend devuelve los precios (campos `display*`). Ver
+// utils/displayCurrency.ts: con o sin sesión se manda la misma que usa la
+// pantalla, para que tarjetas, detalle y filtro de precio coincidan.
+myntedAPI.interceptors.request.use((config) => {
+  const currency = getRequestDisplayCurrency()
+  if (currency && !config.headers.has(DISPLAY_CURRENCY_HEADER)) {
+    config.headers.set(DISPLAY_CURRENCY_HEADER, currency)
+  }
+  return config
 })
 
 // -----------------------------------------------------------------------------
