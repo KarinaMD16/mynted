@@ -8,7 +8,7 @@ import { flattenUniquePosts, useHomePosts } from '@/features/community/hooks/use
 import { GlobalPostCard } from '@/features/community/components/cards/GlobalPostCard'
 
 /** Cuantas publicaciones entran en el home antes de mandar a /explore. */
-const HIGHLIGHT_LIMIT = 3
+const HIGHLIGHT_LIMIT = 5
 
 /**
  * Lo ultimo de "Talk" en el home (GET /home/posts): con sesion, lo mas reciente
