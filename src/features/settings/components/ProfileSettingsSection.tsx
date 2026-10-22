@@ -5,7 +5,7 @@ import { Link } from '@tanstack/react-router'
 import { BadgeCheck, Camera, Clock, ExternalLink, ShoppingBag, XCircle } from 'lucide-react'
 import { getFieldErrorMessage } from '@/utils/form'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { INTL_LOCALES, PUBLISH_FALLBACK_CURRENCY, SUPPORTED_CURRENCIES } from '@/utils/locale'
+import { INTL_LOCALES, SUPPORTED_CURRENCIES } from '@/utils/locale'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import type { AuthUser } from '@/features/auth/models/auth'
@@ -287,12 +287,16 @@ function StatusBanner({
   )
 }
 
-/** Moneda de publicación del vendedor (la usa CreateProductPage). */
+/**
+ * Moneda de publicación del vendedor (la usa CreateProductPage). Es obligatoria
+ * para publicar: el backend ya no asume USD, responde 400 si falta. Por eso, si
+ * la cuenta no tiene una, el selector arranca vacío y se avisa.
+ */
 function CurrencyForm({ user }: { user: AuthUser }) {
   const { t, language } = useLanguage()
   const updateProfile = useUpdateProfileMutation()
   const saved = useSavedFlash()
-  const currentCurrency = user.currency ?? PUBLISH_FALLBACK_CURRENCY
+  const currentCurrency = user.currency ?? ''
   const [currency, setCurrency] = useState(currentCurrency)
 
   const currencyNames = useMemo(() => {
@@ -303,9 +307,10 @@ function CurrencyForm({ user }: { user: AuthUser }) {
     }
   }, [language])
 
-  const options = SUPPORTED_CURRENCIES.includes(currentCurrency)
-    ? SUPPORTED_CURRENCIES
-    : [currentCurrency, ...SUPPORTED_CURRENCIES]
+  const options =
+    currentCurrency === '' || SUPPORTED_CURRENCIES.includes(currentCurrency)
+      ? SUPPORTED_CURRENCIES
+      : [currentCurrency, ...SUPPORTED_CURRENCIES]
 
   const save = () => {
     updateProfile.mutate(toProfileFormData({ currency }), { onSuccess: () => saved.flash() })
@@ -321,7 +326,7 @@ function CurrencyForm({ user }: { user: AuthUser }) {
           id="settings-currency"
           className="sm:max-w-sm"
           value={currency}
-          placeholder={currency}
+          placeholder={t('settings.profile.currencyPlaceholder')}
           options={options.map((code) => {
             const name = currencyNames?.of(code)
             return { value: code, label: name && name !== code ? `${name} (${code})` : code }
@@ -329,6 +334,11 @@ function CurrencyForm({ user }: { user: AuthUser }) {
           onChange={setCurrency}
         />
         <p className="text-xs text-mynted-gray">{t('settings.profile.currencyHint')}</p>
+        {currentCurrency === '' && (
+          <p className="text-xs font-medium text-amber-700" role="status">
+            {t('settings.profile.currencyMissing')}
+          </p>
+        )}
       </div>
 
       <SettingsFormFooter error={updateProfile.isError ? updateProfile.error : undefined} showSaved={saved.isVisible}>
@@ -336,7 +346,7 @@ function CurrencyForm({ user }: { user: AuthUser }) {
           type="button"
           variant="primary"
           size="md"
-          disabled={currency === currentCurrency}
+          disabled={currency === '' || currency === currentCurrency}
           isLoading={updateProfile.isPending}
           onClick={save}
         >

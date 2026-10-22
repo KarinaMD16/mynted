@@ -1,11 +1,11 @@
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import type { ReactNode } from 'react'
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Repeat, Tag, UsersRound } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { formatPrice } from '@/utils/price'
+import { ProductPrice } from './ProductPrice'
 import type { ProductCondition, ProductListItem, ProductPage, ProductStatus } from '../models/product'
 import { Button } from '@/components/ui/Button'
 
@@ -17,6 +17,7 @@ const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
 }
 
 const STATUS_LABEL: Record<Exclude<ProductStatus, 'active'>, TranslationKey> = {
+  draft: 'products.status.draft',
   sold: 'products.status.sold',
   inactive: 'products.status.inactive',
 }
@@ -49,19 +50,7 @@ export function ProductGrid({
 
   if (query.isError) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-        <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-        <p className="text-sm text-mynted-gray">{getApiErrorMessage(query.error)}</p>
-        <Button
-          type="button"
-          onClick={() => void query.refetch()}
-          variant="secondary"
-          size="sm"
-          className="mt-2"
-        >
-          {t('communities.list.retry')}
-        </Button>
-      </div>
+      <QueryErrorState error={query.error} onRetry={() => void query.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
     )
   }
 
@@ -95,16 +84,16 @@ export function ProductGrid({
 }
 
 function ProductListingCard({ product, showCommunity }: { product: ProductListItem; showCommunity: boolean }) {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const isExchange = product.type === 'exchange'
   const tags = product.productTags?.map((item) => item.tag) ?? []
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-mynted-border bg-white transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(13,13,20,0.15)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-mynted-border bg-white transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(13,13,20,0.15)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-mynted-bg">
         <img
           src={product.imageUrl}
-          alt={product.title}
+          alt=""
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
@@ -124,7 +113,16 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 font-heading text-base font-semibold text-mynted-ink">{product.title}</h3>
+        <h3 className="line-clamp-2 font-heading text-base font-semibold text-mynted-ink">
+          {/* Enlace "estirado": todo el card abre el detalle, y el link de la comunidad queda por encima. */}
+          <Link
+            to="/products/$productId"
+            params={{ productId: String(product.id) }}
+            className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-mynted-blue focus-visible:after:rounded-2xl"
+          >
+            {product.title}
+          </Link>
+        </h3>
         <p className="text-xs font-medium text-mynted-gray">{t(CONDITION_LABEL[product.condition])}</p>
 
         {tags.length > 0 && (
@@ -134,19 +132,31 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <span className="flex flex-col">
             {isExchange && <span className="text-[11px] text-mynted-gray">{t('products.card.referenceValue')}</span>}
-            <span className="font-heading text-lg font-semibold text-mynted-ink">
-              {formatPrice(product.price, product.currency, language)}
-            </span>
+            <ProductPrice
+              price={product.price}
+              finalPrice={product.finalPrice}
+              discountPercent={product.discountPercent}
+              currency={product.currency}
+              className="font-heading text-lg font-semibold text-mynted-ink"
+            />
           </span>
+          {/* Un producto sin comunidad (community: null) no pinta el chip. */}
           {showCommunity && product.community && (
-            <Link
-              to="/communities/$slug"
-              params={{ slug: product.community.slug }}
-              className="flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink hover:text-mynted-orange"
-            >
-              <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
-              <span className="truncate">{product.community.name}</span>
-            </Link>
+            product.community.slug ? (
+              <Link
+                to="/communities/$slug"
+                params={{ slug: product.community.slug }}
+                className="relative z-10 flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink hover:text-mynted-orange"
+              >
+                <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{product.community.name}</span>
+              </Link>
+            ) : (
+              <span className="flex min-w-0 items-center gap-1 rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-semibold text-mynted-ink">
+                <UsersRound className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{product.community.name}</span>
+              </span>
+            )
           )}
         </div>
       </div>

@@ -1,9 +1,14 @@
+import { ErrorState } from '@/components/errors/ErrorState'
 import { useState } from 'react'
+import { SignedOutState } from '@/components/errors/QueryErrorState'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
 import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, ShoppingBag, TrendingUp } from 'lucide-react'
+import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
+import { BadgesCard } from '@/features/badges/components/BadgesCard'
+import { useBadgeCatalog, useMyBadges } from '@/features/badges/hooks/useBadgesQueries'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
 import { MyThreadsTab } from '@/features/community/components/profile/MyThreadsTab'
@@ -28,6 +33,9 @@ export default function ProfilePage() {
   const { t, language } = useLanguage()
   const { isLoggedIn, data: user, isLoading, isError } = useCurrentUser()
   const interestsQuery = useMyInterestsQuery(isLoggedIn)
+  const badgesQuery = useMyBadges(isLoggedIn)
+  // Catálogo de badges de cuenta: en el perfil propio también se muestran los que faltan por ganar.
+  const badgeCatalogQuery = useBadgeCatalog('user', isLoggedIn)
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts')
   const navigate = useNavigate()
   const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false)
@@ -39,7 +47,7 @@ export default function ProfilePage() {
       <SiteHeader />
 
       <main className="mx-auto max-w-[1320px] px-4 pt-6 pb-16 sm:px-6">
-        {!isLoggedIn && <SignedOutState />}
+        {!isLoggedIn && <SignedOutState description={t('profile.signedOutSubtitle')} />}
 
         {isLoggedIn && isLoading && (
           <div className="flex justify-center py-24">
@@ -70,7 +78,7 @@ export default function ProfilePage() {
                   izquierda, sin depender de qué tab esté activa. */}
               <div className={`${activeTab === 'info' ? 'flex' : 'hidden'} flex-col gap-6 lg:order-1 lg:flex`}>
                 <AboutCard user={user} language={language} />
-                <BadgesCard />
+                <BadgesCard query={badgesQuery} catalogQuery={badgeCatalogQuery} emptyKey="profile.badges.empty" />
                 <InterestsCard interestsQuery={interestsQuery} />
               </div>
 
@@ -95,30 +103,9 @@ export default function ProfilePage() {
   )
 }
 
-function SignedOutState() {
-  const { t } = useLanguage()
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-mynted-border bg-mynted-white py-24 text-center">
-      <h1 className="font-heading text-xl font-semibold text-mynted-ink">{t('profile.signedOutTitle')}</h1>
-      <p className="max-w-sm text-sm text-mynted-gray">{t('profile.signedOutSubtitle')}</p>
-      <Link
-        to="/login"
-        className="mt-2 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-      >
-        {t('profile.goToLogin')}
-      </Link>
-    </div>
-  )
-}
-
 function LoadErrorState() {
   const { t } = useLanguage()
-  return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-mynted-white py-24 text-center">
-      <h1 className="font-heading text-xl font-semibold text-mynted-ink">{t('profile.loadErrorTitle')}</h1>
-      <p className="max-w-sm text-sm text-mynted-gray">{t('profile.loadErrorSubtitle')}</p>
-    </div>
-  )
+  return <ErrorState kind="error" description={t('profile.loadErrorSubtitle')} />
 }
 
 function ProfileHeader({
@@ -276,22 +263,18 @@ function ProfileTabsBar({
   const visibleTabs = PROFILE_TABS.filter((tab) => !tab.sellerOnly || isSeller)
 
   return (
-    <div className="mt-6 flex items-center gap-2 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]">
-      {visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onChange(id)}
-          aria-pressed={activeTab === id}
-          className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${
-            mobileOnly ? 'lg:hidden' : ''
-          } ${activeTab === id ? 'bg-mynted-orange text-white' : 'text-mynted-gray hover:text-mynted-ink'}`}
-        >
-          <Icon className="size-4" aria-hidden="true" />
-          {t(labelKey)}
-        </button>
-      ))}
-    </div>
+    <AnimatedTabs
+      items={visibleTabs.map(({ id, labelKey, icon: Icon, mobileOnly }) => ({
+        id,
+        label: t(labelKey),
+        icon: <Icon className="size-4" aria-hidden="true" />,
+        className: mobileOnly ? 'lg:hidden' : undefined,
+      }))}
+      value={activeTab}
+      onChange={onChange}
+      semantics="pressed"
+      className="mt-6 flex items-center gap-1.5 overflow-x-auto border-b border-mynted-border pb-1 [scrollbar-width:thin]"
+    />
   )
 }
 
@@ -310,43 +293,7 @@ function TabContent({ activeTab }: { activeTab: ProfileTab }) {
   const { title, subtitle } = copy[activeTab]
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
-      <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t(title)}</h2>
-      <p className="max-w-sm text-sm text-mynted-gray">{t(subtitle)}</p>
-    </div>
-  )
-}
-
-const PLACEHOLDER_BADGES: { emoji: string; labelKey: TranslationKey; className: string }[] = [
-  { emoji: '🏆', labelKey: 'profile.badges.topSeller', className: 'bg-mynted-orange/10 text-mynted-orange' },
-  { emoji: '⚡', labelKey: 'profile.badges.fastResponder', className: 'bg-mynted-blue/10 text-mynted-blue' },
-  { emoji: '📦', labelKey: 'profile.badges.sales100', className: 'bg-mynted-bg text-mynted-ink' },
-  { emoji: '⭐', labelKey: 'profile.badges.rating5', className: 'bg-green-400/10 text-green-600' },
-  { emoji: '🚚', labelKey: 'profile.badges.secureShipping', className: 'bg-mynted-blue/10 text-mynted-blue-dark' },
-  { emoji: '🛡️', labelKey: 'profile.badges.trusted', className: 'bg-mynted-yellow/20 text-amber-600' },
-]
-
-
-function BadgesCard() {
-  const { t } = useLanguage()
-  return (
-    <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
-      <h2 className="font-heading text-lg font-semibold text-mynted-ink">
-        {t('profile.badges.title', { count: PLACEHOLDER_BADGES.length })}
-      </h2>
-      <p className="mt-1 text-xs text-mynted-gray">{t('profile.badges.previewNote')}</p>
-
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        {PLACEHOLDER_BADGES.map((badge) => (
-          <div key={badge.labelKey} className="flex flex-col items-center gap-1.5 text-center">
-            <span className={`flex size-12 items-center justify-center rounded-full text-xl ${badge.className}`}>
-              {badge.emoji}
-            </span>
-            <span className="text-xs font-medium text-mynted-gray">{t(badge.labelKey)}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <ErrorState kind="empty" variant="compact" title={t(title)} description={t(subtitle)} />
   )
 }
 
@@ -395,9 +342,7 @@ function MyProductsTab({ onCreateProduct }: { onCreateProduct: () => void }) {
       query={productsQuery}
       showCommunity
       emptyState={
-        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
-          <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('profile.tabs.productsEmptyTitle')}</h2>
-          <p className="max-w-sm text-sm text-mynted-gray">{t('profile.tabs.productsEmptySubtitle')}</p>
+        <ErrorState kind="empty" variant="compact" title={t('profile.tabs.productsEmptyTitle')} description={t('profile.tabs.productsEmptySubtitle')}>
           <Button
             type="button"
             onClick={onCreateProduct}
@@ -408,7 +353,7 @@ function MyProductsTab({ onCreateProduct }: { onCreateProduct: () => void }) {
             <Plus className="size-4" aria-hidden="true" />
             {t('products.create.firstCta')}
           </Button>
-        </div>
+        </ErrorState>
       }
     />
   )

@@ -40,15 +40,45 @@ export interface AuthUser {
   bio?: string | null
   location?: string | null
   sellerRequestStatus?: SellerRequestStatus
-  /** Moneda en la que el usuario publica sus precios (ISO 4217, p. ej. CRC). */
+  /**
+   * Moneda en la que el usuario publica sus precios (ISO 4217, p. ej. CRC).
+   * Para publicar productos es OBLIGATORIA: ya no hay USD por defecto.
+   */
   currency?: string | null
+  /** País de la persona (ISO 3166-1 alfa-2, p. ej. CR): "dónde recibo mis compras". */
+  country?: string | null
   locale?: string | null
   /** Preferencias de notificación (ver /settings, pestaña Notificaciones). */
   emailNotifications?: boolean
   pushNotifications?: boolean
+  /** Pedir confirmación antes de quitar un favorito (el backend no lo impone; lo aplica el front). */
+  confirmUnfavorite?: boolean
   /** Cuándo aceptó la Política de Privacidad y qué versión (ver /settings, pestaña Privacidad). */
   acceptedPrivacyPolicyAt?: string | null
   privacyPolicyVersion?: string
+}
+
+/**
+ * Vista pública de un usuario (GET /users/:id, /users/by-username/:username,
+ * /users/search y /search): nunca trae correo, locale, moneda, preferencias ni
+ * datos de la solicitud de vendedor. (Un superadmin recibe el usuario completo.)
+ */
+export interface PublicUser {
+  id: string
+  username: string
+  photoUrl: string | null
+  bio: string | null
+  location: string | null
+  role: UserRole
+  createdAt: string
+  /** Solo si es vendedor. */
+  seller?: {
+    displayName: string
+    isVerified: boolean
+    /** Promedio de las reseñas de sus productos; null si no tiene. */
+    ratingAverage: number | null
+    reviewsCount: number
+  }
 }
 
 export interface LogoutResponse {

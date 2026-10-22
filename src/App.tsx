@@ -1,5 +1,7 @@
 import { Outlet } from '@tanstack/react-router'
 import { CookieBanner } from './components/ui/CookieBanner'
+import { ChatLauncher } from './features/chat/components/ChatLauncher'
+import { ChatRealtime } from './features/chat/components/ChatRealtime'
 import { ShipToDialog } from './features/region/components/ShipToDialog'
 import { useAdoptAccountLanguage } from './features/auth/hooks/useAccountLanguage'
 import { LanguageProvider } from './i18n/LanguageContext'
@@ -22,6 +24,10 @@ function App() {
   return (
     <LanguageProvider>
       <AccountLanguageSync />
+      {/* Socket del chat: conecta con sesión, desconecta al cerrarla (ver ChatRealtime). */}
+      <ChatRealtime />
+      {/* Botón flotante de mensajes, en todas las pantallas menos /messages (ver ChatLauncher). */}
+      <ChatLauncher />
       <Outlet />
       <CookieBanner />
       <ShipToDialog />

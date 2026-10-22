@@ -7,6 +7,7 @@ import {
   forgotPasswordRequest,
   getCurrentUserRequest,
   getUserByIdRequest,
+  getUserByUsernameRequest,
   loginRequest,
   loginWithFacebookRequest,
   loginWithGoogleRequest,
@@ -51,6 +52,17 @@ export function useCurrentUserQuery() {
     queryKey: authKeys.me,
     queryFn: getCurrentUserRequest,
     retry: false,
+    // Sin sesión la consulta queda en error y sin datos. Por defecto React Query la vuelve
+    // a pedir cada vez que se monta un componente nuevo que la usa, y mientras la pide
+    // `isLoading` vuelve a true: las pantallas que esconden secciones "mientras carga la
+    // sesión" (el home) las desmontan, al terminar las montan otra vez y eso dispara otro
+    // GET /users/me + POST /auth/refresh... en bucle, con el botón de cuenta pegado en
+    // "cargando". Con retryOnMount: false un 401 se respeta hasta que algo cambie la
+    // sesión (login/logout escriben este cache directo).
+    retryOnMount: false,
+    // Por lo mismo, sin sesión no se re-pide al volver a la pestaña (haría parpadear el
+    // home); con sesión sí, para enterarse si venció.
+    refetchOnWindowFocus: (query) => query.state.status !== 'error',
   })
 }
 
@@ -93,11 +105,21 @@ export function useFacebookLoginMutation() {
   })
 }
 
+/** Perfil público de otra persona, por id (la clave empieza con 'users' para invalidarlo junto con sus datos). */
 export function useUserByIdQuery(id: string | undefined) {
   return useQuery({
-    queryKey: ['users', id],
+    queryKey: ['users', 'by-id', id],
     queryFn: () => getUserByIdRequest(id as string),
     enabled: Boolean(id),
+  })
+}
+
+/** Perfil público de otra persona, por username (/users/keishi). */
+export function useUserByUsernameQuery(username: string | undefined) {
+  return useQuery({
+    queryKey: ['users', 'by-username', username],
+    queryFn: () => getUserByUsernameRequest(username as string),
+    enabled: Boolean(username),
   })
 }
 

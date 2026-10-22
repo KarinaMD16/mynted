@@ -23,7 +23,8 @@ export function CoverBanner() {
   )
 }
 
-export function AboutCard({ user, language }: { user: AuthUser; language: AppLanguage }) {
+/** Solo usa estos campos: sirve tanto para la cuenta propia (AuthUser) como para un perfil público (PublicUser). */
+export function AboutCard({ user, language }: { user: Pick<AuthUser, 'bio' | 'location' | 'createdAt'>; language: AppLanguage }) {
   const { t } = useLanguage()
   return (
     <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">

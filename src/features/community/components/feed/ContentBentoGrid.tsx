@@ -3,7 +3,7 @@ import { Repeat, Tag } from 'lucide-react'
 import { EAGER_ITEM_COUNT, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
-import { formatPrice } from '@/utils/formatPrice'
+import { ProductPrice } from '@/features/products/components/ProductPrice'
 import type { TranslationKey } from '@/i18n/translations/es'
 import type { FeedPost, MyContentEntry, MyContentProduct } from '@/features/community/models/communityDTOs'
 import { AVATAR_COLORS } from '@/features/community/types/DEFAULT_VALUES'
@@ -34,6 +34,17 @@ const BODY_CLASS: Record<TileSize, string> = {
 }
 
 /** Posts y productos propios mezclados (GET /posts/me) en un bento grid. */
+
+/**
+ * Chip sobre una FOTO (comunidad del post / del producto). Un blanco translúcido
+ * desaparece sobre fotos claras (texto blanco sobre fondo casi blanco). Esto es
+ * "vidrio oscuro": el blur y la saturación toman los colores de la foto que hay
+ * detrás, y el tinte negro + bajar el brillo del fondo garantizan que el texto
+ * blanco se lea incluso sobre blanco puro (~4.7:1). Sobre fotos oscuras casi no se nota.
+ */
+const IMAGE_CHIP_CLASS =
+  'bg-gray/40 text-white ring-1 ring-mynted-gray-light/20 backdrop-blur-md backdrop-saturate-150 backdrop-brightness-75 [text-shadow:0_1px_2px_rgb(0_0_0/0.3)]'
+
 export function ContentBentoGrid({ entries }: { entries: MyContentEntry[] }) {
   return (
     <ul className={BENTO_GRID_CLASS}>
@@ -70,7 +81,7 @@ function BentoTile({ post, size, index }: { post: FeedPost; size: TileSize; inde
 
   return (
     <article
-      className={`relative flex w-full flex-col justify-between gap-3 overflow-hidden rounded-3xl p-5 ${
+      className={`group relative flex w-full flex-col justify-between gap-3 overflow-hidden rounded-3xl p-5 ${
         cover ? 'bg-mynted-ink' : theme.surface
       }`}
     >
@@ -80,19 +91,32 @@ function BentoTile({ post, size, index }: { post: FeedPost; size: TileSize; inde
             src={cover.url}
             alt=""
             loading="lazy"
-            className="absolute inset-0 size-full object-cover transition-transform duration-500 hover:scale-105"
+            className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" aria-hidden="true" />
         </>
       )}
+      {/* Toda la tarjeta lleva al post; el chip de la comunidad se mantiene aparte (z-10). Sin comunidad no hay ruta. */}
+      {post.community && (
+        <Link
+          to="/communities/$slug/posts/$postId"
+          params={{ slug: post.community.slug, postId: String(post.id) }}
+          aria-label={post.title}
+          className="absolute inset-0 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-mynted-blue"
+        />
+      )}
 
-      <header className="relative flex items-start justify-between gap-3">
+      <header className="pointer-events-none relative flex items-start justify-between gap-3">
         {post.community ? (
           <Link
             to="/communities/$slug"
             params={{ slug: post.community.slug }}
-            className={`max-w-[70%] truncate rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm ${
-              onDark ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-mynted-ink/5 text-mynted-ink hover:bg-mynted-ink/10'
+            className={`pointer-events-auto relative z-10 max-w-[70%] truncate rounded-full px-3 py-1 text-xs font-semibold ${
+              cover
+                ? `${IMAGE_CHIP_CLASS} hover:bg-black/55`
+                : onDark
+                  ? 'bg-white/20 text-white hover:bg-white/30'
+                  : 'bg-mynted-ink/5 text-mynted-ink hover:bg-mynted-ink/10'
             }`}
           >
             {post.community.name}
@@ -107,7 +131,7 @@ function BentoTile({ post, size, index }: { post: FeedPost; size: TileSize; inde
         )}
       </header>
 
-      <div className="relative flex flex-col gap-2">
+      <div className="pointer-events-none relative flex flex-col gap-2">
         <h3 className={`font-heading font-semibold ${TITLE_CLASS[size]} ${titleColor}`}>{post.title}</h3>
         <p className={`${BODY_CLASS[size]} ${bodyColor}`}>{post.body}</p>
         {(size === 'hero' || size === 'tall') && post.tags.length > 0 && (
@@ -115,7 +139,7 @@ function BentoTile({ post, size, index }: { post: FeedPost; size: TileSize; inde
         )}
       </div>
 
-      <footer className="relative flex items-center justify-between gap-3">
+      <footer className="pointer-events-none relative flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <AuthorAvatar post={post} index={index} />
           <div className="flex min-w-0 flex-col leading-tight">
@@ -164,7 +188,7 @@ const STATUS_LABEL: Record<Exclude<MyContentProduct['status'], 'active'>, Transl
 
 /** Producto propio: siempre tiene foto, así que va a sangre con el título y el precio encima. */
 function BentoProductTile({ product, size }: { product: MyContentProduct; size: TileSize }) {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const isExchange = product.type === 'exchange'
 
   return (
@@ -209,13 +233,21 @@ function BentoProductTile({ product, size }: { product: MyContentProduct; size: 
       <footer className="pointer-events-none relative flex items-end justify-between gap-3">
         <span className="flex flex-col leading-tight">
           {isExchange && <span className="text-[11px] text-white/80">{t('products.card.referenceValue')}</span>}
-          <span className="font-heading text-lg font-semibold text-white">
-            {formatPrice(product.price, product.currency, language)}
+          <ProductPrice
+            price={product.price}
+            finalPrice={product.finalPrice}
+            discountPercent={product.discountPercent}
+            currency={product.currency}
+            className="font-heading text-lg font-semibold text-white"
+            onDark
+          />
+        </span>
+        {/* Un producto sin comunidad (community: null) no pinta el chip. Vidrio claro (como la pastilla "Venta"): texto oscuro legible sobre cualquier foto. */}
+        {product.community && (
+          <span className="max-w-[50%] truncate rounded-full bg-white/75 px-3 py-1 text-xs font-semibold text-mynted-ink shadow-sm ring-1 ring-black/5 backdrop-blur-md backdrop-saturate-150">
+            {product.community.name}
           </span>
-        </span>
-        <span className="max-w-[50%] truncate rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-          {product.community.name}
-        </span>
+        )}
       </footer>
     </article>
   )

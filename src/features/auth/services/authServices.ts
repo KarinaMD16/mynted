@@ -1,6 +1,7 @@
 import myntedAPI from '@/api/apiConfig'
 import type {
   AuthUser,
+  PublicUser,
   ChangePasswordPayload,
   ConfirmEmailChangePayload,
   ForgotPasswordPayload,
@@ -23,8 +24,15 @@ export async function registerRequest(payload: RegisterPayload): Promise<AuthUse
   return data
 }
 
-export async function getUserByIdRequest(id: string): Promise<AuthUser> {
-  const { data } = await myntedAPI.get<AuthUser>(`/users/${id}`)
+/** GET /users/:id — perfil público (pide sesión). Cuenta desactivada → 404. */
+export async function getUserByIdRequest(id: string): Promise<PublicUser> {
+  const { data } = await myntedAPI.get<PublicUser>(`/users/${id}`)
+  return data
+}
+
+/** GET /users/by-username/:username — igual que por id, para enlaces legibles (pide sesión). */
+export async function getUserByUsernameRequest(username: string): Promise<PublicUser> {
+  const { data } = await myntedAPI.get<PublicUser>(`/users/by-username/${encodeURIComponent(username)}`)
   return data
 }
 

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from './SiteHeader'
 
 /**
@@ -7,14 +7,14 @@ import { SiteHeader } from './SiteHeader'
  * el header oficial + un mensaje de "en construcción", así el nav ya
  * redirige a algo mientras se construye cada módulo de verdad.
  */
-export function PlaceholderPage({ title, description }: { title: string; description: ReactNode }) {
+export function PlaceholderPage({ title, description }: { title: string; description: string }) {
   return (
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="flex flex-col items-center justify-center gap-3 px-4 py-24 text-center">
-        <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{title}</h1>
-        <p className="max-w-sm text-sm text-mynted-gray">{description}</p>
+      <main className="mx-auto flex max-w-[1320px] justify-center px-4 sm:px-6">
+        {/* El ganso con megáfono anuncia que la sección viene pronto; su nombre va como etiqueta. */}
+        <ErrorState kind="comingSoon" variant="page" eyebrow={title} description={description} />
       </main>
     </div>
   )

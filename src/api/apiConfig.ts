@@ -41,7 +41,13 @@ const myntedAPI = axios.create({
 
 let refreshPromise: Promise<void> | null = null
 
-function refreshSession(): Promise<void> {
+/**
+ * Pide un access_token nuevo con la cookie refresh_token. Se exporta para el
+ * socket del chat (ver features/chat/socket): el handshake no pasa por este
+ * interceptor, así que cuando el socket responde "No autenticado" refresca
+ * con esta misma función (comparte la promesa en curso) y reconecta.
+ */
+export function refreshSession(): Promise<void> {
   if (!refreshPromise) {
     // Axios "pelado" (no myntedAPI) a propósito: así esta llamada nunca pasa
     // por este mismo interceptor.

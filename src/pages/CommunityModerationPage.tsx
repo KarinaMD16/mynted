@@ -1,9 +1,9 @@
+import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
 import { useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Flag, ScrollText, Settings, UserPlus, Users } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { ModerationJoinRequestsSection } from '@/features/community/components/moderation/ModerationJoinRequestsSection'
 import { ModerationRulesSection } from '@/features/community/components/moderation/ModerationRulesSection'
 import { ModerationSettingsSection } from '@/features/community/components/moderation/ModerationSettingsSection'
@@ -15,7 +15,6 @@ import {
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { Button } from '@/components/ui/Button'
 
 type ModerationTab = 'reports' | 'requests' | 'members' | 'rules' | 'settings'
 
@@ -63,17 +62,7 @@ export default function CommunityModerationPage() {
         </Link>
 
         {!isLoadingSession && !isLoggedIn && (
-          <CommunityNotice
-            title={t('community.detail.signedOutTitle')}
-            description={t('community.detail.signedOutDescription')}
-          >
-            <Link
-              to="/login"
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-            >
-              {t('communities.list.signIn')}
-            </Link>
-          </CommunityNotice>
+          <SignedOutState description={t('community.detail.signedOutDescription')} />
         )}
 
         {(isLoadingSession || (isLoggedIn && communityQuery.isPending)) && (
@@ -84,23 +73,16 @@ export default function CommunityModerationPage() {
         )}
 
         {isLoggedIn && communityQuery.isError && (
-          <CommunityNotice
-            title={t('community.detail.loadError')}
-            description={getApiErrorMessage(communityQuery.error)}
-          >
-            <Button
-              type="button"
-              onClick={() => void communityQuery.refetch()}
-              variant="secondary"
-              size="sm"
-            >
-              {t('communities.list.retry')}
-            </Button>
-          </CommunityNotice>
+          <QueryErrorState
+            error={communityQuery.error}
+            onRetry={() => void communityQuery.refetch()}
+            texts={{ notFound: { description: t('errors.notFound.community') }, error: { description: t('community.detail.loadError') } }}
+          />
         )}
 
         {community && !canModerate && (
-          <CommunityNotice
+          <ErrorState
+            kind="forbidden"
             title={t('moderation.forbiddenTitle')}
             description={t('moderation.forbiddenDescription')}
           >
@@ -111,7 +93,7 @@ export default function CommunityModerationPage() {
             >
               {t('moderation.backToCommunity')}
             </Link>
-          </CommunityNotice>
+          </ErrorState>
         )}
 
         {community && canModerate && (

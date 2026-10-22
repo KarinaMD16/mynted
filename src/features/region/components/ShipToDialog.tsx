@@ -24,17 +24,18 @@ function wasDismissed(): boolean {
  * compras?") para no depender del idioma del navegador: el país elegido manda
  * la moneda de referencia de los precios (ver useDisplayCurrency). Arranca con
  * el país detectado. Solo aparece si todavía no eligió uno, y después de
- * resolver el banner de cookies para no apilar avisos. "Ahora no" lo oculta
+ * resolver el banner de cookies para no apilar avisos y de saber si hay sesión
+ * (con sesión, el país sale de la cuenta). "Ahora no" lo oculta
  * solo durante esta visita.
  */
 export function ShipToDialog() {
   const { t } = useLanguage()
-  const { shipTo, setShipTo, options, detectedRegion } = useShipTo()
+  const { shipTo, setShipTo, options, detectedRegion, isLoading } = useShipTo()
   const [consent] = useCookie<CookieConsent>(COOKIE_CONSENT_NAME, DEFAULT_COOKIE_CONSENT, COOKIE_CONSENT_OPTIONS)
   const [dismissed, setDismissed] = useState(wasDismissed)
   const [draft, setDraft] = useState<string | null>(null)
 
-  const isOpen = consent.consent && shipTo === null && !dismissed
+  const isOpen = consent.consent && !isLoading && shipTo === null && !dismissed
   const selected = draft ?? detectedRegion
 
   function dismiss() {

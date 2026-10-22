@@ -498,7 +498,7 @@ function Footer() {
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-6 text-mynted-gray">{t('landing.footer.tagline')}</p>
           </div>
-          <nav aria-label={t('landing.footer.linksLabel')} className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-semibold text-mynted-gray">
+          <nav aria-label={t('landing.footer.linksLabel')} className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-semibold text-mynted-white">
             <Link to="/" className={linkClass}>
               {t('nav.home')}
             </Link>

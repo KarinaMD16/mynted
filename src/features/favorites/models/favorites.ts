@@ -14,3 +14,9 @@ export interface FavoriteToggleResult {
   itemType: 'POST' | 'PRODUCT' | 'REPLY'
   isSaved: boolean
 }
+
+/** Respuesta de GET /favorites/me/ids: solo los ids guardados, para pintar los corazones. */
+export interface FavoriteIdsResult {
+  type: 'products' | 'posts'
+  ids: number[]
+}

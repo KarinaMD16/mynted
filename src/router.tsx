@@ -2,6 +2,7 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import App from './App'
 import { ADMIN_SECTIONS, ADMIN_TABS, type AdminSection, type AdminTab } from './features/admin/models/admin'
 import { Loader } from './components/ui/Loader'
+import { NotFoundPage, RouteErrorPage } from './components/errors/ErrorPages'
 import { useLanguage } from './i18n/LanguageContext'
 import AdminPage from './pages/AdminPage'
 import CommunitiesPage from './pages/CommunitiesPage'
@@ -26,9 +27,12 @@ import SettingsPage from './pages/SettingsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import MyProductsPage from './pages/MyProductsPage'
 import CreateProductPage from './pages/CreateProductPage'
+import EditProductPage from './pages/EditProductPage'
+import SearchPage from './pages/SearchPage'
 import TagProductsPage from './pages/TagProductsPage'
 import UserProfilePage from './pages/UserProfilePage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
+import { SEARCH_MAX_LENGTH, SEARCH_TYPES, type SearchType } from './features/search/models/search'
 
 /**
  * Configuración de rutas del frontend.
@@ -47,6 +51,8 @@ import { isSettingsTab, type SettingsTab } from './features/settings/models/sett
  */
 const rootRoute = createRootRoute({
   component: App,
+  // Ruta inexistente: se dibuja dentro del <Outlet /> de App, con idioma y header.
+  notFoundComponent: NotFoundPage,
 })
 
 const homeRoute = createRoute({
@@ -100,11 +106,30 @@ const shopTagRoute = createRoute({
   component: TagProductsPage,
 })
 
-/** Detalle de un producto (Marketplace — Item Detail). */
+/** Resultados de la búsqueda global del header: /search?q=texto&type=products|communities|users|posts. */
+const searchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/search',
+  component: SearchPage,
+  validateSearch: (search: Record<string, unknown>): { q: string; type: SearchType | undefined } => ({
+    q: typeof search.q === 'string' ? search.q.trim().slice(0, SEARCH_MAX_LENGTH) : '',
+    type: (SEARCH_TYPES as readonly unknown[]).includes(search.type) ? (search.type as SearchType) : undefined,
+  }),
+})
+
+/**
+ * Detalle de un producto (Marketplace — Item Detail). `?chat=<id>` deja abierto
+ * el chat con el vendedor (botón "Contactar vendedor"): sobrevive a recargar y
+ * el botón "atrás" del navegador lo cierra.
+ */
 const productDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/products/$productId',
   component: ProductDetailPage,
+  validateSearch: (search: Record<string, unknown>): { chat?: number } => {
+    const chat = Number(search.chat)
+    return { chat: Number.isInteger(chat) && chat > 0 && chat <= 2147483647 ? chat : undefined }
+  },
 })
 
 /**
@@ -118,6 +143,13 @@ const createProductRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): { community?: string } => ({
     community: typeof search.community === 'string' && search.community ? search.community : undefined,
   }),
+})
+
+/** Editar un producto propio (misma pantalla que publicar, con los datos cargados). */
+const editProductRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/products/$productId/edit',
+  component: EditProductPage,
 })
 
 /** Panel del vendedor: sus productos publicados, con edición y cambio de estado. */
@@ -173,6 +205,13 @@ const favoritesRoute = createRoute({
 const messagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/messages',
+  component: MessagesPage,
+})
+
+/** Un chat abierto: en escritorio junto a la bandeja; en móvil a pantalla completa. */
+const conversationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/messages/$conversationId',
   component: MessagesPage,
 })
 
@@ -270,6 +309,8 @@ const routeTree = rootRoute.addChildren([
   exploreRoute,
   shopTagRoute,
   createProductRoute,
+  editProductRoute,
+  searchRoute,
   productDetailRoute,
   myProductsRoute,
   communitiesRoute,
@@ -280,6 +321,7 @@ const routeTree = rootRoute.addChildren([
   discoverCommunitiesRoute,
   favoritesRoute,
   messagesRoute,
+  conversationRoute,
   profileRoute,
   userProfileRoute,
   settingsRoute,
@@ -310,6 +352,10 @@ export const router = createRouter({
   // Loader oficial de la app (el gansito) mientras se resuelve la
   // navegación entre rutas o la carga de datos de una ruta.
   defaultPendingComponent: DefaultPending,
+  // Pantallas de error por defecto (ver components/errors/ErrorPages.tsx):
+  // 404 "not quaound" para rutas que no existen y "honk" si una ruta revienta.
+  defaultNotFoundComponent: NotFoundPage,
+  defaultErrorComponent: RouteErrorPage,
 })
 
 declare module '@tanstack/react-router' {

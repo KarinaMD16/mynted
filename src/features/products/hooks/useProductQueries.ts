@@ -1,6 +1,19 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { getCommunityProducts, getMyProducts, getProducts, getMyProductsDashboard, getMyProductsStats, getProduct, getProductsByTag, getRecommendedProducts, getShop, getTag } from '../services/productService'
-import type { ExploreFilters, MyProductsFilters, MyProductsPage, ProductPage, ShopPage } from '../models/product'
+import {
+  getCommunityProducts,
+  getMyProducts,
+  getMyProductsDashboard,
+  getMyProductsStats,
+  getProduct,
+  getProductReviews,
+  getProducts,
+  getProductsByTag,
+  getRecommendedProducts,
+  getRelatedProducts,
+  getShop,
+  getTag,
+} from '../services/productService'
+import type { ExploreFilters, MyProductsFilters, MyProductsPage, ProductPage, ProductReviewsPage, ShopPage } from '../models/product'
 import { productKeys } from './useProductMutations'
 
 const PAGE_SIZE = 12
@@ -34,7 +47,12 @@ export function useCommunityProducts(communityId: number | undefined, enabled = 
 const SHOP_SECTIONS_PER_PAGE = 3
 const SHOP_PRODUCTS_PER_SECTION = 4
 
-/** Pantalla Shop: secciones por tag, con scroll infinito (cada página trae unas pocas secciones). */
+/**
+ * Pantalla Shop: secciones por tag, con scroll infinito (cada página trae unas
+ * pocas secciones). Sin filtro de país: el backend con `shipTo` deja fuera los
+ * productos que no indicaron a dónde envían, así que ese filtro solo se aplica
+ * si la persona lo pide (ver Explorar).
+ */
 export function useShopFeed() {
   return useInfiniteQuery({
     queryKey: productKeys.shop(),
@@ -67,7 +85,7 @@ export function useTagProducts(tagId: number | undefined, enabled = true) {
   })
 }
 
-/** Detalle de un producto. */
+/** Detalle de un producto (público; un borrador solo lo ve su dueño). */
 export function useProduct(productId: number | undefined, enabled = true) {
   return useQuery({
     queryKey: productKeys.detail(productId ?? 0),
@@ -76,11 +94,34 @@ export function useProduct(productId: number | undefined, enabled = true) {
   })
 }
 
-/** Productos sugeridos a partir del que se está viendo. */
-export function useRecommendedProducts(productId: number | undefined, enabled = true) {
+/** "También te puede interesar": a partir del producto actual y de lo visto hace poco. */
+export function useRecommendedProducts(productId: number | undefined, recentIds: number[], enabled = true) {
   return useQuery({
-    queryKey: productKeys.recommended(productId ?? 0),
-    queryFn: () => getRecommendedProducts(productId ?? 0, 4),
+    queryKey: productKeys.recommended(productId ?? 0, recentIds),
+    queryFn: () => getRecommendedProducts(productId, 4, recentIds),
+    enabled: enabled && productId !== undefined,
+  })
+}
+
+/** Productos relacionados: primero los que eligió el vendedor, luego los automáticos. */
+export function useRelatedProducts(productId: number | undefined, enabled = true) {
+  return useQuery({
+    queryKey: productKeys.related(productId ?? 0),
+    queryFn: () => getRelatedProducts(productId ?? 0),
+    enabled: enabled && productId !== undefined,
+  })
+}
+
+const REVIEWS_PER_PAGE = 5
+
+/** Reseñas de un producto, con "Cargar más". El resumen (promedio y total) viene en cada página. */
+export function useProductReviews(productId: number | undefined, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: productKeys.reviews(productId ?? 0),
+    queryFn: ({ pageParam }) => getProductReviews(productId ?? 0, pageParam, REVIEWS_PER_PAGE),
+    initialPageParam: 1,
+    getNextPageParam: (last: ProductReviewsPage) =>
+      last.pagination.page < last.pagination.totalPages ? last.pagination.page + 1 : undefined,
     enabled: enabled && productId !== undefined,
   })
 }
@@ -108,6 +149,25 @@ export function useMyProductsStats(enabled = true) {
     queryFn: getMyProductsStats,
     enabled,
   })
+}
+
+/**
+ * ¿Es un producto mío? GET /products/:id no trae el dueño (solo el sellerId
+ * público), así que se busca el producto por título entre los míos
+ * (GET /products/me?q=). Solo se consulta si la persona es vendedora.
+ * Mientras no se sepa, devuelve false.
+ */
+export function useIsOwnProduct(productId: number | undefined, title: string | undefined, enabled: boolean) {
+  const query = useQuery({
+    queryKey: [...productKeys.all, 'ownership', productId, title],
+    queryFn: async () => {
+      const result = await getMyProductsDashboard(1, 20, 50, { q: title })
+      return result.sections.some((section) => section.products.some((product) => product.id === productId))
+    },
+    enabled: enabled && productId !== undefined && Boolean(title),
+    staleTime: 5 * 60 * 1000,
+  })
+  return query.data === true
 }
 
 const EXPLORE_PAGE_SIZE = 12
