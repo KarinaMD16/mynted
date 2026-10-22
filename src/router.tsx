@@ -97,10 +97,19 @@ const resetPasswordRoute = createRoute({
   component: ResetPasswordPage,
 })
 
+/**
+ * Explorar. La pestaña (Tienda / Talk) va en ?tab= para que sobreviva a salir
+ * y volver: al abrir una publicación y pulsar atrás, el navegador restaura el
+ * scroll de donde estabas, así que la pestaña tiene que ser la misma o te deja
+ * mirando la tienda a la altura del feed de Talk. Un valor raro cae en 'shop'.
+ */
 const exploreRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore',
   component: ExplorePage,
+  validateSearch: (search: Record<string, unknown>): { tab: 'shop' | 'talk' } => ({
+    tab: search.tab === 'talk' ? 'talk' : 'shop',
+  }),
 })
 
 /** "Ver todo" de una sección de la tienda: todos los productos de un tag. */
