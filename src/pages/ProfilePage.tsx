@@ -4,12 +4,13 @@ import { SignedOutState } from '@/components/errors/QueryErrorState'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
-import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, ShoppingBag, Store, TrendingUp } from 'lucide-react'
+import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, Receipt, ShoppingBag, Store, TrendingUp } from 'lucide-react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { BadgesCard } from '@/features/badges/components/BadgesCard'
 import { useBadgeCatalog, useMyBadges } from '@/features/badges/hooks/useBadgesQueries'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
+import { MyPurchasesTab } from '@/features/payments/components/MyPurchasesTab'
 import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
 import { MyThreadsTab } from '@/features/community/components/profile/MyThreadsTab'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -27,7 +28,7 @@ import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
 import { Button } from '@/components/ui/Button'
 
-type ProfileTab = 'posts' | 'threads' | 'products' | 'favorites' | 'info'
+type ProfileTab = 'posts' | 'threads' | 'products' | 'purchases' | 'favorites' | 'info'
 
 export default function ProfilePage() {
   const { t, language } = useLanguage()
@@ -88,6 +89,7 @@ export default function ProfilePage() {
                 {activeTab === 'products' && isSeller && (
                   <MyProductsTab onCreateProduct={() => void navigate({ to: '/products/new' })} />
                 )}
+                {activeTab === 'purchases' && <MyPurchasesTab />}
                 {activeTab === 'favorites' && <MyFavoritesTab />}
                 {(activeTab === 'info' || (activeTab === 'products' && !isSeller)) && (
                   <TabContent activeTab={activeTab} />
@@ -258,6 +260,7 @@ const PROFILE_TABS: { id: ProfileTab; labelKey: TranslationKey; icon: LucideIcon
   { id: 'posts', labelKey: 'profile.tabs.posts', icon: LayoutGrid },
   { id: 'threads', labelKey: 'profile.tabs.threads', icon: MessageCircle },
   { id: 'products', labelKey: 'profile.tabs.products', icon: ShoppingBag, sellerOnly: true },
+  { id: 'purchases', labelKey: 'profile.tabs.purchases', icon: Receipt },
   { id: 'favorites', labelKey: 'profile.tabs.favorites', icon: HeartOutline },
   // Solo en mobile/tablet: en desktop el About/Badges/Intereses ya está siempre visible a la izquierda.
   { id: 'info', labelKey: 'profile.tabs.info', icon: Info, mobileOnly: true },
@@ -297,6 +300,7 @@ function TabContent({ activeTab }: { activeTab: ProfileTab }) {
     posts: { title: 'profile.tabs.postsEmptyTitle', subtitle: 'profile.tabs.postsEmptySubtitle' },
     threads: { title: 'profile.tabs.threadsEmptyTitle', subtitle: 'profile.tabs.threadsEmptySubtitle' },
     products: { title: 'profile.tabs.productsEmptyTitle', subtitle: 'profile.tabs.productsEmptySubtitle' },
+    purchases: { title: 'purchases.empty.title', subtitle: 'purchases.empty.subtitle' },
     favorites: { title: 'profile.tabs.favoritesEmptyTitle', subtitle: 'profile.tabs.favoritesEmptySubtitle' },
     // 'info' no tiene tab propia en desktop (el sidebar ya está siempre visible ahí):
     // este fallback solo cubre el caso raro de pasar a desktop con activeTab='info'

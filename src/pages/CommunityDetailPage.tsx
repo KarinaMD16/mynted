@@ -1,5 +1,5 @@
 import { ErrorState } from '@/components/errors/ErrorState'
-import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Plus, Shield } from 'lucide-react'
@@ -22,26 +22,21 @@ export default function CommunityDetailPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug' })
   const navigate = useNavigate()
-  const { isLoggedIn, isLoading: isLoadingSession, data: currentUser } = useCurrentUser()
+  const { data: currentUser } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   // Publicar productos es exclusivo de vendedores (el backend lo exige con SellerGuard).
   const isSeller = currentUser?.role === 'seller'
 
-  const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
-  // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
-  const community = isLoggedIn ? communityQuery.data : undefined
+  // Ver la comunidad y su foro no pide sesion (OptionalJwtAuthGuard). De una
+  // privada se devuelve la vitrina —nombre, descripcion, reglas— pero el foro
+  // responde 403: quien decide que podes leer es el servidor, no el frontend.
+  const communityQuery = useCommunityDetailBySlug(slug)
+  const community = communityQuery.data
   const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
-  // En una comunidad privada el foro es solo para miembros: el backend responde
-  // 403, asi que aca ni se pide y se explica en vez de mostrar un error.
-  const canSeeForum = Boolean(community && (!community.isPrivate || community.isMember))
   // El foro ya no sale del detalle: tiene su propio endpoint paginado
-  const postsQuery = useCommunityPosts(
-    community?.id ?? 0,
-    { limit: 20 },
-    isLoggedIn && activeTab === 'talk' && canSeeForum,
-  )
-  const posts = isLoggedIn && canSeeForum ? (postsQuery.data?.data ?? []) : []
+  const postsQuery = useCommunityPosts(community?.id ?? 0, { limit: 20 }, activeTab === 'talk')
+  const posts = postsQuery.data?.data ?? []
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -90,11 +85,7 @@ export default function CommunityDetailPage() {
           </div>
         </div>
 
-        {!isLoadingSession && !isLoggedIn && (
-          <SignedOutState description={t('community.detail.signedOutDescription')} />
-        )}
-
-        {(isLoadingSession || (isLoggedIn && communityQuery.isPending)) && (
+        {communityQuery.isPending && (
           <div className="flex flex-col gap-6">
             <div className="h-56 animate-pulse rounded-2xl bg-white" />
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -104,7 +95,7 @@ export default function CommunityDetailPage() {
           </div>
         )}
 
-        {isLoggedIn && communityQuery.isError && (
+        {communityQuery.isError && (
           <QueryErrorState
             error={communityQuery.error}
             onRetry={() => void communityQuery.refetch()}
@@ -133,27 +124,28 @@ export default function CommunityDetailPage() {
                     </Button>
                   )}
 
-                  {!canSeeForum ? (
-                    <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                      {t('community.detail.privateForum')}
-                    </p>
-                  ) : (
-                    <>
-                      {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
+                  {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
 
-                      {postsQuery.isError && (
-                        <QueryErrorState error={postsQuery.error} onRetry={() => void postsQuery.refetch()} variant="compact" texts={{ error: { description: t('forum.loadError') } }} />
-                      )}
-
-                      {posts.length > 0
-                        ? posts.map((post, index) => (
-                            <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
-                          ))
-                        : postsQuery.isSuccess && (
-                            <ErrorState kind="empty" variant="compact" description={t('community.detail.noPosts')} />
-                          )}
-                    </>
+                  {postsQuery.isError && (
+                    <QueryErrorState
+                      error={postsQuery.error}
+                      onRetry={() => void postsQuery.refetch()}
+                      variant="compact"
+                      texts={{
+                        // 403 = la comunidad es privada y no sos miembro.
+                        forbidden: { description: t('community.detail.privateForum') },
+                        error: { description: t('forum.loadError') },
+                      }}
+                    />
                   )}
+
+                  {posts.length > 0
+                    ? posts.map((post, index) => (
+                        <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
+                      ))
+                    : postsQuery.isSuccess && (
+                        <ErrorState kind="empty" variant="compact" description={t('community.detail.noPosts')} />
+                      )}
                 </div>
 
                 <CommunitySidebar community={community} />

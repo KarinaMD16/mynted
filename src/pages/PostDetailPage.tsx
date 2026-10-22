@@ -1,9 +1,8 @@
-import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
-import { Link, useParams, useRouter } from '@tanstack/react-router'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
+import { Link, useNavigate, useParams, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { SiteHeader } from '@/components/layout/SiteHeader'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { CommunitySidebar } from '@/features/community/components/detail/CommunitySidebar'
 import { ForumReplyTree, ReplyForm } from '@/features/community/components/detail/ForumReplyTree'
 import { ForumAuthorLine } from '@/features/community/components/ui/ForumAuthorLine'
@@ -20,22 +19,25 @@ export default function PostDetailPage() {
   const { t, language } = useLanguage()
   const { slug, postId } = useParams({ from: '/communities/$slug/posts/$postId' })
   const router = useRouter()
-  const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
+  const { isLoggedIn } = useCurrentUser()
   const { voteOnPost, favoritePost } = useForumActions()
+  const navigate = useNavigate()
 
-  const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
-  const postQuery = usePost(Number(postId), isLoggedIn)
-  const repliesQuery = usePostReplies(Number(postId), isLoggedIn)
+  // Leer no pide sesion (OptionalJwtAuthGuard). Si la comunidad es privada y no
+  // sos miembro, el backend responde 403 y eso se muestra como "es privada":
+  // quien decide es el servidor, no una cuenta que el frontend saque del detalle.
+  const communityQuery = useCommunityDetailBySlug(slug)
+  const postQuery = usePost(Number(postId))
+  const repliesQuery = usePostReplies(Number(postId))
 
-  // Sin sesion no se usa lo que haya quedado en cache de otra cuenta
-  const community = isLoggedIn ? communityQuery.data : undefined
-  // En una comunidad privada la publicacion es solo para miembros: el backend
-  // responde 403, asi que aca se explica en vez de mostrar un error.
-  const canSeePost = Boolean(community && (!community.isPrivate || community.isMember))
-  const post = isLoggedIn && canSeePost ? postQuery.data : undefined
-  const replies = isLoggedIn && canSeePost ? (repliesQuery.data ?? []) : []
+  const community = communityQuery.data
+  const post = postQuery.data
+  const replies = repliesQuery.data ?? []
   // Desde una notificación de respuesta se llega con #reply-<id>.
   useScrollToHash(Boolean(post) && repliesQuery.isSuccess)
+
+  /** Votar, guardar y responder si piden sesion: sin ella se invita a entrar. */
+  const goToLogin = () => void navigate({ to: '/login' })
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -69,37 +71,26 @@ export default function PostDetailPage() {
           </Link>
         )}
 
-        {!isLoadingSession && !isLoggedIn && (
-          <SignedOutState description={t('community.detail.signedOutDescription')} />
-        )}
-
-        {(isLoadingSession || (isLoggedIn && postQuery.isPending)) && (
+        {postQuery.isPending && (
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
             <div className="h-72 animate-pulse rounded-2xl bg-white" />
             <div className="h-72 animate-pulse rounded-2xl bg-white" />
           </div>
         )}
 
-        {community && !canSeePost && (
-          <CommunityNotice
-            title={t('community.detail.privateTitle')}
-            description={t('community.detail.privateForum')}
-          >
-            <Link
-              to="/communities/$slug"
-              params={{ slug }}
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-            >
-              {t('forum.backToCommunity', { slug })}
-            </Link>
-          </CommunityNotice>
-        )}
-
-        {isLoggedIn && canSeePost && postQuery.isError && (
+        {postQuery.isError && (
           <QueryErrorState
             error={postQuery.error}
             onRetry={() => void postQuery.refetch()}
-            texts={{ notFound: { description: t('errors.notFound.post') }, error: { description: t('forum.loadError') } }}
+            texts={{
+              notFound: { description: t('errors.notFound.post') },
+              // 403 = la comunidad es privada y no sos miembro.
+              forbidden: {
+                title: t('community.detail.privateTitle'),
+                description: t('community.detail.privateForum'),
+              },
+              error: { description: t('forum.loadError') },
+            }}
           >
             <Link to="/communities/$slug" params={{ slug }} className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80">
               {t('forum.backToCommunity', { slug })}
@@ -145,16 +136,27 @@ export default function PostDetailPage() {
                   metrics={post}
                   replyCount={post.replyCount}
                   disabled={voteOnPost.isPending || favoritePost.isPending}
-                  onVote={(voteType) => voteOnPost.mutate({ postId: post.id, voteType })}
-                  onToggleFavorite={() => favoritePost.mutate({ postId: post.id, isSaved: !post.isSaved })}
+                  onVote={(voteType) =>
+                    isLoggedIn ? voteOnPost.mutate({ postId: post.id, voteType }) : goToLogin()
+                  }
+                  onToggleFavorite={() =>
+                    isLoggedIn ? favoritePost.mutate({ postId: post.id, isSaved: !post.isSaved }) : goToLogin()
+                  }
                 />
               </article>
 
               <section className="flex flex-col gap-3">
                 <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('forum.replies.title')}</h2>
 
-                {/* Responder exige ser miembro: el backend devuelve 403 si no lo sos. */}
-                {community?.isMember ? (
+                {/* Leer es libre; responder exige ser miembro (el backend devuelve 403). */}
+                {!isLoggedIn ? (
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-dashed border-mynted-border bg-white px-4 py-3 text-sm text-mynted-gray">
+                    {t('forum.replies.signedOut')}
+                    <Link to="/login" className="font-semibold text-mynted-blue hover:underline">
+                      {t('errors.actions.signIn')}
+                    </Link>
+                  </p>
+                ) : community?.isMember ? (
                   <ReplyForm postId={post.id} />
                 ) : (
                   community && (
@@ -168,7 +170,7 @@ export default function PostDetailPage() {
                   <div className="h-24 animate-pulse rounded-2xl bg-white" />
                 ) : (
                   <ForumReplyTree
-                    canReply={Boolean(community?.isMember)}
+                    canReply={isLoggedIn && Boolean(community?.isMember)}
                     postId={post.id}
                     replies={replies}
                     authorProfileId={post.communityProfileId}

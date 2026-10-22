@@ -16,6 +16,7 @@ import {
   MY_COMMUNITIES_QUERY,
 } from '@/features/community/types/DEFAULT_VALUES'
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
+import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 
 
 export function ExploreCommunitiesSection() {
@@ -56,7 +57,7 @@ export function ExploreCommunitiesSection() {
 
       <div className="mt-4">
         {exploreQuery.isPending && (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          <div className={SHOP_GRID_CLASS}>
             {Array.from({ length: EXPLORE_LIMIT }, (_, index) => (
               <div key={index} className="aspect-square animate-pulse rounded-xl bg-white" />
             ))}
@@ -72,7 +73,7 @@ export function ExploreCommunitiesSection() {
         )}
 
         {visibleCommunities.length > 0 && (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          <div className={SHOP_GRID_CLASS}>
             {visibleCommunities.map((community, index) => (
               <ExploreCommunityCard
                 key={community.id}

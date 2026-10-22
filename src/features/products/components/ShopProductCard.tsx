@@ -62,15 +62,22 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
         className="absolute top-3.5 right-3.5 size-8 sm:top-[18px] sm:right-[18px] sm:size-9"
       />
 
-      {/* Venta / Intercambio sobre la foto: el intercambio es lo que diferencia a Mynted de una tienda común. */}
-      {product.type && (
-        <span
-          className={`absolute top-3.5 left-3.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-mynted-ink shadow-xs sm:top-[18px] sm:left-[18px] sm:px-2 sm:py-1 sm:text-[11px] ${
-            product.type === 'exchange' ? 'bg-mynted-yellow' : 'bg-white/95'
-          }`}
-        >
-          {t(product.type === 'exchange' ? 'products.type.exchange' : 'products.type.sale')}
+      {/* Vendido: reemplaza la etiqueta de venta/intercambio, que ya no significa nada. */}
+      {product.status === 'sold' ? (
+        <span className="absolute top-3.5 left-3.5 rounded-md bg-mynted-ink/85 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-xs sm:top-[18px] sm:left-[18px] sm:px-2 sm:py-1 sm:text-[11px]">
+          {t('products.status.sold')}
         </span>
+      ) : (
+        /* Venta / Intercambio sobre la foto: el intercambio es lo que diferencia a Mynted de una tienda común. */
+        product.type && (
+          <span
+            className={`absolute top-3.5 left-3.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-mynted-ink shadow-xs sm:top-[18px] sm:left-[18px] sm:px-2 sm:py-1 sm:text-[11px] ${
+              product.type === 'exchange' ? 'bg-mynted-yellow' : 'bg-white/95'
+            }`}
+          >
+            {t(product.type === 'exchange' ? 'products.type.exchange' : 'products.type.sale')}
+          </span>
+        )
       )}
 
       {(product.tags.length > 0 || product.isVerified) && (

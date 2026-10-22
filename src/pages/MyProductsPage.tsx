@@ -2,12 +2,13 @@ import { ErrorState } from '@/components/errors/ErrorState'
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { PackageCheck, PauseCircle, Pencil, Play, Plus, Rocket, Search, Trash2 } from 'lucide-react'
+import { PackageCheck, PauseCircle, Pencil, Play, Plus, Receipt, Rocket, Search, Trash2 } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { CommissionCard } from '@/features/payments/components/CommissionCard'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
 import {
@@ -125,10 +126,16 @@ export default function MyProductsPage() {
             <p className="text-sm text-mynted-gray">{t('myProducts.subtitle')}</p>
           </div>
           {isSeller && (
-            <Button type="button" variant="primary" size="md" onClick={() => void navigate({ to: '/products/new' })}>
-              <Plus className="size-4" aria-hidden="true" />
-              {t('myProducts.publish')}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="secondary" size="md" onClick={() => void navigate({ to: '/ventas' })}>
+                <Receipt className="size-4" aria-hidden="true" />
+                {t('myProducts.viewSales')}
+              </Button>
+              <Button type="button" variant="primary" size="md" onClick={() => void navigate({ to: '/products/new' })}>
+                <Plus className="size-4" aria-hidden="true" />
+                {t('myProducts.publish')}
+              </Button>
+            </div>
           )}
         </ScrollReveal>
 
@@ -141,6 +148,9 @@ export default function MyProductsPage() {
         ) : (
           <>
             <Stats />
+
+            {/* Nivel y matriz de comisión: lo que el vendedor paga por vender. */}
+            <CommissionCard />
 
             <ScrollReveal className="flex flex-col gap-4 rounded-2xl border border-mynted-border bg-white p-4 lg:flex-row lg:items-center lg:gap-8">
               <FilterChips

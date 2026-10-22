@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router'
 import { getHttpStatus, isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
+import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -17,7 +18,7 @@ import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
 import { ProductReviews } from '@/features/products/components/ProductReviews'
 import { useRecordProductViewMutation } from '@/features/products/hooks/useProductMutations'
-import { useIsOwnProduct, useProduct, useRecommendedProducts, useRelatedProducts } from '@/features/products/hooks/useProductQueries'
+import { useProduct, useRecommendedProducts, useRelatedProducts } from '@/features/products/hooks/useProductQueries'
 import type {
   ProductCondition,
   ProductDetail,
@@ -59,6 +60,18 @@ interface ContactState {
 }
 
 /**
+ * Estado del botón "Comprar". Solo aparece en productos de venta disponibles
+ * que no son de quien mira: un intercambio no se paga con tarjeta, uno vendido
+ * o pausado ya no se puede comprar, y el backend rechazaría comprarse a uno
+ * mismo. Sin sesión sí se muestra (no se sabe de quién es el producto) y el
+ * clic lleva a iniciar sesión.
+ */
+interface PurchaseState {
+  canBuy: boolean
+  onBuy: () => void
+}
+
+/**
  * Detalle de un producto (Marketplace — Item Detail). Es público: GET
  * /products/:id no pide sesión (un borrador solo lo ve su dueño). Con sesión
  * registra la visita (POST /products/:id/view) y sin sesión manda al
@@ -73,7 +86,11 @@ export default function ProductDetailPage() {
 
   const { isLoggedIn, isLoading: isLoadingUser, data: currentUser } = useCurrentUser()
   const product = useProduct(productId)
-  const isOwnProduct = useIsOwnProduct(productId, product.data?.title, currentUser?.role === 'seller')
+  // GET /products/:id trae el id de usuario del vendedor, así que comparar
+  // alcanza. Mientras no haya cargado el producto no se sabe, y vale `false`:
+  // el backend igual rechaza comprarse a uno mismo.
+  const sellerUserId = product.data?.seller.userId
+  const isOwnProduct = sellerUserId !== undefined && currentUser?.id === sellerUserId
   const isActive = product.data?.status === 'active'
   // La notificación de reseña nueva llega con #reviews: el producto carga después de navegar.
   useScrollToHash(Boolean(product.data))
@@ -137,6 +154,18 @@ export default function ProductDetailPage() {
     onContact: handleContact,
   }
 
+  const purchase: PurchaseState = {
+    canBuy: isActive && product.data?.type === 'sale' && !isOwnProduct,
+    onBuy: () => {
+      if (productId === undefined) return
+      if (!isLoggedIn) {
+        void navigate({ to: '/login' })
+        return
+      }
+      void navigate({ to: '/checkout/$productId', params: { productId: String(productId) } })
+    },
+  }
+
   return (
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
@@ -169,7 +198,7 @@ export default function ProductDetailPage() {
           ) : product.data ? (
             <>
               <Breadcrumb title={product.data.title} />
-              <Detail key={product.data.id} product={product.data} contact={contact} fitsContainer={isDesktop} />
+              <Detail key={product.data.id} product={product.data} contact={contact} purchase={purchase} fitsContainer={isDesktop} />
               {isActive && <ProductReviews productId={product.data.id} isOwnProduct={isOwnProduct} />}
               {related.data && related.data.length > 0 && (
                 <Related title={t('itemDetail.relatedBySeller')} items={related.data} horizontal />
@@ -274,7 +303,17 @@ function Chip({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Detail({ product, contact, fitsContainer }: { product: ProductDetail; contact: ContactState; fitsContainer: boolean }) {
+function Detail({
+  product,
+  contact,
+  purchase,
+  fitsContainer,
+}: {
+  product: ProductDetail
+  contact: ContactState
+  purchase: PurchaseState
+  fitsContainer: boolean
+}) {
   const { t, language } = useLanguage()
   // La galería (si hay) viene ordenada; la portada va primero.
   const images = [product.imageUrl, ...product.images.map((image) => image.url)].filter((url): url is string => Boolean(url))
@@ -363,7 +402,12 @@ function Detail({ product, contact, fitsContainer }: { product: ProductDetail; c
           </>
         )}
 
-        <div className="flex items-start gap-3">
+        <div className="flex flex-wrap items-start gap-3">
+          {purchase.canBuy && (
+            <Button type="button" size="lg" onClick={purchase.onBuy}>
+              {t('checkout.buy')}
+            </Button>
+          )}
           {contact.canContact && (
             <button
               type="button"

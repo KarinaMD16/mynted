@@ -47,6 +47,9 @@ function startSession(queryClient: QueryClient, user: AuthUser) {
  * en api/apiConfig.ts). Un 401 acá significa "no hay sesión", no un error
  * de la app, así que no tiene sentido reintentar (ver useCurrentUser).
  */
+/** Cinco minutos: lo justo para que los montajes de una misma pantalla compartan la respuesta. */
+const SESSION_STALE_TIME = 5 * 60 * 1000
+
 export function useCurrentUserQuery() {
   return useQuery({
     queryKey: authKeys.me,
@@ -63,6 +66,13 @@ export function useCurrentUserQuery() {
     // Por lo mismo, sin sesión no se re-pide al volver a la pestaña (haría parpadear el
     // home); con sesión sí, para enterarse si venció.
     refetchOnWindowFocus: (query) => query.state.status !== 'error',
+    // Lo de arriba cubre el caso sin sesión (la consulta queda en error). Con sesión el
+    // problema es otro: los datos nacen vencidos, así que cada componente que se monta y
+    // se suscribe —el header, la pantalla, cada botón de favorito— dispara su propio GET
+    // /users/me. Se medían tres por carga de /explore. La sesión no cambia sola, y cuando
+    // cambia se avisa a mano: login y logout hacen clear() y setQueryData, y un 401 lo
+    // atrapa el interceptor de apiConfig.
+    staleTime: SESSION_STALE_TIME,
   })
 }
 

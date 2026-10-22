@@ -12,7 +12,7 @@ export default function CommunitiesPage() {
     <section className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="flex flex-col gap-10 px-6 py-10 sm:px-14 sm:py-15">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-4 py-10 sm:px-6 sm:py-15 lg:px-14">
         <MyCommunitiesSection onCreateCommunity={() => setIsCreateCommunityFormOpen(true)} />
         <ExploreCommunitiesSection />
       </main>

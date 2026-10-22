@@ -25,6 +25,10 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import ConfirmEmailChangePage from './pages/ConfirmEmailChangePage'
 import SettingsPage from './pages/SettingsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
+import CheckoutPage from './pages/CheckoutPage'
+import MyPurchasesPage from './pages/MyPurchasesPage'
+import ReceiptPage from './pages/ReceiptPage'
+import MySalesPage from './pages/MySalesPage'
 import MyProductsPage from './pages/MyProductsPage'
 import CreateProductPage from './pages/CreateProductPage'
 import EditProductPage from './pages/EditProductPage'
@@ -94,10 +98,19 @@ const resetPasswordRoute = createRoute({
   component: ResetPasswordPage,
 })
 
+/**
+ * Explorar. La pestaña (Tienda / Talk) va en ?tab= para que sobreviva a salir
+ * y volver: al abrir una publicación y pulsar atrás, el navegador restaura el
+ * scroll de donde estabas, así que la pestaña tiene que ser la misma o te deja
+ * mirando la tienda a la altura del feed de Talk. Un valor raro cae en 'shop'.
+ */
 const exploreRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore',
   component: ExplorePage,
+  validateSearch: (search: Record<string, unknown>): { tab: 'shop' | 'talk' } => ({
+    tab: search.tab === 'talk' ? 'talk' : 'shop',
+  }),
 })
 
 /** "Ver todo" de una sección de la tienda: todos los productos de un tag. */
@@ -151,6 +164,41 @@ const editProductRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/products/$productId/edit',
   component: EditProductPage,
+})
+
+/**
+ * Checkout de un producto (pasarela simulada). Pide sesión: el botón
+ * "Comprar" del detalle manda antes a /login, pero acá también se controla
+ * porque se puede llegar escribiendo la ruta.
+ */
+const checkoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/checkout/$productId',
+  component: CheckoutPage,
+})
+
+/** Ventas del vendedor con su comisión y el resumen del periodo. */
+const salesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/ventas',
+  component: MySalesPage,
+})
+
+/** Historial de compras de la persona (la misma lista que la pestaña del perfil). */
+const purchasesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compras',
+  component: MyPurchasesPage,
+})
+
+/**
+ * Recibo de una transacción. El id es el UUID de la transacción, no el del
+ * producto: lo pueden abrir el comprador y el vendedor (403 para el resto).
+ */
+const receiptRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compras/$transactionId',
+  component: ReceiptPage,
 })
 
 /** Panel del vendedor: sus productos publicados, con edición y cambio de estado. */
@@ -325,6 +373,10 @@ const routeTree = rootRoute.addChildren([
   searchRoute,
   productDetailRoute,
   myProductsRoute,
+  checkoutRoute,
+  purchasesRoute,
+  salesRoute,
+  receiptRoute,
   communitiesRoute,
   communityDetailRoute,
   communityModerationRoute,

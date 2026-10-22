@@ -63,7 +63,7 @@ export default function HomePage() {
             </ScrollReveal>
 
             <div
-              className={`grid gap-6 ${showsSellCta && isLoggedIn ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''}`}
+              className={`grid items-start gap-6 ${showsSellCta && isLoggedIn ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''}`}
             >
               <TalkHighlights />
               {/* Sin sesión el llamado a vender ya va al final de la página. */}
@@ -298,7 +298,10 @@ function SellCta({ layout = 'row' }: { layout?: 'row' | 'column' }) {
       <section
         className={`flex gap-6 rounded-[22px] bg-mynted-orange p-7 sm:p-9 ${
           isColumn
-            ? 'h-full flex-col items-start justify-between'
+            // Sin h-full la tarjeta mide lo que mide su contenido; el margen
+            // extra separa el botón del párrafo, que antes los apartaba el
+            // justify-between del alto estirado.
+            ? 'flex-col items-start [&>:last-child]:mt-2'
             : 'flex-col items-start justify-between sm:flex-row sm:items-center'
         }`}
       >

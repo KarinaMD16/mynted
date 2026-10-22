@@ -151,25 +151,6 @@ export function useMyProductsStats(enabled = true) {
   })
 }
 
-/**
- * ¿Es un producto mío? GET /products/:id no trae el dueño (solo el sellerId
- * público), así que se busca el producto por título entre los míos
- * (GET /products/me?q=). Solo se consulta si la persona es vendedora.
- * Mientras no se sepa, devuelve false.
- */
-export function useIsOwnProduct(productId: number | undefined, title: string | undefined, enabled: boolean) {
-  const query = useQuery({
-    queryKey: [...productKeys.all, 'ownership', productId, title],
-    queryFn: async () => {
-      const result = await getMyProductsDashboard(1, 20, 50, { q: title })
-      return result.sections.some((section) => section.products.some((product) => product.id === productId))
-    },
-    enabled: enabled && productId !== undefined && Boolean(title),
-    staleTime: 5 * 60 * 1000,
-  })
-  return query.data === true
-}
-
 const EXPLORE_PAGE_SIZE = 12
 
 /** Pantalla Explorar: productos activos filtrados, con scroll infinito. */
