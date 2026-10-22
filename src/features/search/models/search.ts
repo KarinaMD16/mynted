@@ -1,9 +1,14 @@
 import type { PublicUser } from '@/features/auth/models/auth'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
 import type { ProductListItem } from '@/features/products/models/product'
+import type { StoreSearchItem } from '@/features/stores/models/store'
 
-/** Tipos de resultado de GET /search (`forums` es un alias de `posts` que no hace falta usar). */
-export const SEARCH_TYPES = ['products', 'communities', 'users', 'posts'] as const
+/**
+ * Tipos de resultado de GET /search (`forums` es un alias de `posts` que no
+ * hace falta usar). `stores` busca tiendas por nombre y descripción, sin
+ * distinguir mayúsculas ni tildes (solo vendedores aprobados).
+ */
+export const SEARCH_TYPES = ['products', 'stores', 'communities', 'users', 'posts'] as const
 export type SearchType = (typeof SEARCH_TYPES)[number]
 
 /** Comunidad tal como la devuelve la búsqueda (solo públicas y activas). */
@@ -18,6 +23,7 @@ export interface SearchCommunity {
 
 export interface SearchItemByType {
   products: ProductListItem
+  stores: StoreSearchItem
   communities: SearchCommunity
   users: PublicUser
   posts: FeedPost

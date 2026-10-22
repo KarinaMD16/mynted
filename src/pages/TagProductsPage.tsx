@@ -8,6 +8,7 @@ import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { PRODUCT_CARD_SKELETON_CLASS, SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 import { useTag, useTagProducts } from '@/features/products/hooks/useProductQueries'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 /**
@@ -79,6 +80,7 @@ export default function TagProductsPage() {
                       finalPrice: product.finalPrice,
                       discountPercent: product.discountPercent,
                       currency: product.currency,
+                      ...displayFieldsOf(product),
                       tags: product.productTags?.map((item) => item.tag) ?? [],
                       type: product.type,
                     }}

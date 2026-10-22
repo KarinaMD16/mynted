@@ -3,6 +3,7 @@ import { Clock, MapPin } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
+import { formatResponseTime } from '@/features/stores/utils/responseTime'
 import { formatMemberSince } from '../utils/profileFormat'
 
 /**
@@ -23,8 +24,18 @@ export function CoverBanner() {
   )
 }
 
-/** Solo usa estos campos: sirve tanto para la cuenta propia (AuthUser) como para un perfil público (PublicUser). */
-export function AboutCard({ user, language }: { user: Pick<AuthUser, 'bio' | 'location' | 'createdAt'>; language: AppLanguage }) {
+/**
+ * Solo usa estos campos: sirve tanto para la cuenta propia (AuthUser) como
+ * para un perfil público (PublicUser). El tiempo de respuesta solo aplica a
+ * vendedores aprobados (los que traen `seller`).
+ */
+export function AboutCard({
+  user,
+  language,
+}: {
+  user: Pick<AuthUser, 'bio' | 'location' | 'createdAt' | 'seller'>
+  language: AppLanguage
+}) {
   const { t } = useLanguage()
   return (
     <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
@@ -40,10 +51,12 @@ export function AboutCard({ user, language }: { user: Pick<AuthUser, 'bio' | 'lo
           <Calendar className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />
           {t('profile.about.memberSinceLabel', { date: formatMemberSince(user.createdAt, language) })}
         </span>
-        <span className="flex items-center gap-2">
-          <Clock className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />
-          {t('profile.about.respondsInPlaceholder')}
-        </span>
+        {user.seller && (
+          <span className="flex items-center gap-2">
+            <Clock className="size-4 shrink-0 text-mynted-orange" aria-hidden="true" />
+            {formatResponseTime(user.seller.responseTime, t)}
+          </span>
+        )}
       </div>
     </div>
   )

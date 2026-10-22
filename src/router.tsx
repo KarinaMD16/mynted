@@ -29,6 +29,7 @@ import MyProductsPage from './pages/MyProductsPage'
 import CreateProductPage from './pages/CreateProductPage'
 import EditProductPage from './pages/EditProductPage'
 import SearchPage from './pages/SearchPage'
+import StorePage from './pages/StorePage'
 import TagProductsPage from './pages/TagProductsPage'
 import UserProfilePage from './pages/UserProfilePage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
@@ -194,6 +195,10 @@ const communityModerationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/communities/$slug/moderacion',
   component: CommunityModerationPage,
+  // ?tab=requests abre directo las solicitudes (lo usa la notificación community_join_requested).
+  validateSearch: (search: Record<string, unknown>): { tab?: 'requests' } => ({
+    tab: search.tab === 'requests' ? 'requests' : undefined,
+  }),
 })
 
 const favoritesRoute = createRoute({
@@ -223,6 +228,13 @@ const userProfileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/users/$userId',
   component: UserProfilePage,
+})
+
+/** Tienda pública de un vendedor (id numérico de la tienda, no el User.id). Ver pages/StorePage.tsx. */
+const storeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sellers/$sellerId',
+  component: StorePage,
 })
 
 const profileRoute = createRoute({
@@ -324,6 +336,7 @@ const routeTree = rootRoute.addChildren([
   conversationRoute,
   profileRoute,
   userProfileRoute,
+  storeRoute,
   settingsRoute,
   confirmEmailChangeRoute,
   privacyPolicyRoute,

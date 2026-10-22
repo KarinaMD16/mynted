@@ -13,16 +13,21 @@ import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { useUpdateProfileMutation } from '@/features/auth/hooks/useAuthMutations'
 import { makeEditProfileSchema } from '@/features/auth/schema/editProfileSchema'
 import { toProfileFormData, useSavedFlash } from '../hooks/useSavedFlash'
+import { DisplayCurrencyCard } from './DisplayCurrencyCard'
 import { SettingsCard, SettingsFormFooter } from './SettingsCard'
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024
 const BIO_MAX_LENGTH = 500
 
-/** Pestaña "Perfil": foto, biografía y (si aplica) ajustes de vendedor. */
+/**
+ * Pestaña "Perfil" (a la que lleva "Editar perfil"): foto, biografía, moneda
+ * en la que se ven los precios y (si aplica) ajustes de vendedor.
+ */
 export function ProfileSettingsSection({ user }: { user: AuthUser }) {
   return (
     <div className="flex flex-col gap-6">
       <PublicProfileCard user={user} />
+      <DisplayCurrencyCard user={user} />
       <SellerCard user={user} />
     </div>
   )

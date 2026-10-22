@@ -3,6 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
 import type { MyContentProduct } from '@/features/community/models/communityDTOs'
+import { FavoriteAlertsButton } from './FavoriteAlertsButton'
 import { FavoriteButton } from './FavoriteButton'
 
 const STATUS_LABEL: Record<Exclude<MyContentProduct['status'], 'active'>, TranslationKey> = {
@@ -48,6 +49,7 @@ export function FavoriteProductCard({ product }: { product: MyContentProduct }) 
             finalPrice={product.finalPrice}
             discountPercent={product.discountPercent}
             currency={product.currency}
+            display={product}
             className="font-heading text-base font-semibold text-mynted-ink"
           />
           {product.seller.isVerified && (
@@ -58,7 +60,10 @@ export function FavoriteProductCard({ product }: { product: MyContentProduct }) 
         </div>
       </div>
 
-      <FavoriteButton productId={product.id} isSaved className="absolute top-3 right-3 z-10" />
+      <div className="absolute top-3 right-3 z-10 flex gap-2">
+        <FavoriteAlertsButton productId={product.id} />
+        <FavoriteButton productId={product.id} isSaved />
+      </div>
     </article>
   )
 }

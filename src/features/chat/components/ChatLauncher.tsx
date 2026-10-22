@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { ArrowUpRight, MessageCircle, X } from 'lucide-react'
@@ -9,6 +9,7 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useUnreadBadge } from '../hooks/useUnreadBadge'
 import { formatBadgeCount } from '../utils/chatFormat'
+import { subscribeToLauncherOpen } from '../utils/chatLauncherBus'
 import { chatIconButtonClass } from './ChatHeader'
 import { ChatPanel } from './ChatPanel'
 import { InboxList } from './InboxList'
@@ -46,7 +47,19 @@ export function ChatLauncher() {
     setConversationId(null)
   }
 
-  if (HIDDEN_ON.some((pattern) => pattern.test(location.pathname)) || productChatOpen) return null
+  const isHidden = HIDDEN_ON.some((pattern) => pattern.test(location.pathname)) || productChatOpen
+
+  // "Contactar" desde una tarjeta de producto (ver useContactSeller): abre la hoja directo en esa conversación.
+  useEffect(() => {
+    if (isHidden) return
+    return subscribeToLauncherOpen((id) => {
+      setConversationId(id)
+      setOpenedOn(location.pathname)
+      setIsOpen(true)
+    })
+  }, [isHidden, location.pathname])
+
+  if (isHidden) return null
 
   function close() {
     setIsOpen(false)

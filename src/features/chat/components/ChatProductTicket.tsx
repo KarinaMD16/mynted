@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { cx } from '@/utils/cx'
-import { formatPrice } from '@/utils/price'
+import { formatPrice, shownPrice } from '@/utils/price'
 import type { ChatProductContext } from '../models/chat'
 
 interface ChatProductTicketProps {
@@ -22,7 +22,9 @@ interface ChatProductTicketProps {
  */
 export function ChatProductTicket({ product, linkToProduct = true, ref }: ChatProductTicketProps) {
   const { t, language } = useLanguage()
-  const hasDiscount = product.finalPrice < product.price
+  // Convertido a la moneda del usuario si el backend lo trae; si no, el original.
+  const shown = product.currency ? shownPrice({ ...product, currency: product.currency }) : null
+  const hasDiscount = shown !== null && shown.finalPrice < shown.price
   const status = product.status === 'sold' ? 'sold' : product.isAvailable ? 'available' : 'unavailable'
 
   return (
@@ -49,14 +51,13 @@ export function ChatProductTicket({ product, linkToProduct = true, ref }: ChatPr
         <div className="flex items-end justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <p className="line-clamp-2 font-heading text-[15px] leading-snug font-semibold text-mynted-ink">{product.title}</p>
-            {product.currency && (
-              <p className="mt-1 flex items-baseline gap-2">
+            {shown && (
+              <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
                 <span className="font-heading text-lg font-semibold text-mynted-ink">
-                  {formatPrice(product.finalPrice, product.currency, language)}
+                  {shown.isConverted && <span aria-hidden="true">≈ </span>}
+                  {formatPrice(shown.finalPrice, shown.currency, language)}
                 </span>
-                {hasDiscount && (
-                  <s className="text-xs text-mynted-gray">{formatPrice(product.price, product.currency, language)}</s>
-                )}
+                {hasDiscount && <s className="text-xs text-mynted-gray">{formatPrice(shown.price, shown.currency, language)}</s>}
               </p>
             )}
           </div>

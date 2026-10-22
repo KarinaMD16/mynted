@@ -1,10 +1,11 @@
 import { ErrorState } from '@/components/errors/ErrorState'
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
 import { Button } from '@/components/ui/Button'
+import { FilterChip } from '@/components/ui/FilterChip'
 import { FilterGroup } from '@/components/ui/FilterGroup'
 import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
@@ -24,6 +25,7 @@ import { useShipTo } from '@/features/region/hooks/useShipTo'
 import { useDisplayCurrency } from '@/features/auth/hooks/useDisplayCurrency'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { INTL_LOCALES, regionName } from '@/utils/locale'
+import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 type ExploreTab = 'shop' | 'talk'
@@ -79,7 +81,6 @@ const LAST_STEP = PRICE_STEPS.length - 1
  */
 export default function ExplorePage() {
   const { t, language } = useLanguage()
-  const displayCurrency = useDisplayCurrency()
   const { shipTo } = useShipTo()
 
   const [category, setCategory] = useState<number | undefined>()
@@ -98,12 +99,12 @@ export default function ExplorePage() {
     ...(priceSteps[1] < LAST_STEP && { priceMax: PRICE_STEPS[priceSteps[1]] }),
     ...(onlyMyCountry && shipTo && { shipTo }),
   }
-  // La moneda solo acompaña al rango de precio; no es un filtro que la persona elija.
-  const hasPriceFilter = filters.priceMin !== undefined || filters.priceMax !== undefined
   const activeCount = Object.keys(filters).length
-  const requestFilters: ExploreFilters = hasPriceFilter ? { ...filters, currency: displayCurrency } : filters
 
-  const products = useExploreProducts(requestFilters)
+  // El rango se interpreta en la moneda de visualización, que ya viaja en el
+  // header X-Display-Currency. NO se manda `currency`: ese parámetro filtra
+  // "solo productos publicados en esa moneda" y escondería los demás.
+  const products = useExploreProducts(filters)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = products
 
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -214,25 +215,25 @@ export default function ExplorePage() {
                 <CategoryFilter value={category} onChange={setCategory} />
 
                 <FilterGroup label={t('explore.filters.type')}>
-                  <Chip selected={type === undefined} onClick={() => setType(undefined)}>
+                  <FilterChip selected={type === undefined} onClick={() => setType(undefined)}>
                     {t('explore.filters.all')}
-                  </Chip>
-                  <Chip selected={type === 'sale'} onClick={() => setType('sale')}>
+                  </FilterChip>
+                  <FilterChip selected={type === 'sale'} onClick={() => setType('sale')}>
                     {t('products.type.sale')}
-                  </Chip>
-                  <Chip selected={type === 'exchange'} onClick={() => setType('exchange')}>
+                  </FilterChip>
+                  <FilterChip selected={type === 'exchange'} onClick={() => setType('exchange')}>
                     {t('products.type.exchange')}
-                  </Chip>
+                  </FilterChip>
                 </FilterGroup>
 
                 <FilterGroup label={t('explore.filters.condition')}>
-                  <Chip selected={condition === undefined} onClick={() => setCondition(undefined)}>
+                  <FilterChip selected={condition === undefined} onClick={() => setCondition(undefined)}>
                     {t('explore.filters.all')}
-                  </Chip>
+                  </FilterChip>
                   {PRODUCT_CONDITIONS.map((item) => (
-                    <Chip key={item} selected={condition === item} onClick={() => setCondition(item)}>
+                    <FilterChip key={item} selected={condition === item} onClick={() => setCondition(item)}>
                       {t(CONDITION_LABEL[item])}
-                    </Chip>
+                    </FilterChip>
                   ))}
                 </FilterGroup>
 
@@ -240,9 +241,9 @@ export default function ExplorePage() {
 
                 {shipTo && (
                   <FilterGroup label={t('explore.filters.shipping')}>
-                    <Chip selected={onlyMyCountry} onClick={() => setOnlyMyCountry((value) => !value)}>
+                    <FilterChip selected={onlyMyCountry} onClick={() => setOnlyMyCountry((value) => !value)}>
                       {t('explore.filters.shipToMine', { country: regionName(shipTo, language) })}
-                    </Chip>
+                    </FilterChip>
                   </FilterGroup>
                 )}
               </aside>
@@ -282,6 +283,7 @@ export default function ExplorePage() {
                             finalPrice: product.finalPrice,
                             discountPercent: product.discountPercent,
                             currency: product.currency,
+                            ...displayFieldsOf(product),
                             tags: product.productTags?.map((item) => item.tag) ?? [],
                             type: product.type,
                           }}
@@ -301,23 +303,6 @@ export default function ExplorePage() {
         )}
       </main>
     </div>
-  )
-}
-
-function Chip({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors hover:cursor-pointer ${
-        selected
-          ? 'border-mynted-orange bg-mynted-orange/10 text-mynted-orange'
-          : 'border-mynted-border text-mynted-ink hover:border-mynted-orange/60'
-      }`}
-    >
-      {children}
-    </button>
   )
 }
 
@@ -400,15 +385,15 @@ function CategoryFilter({ value, onChange }: { value: number | undefined; onChan
 
   return (
     <FilterGroup label={t('explore.filters.category')}>
-      <Chip selected={value === undefined} onClick={() => onChange(undefined)}>
+      <FilterChip selected={value === undefined} onClick={() => onChange(undefined)}>
         {t('explore.filters.all')}
-      </Chip>
+      </FilterChip>
       {categories.isPending &&
         Array.from({ length: 3 }, (_, index) => <span key={index} className="h-7 w-16 animate-pulse rounded-full bg-mynted-bg" />)}
       {categories.data?.map((category) => (
-        <Chip key={category.categoryId} selected={value === category.categoryId} onClick={() => onChange(category.categoryId)}>
+        <FilterChip key={category.categoryId} selected={value === category.categoryId} onClick={() => onChange(category.categoryId)}>
           {category.name}
-        </Chip>
+        </FilterChip>
       ))}
     </FilterGroup>
   )

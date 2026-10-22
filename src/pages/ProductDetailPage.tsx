@@ -9,7 +9,9 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ChatDock, ChatSheet } from '@/features/chat/components/ChatSheet'
 import { useOpenConversation } from '@/features/chat/hooks/useChatMutations'
 import { CHAT_DOCK_CSS_TRANSITION } from '@/features/chat/utils/chatDock'
+import { contactErrorKey } from '@/features/chat/utils/contactError'
 import { CommunitiesForTagSection } from '@/features/community/components/sections/CommunitiesForTagSection'
+import { FavoriteAlertsButton } from '@/features/favorites/components/FavoriteAlertsButton'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
@@ -25,10 +27,12 @@ import type {
 } from '@/features/products/models/product'
 import { getInitials } from '@/features/profile/utils/profileFormat'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useScrollToHash } from '@/hooks/useScrollToHash'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { regionFlag, regionName } from '@/utils/locale'
 import { cx } from '@/utils/cx'
+
 import { readRecentProductIds, rememberRecentProduct } from '@/utils/recentProducts'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
@@ -44,20 +48,6 @@ const STATUS_NOTICE: Partial<Record<ProductStatus, TranslationKey>> = {
   draft: 'itemDetail.notice.draft',
   inactive: 'itemDetail.notice.inactive',
   sold: 'itemDetail.notice.sold',
-}
-
-/** Por qué no se pudo abrir el chat (POST /conversations), según el status. */
-function contactErrorKey(error: unknown): TranslationKey {
-  switch (getHttpStatus(error)) {
-    case 400:
-      return 'chat.contact.unavailable'
-    case 403:
-      return 'chat.contact.ownProduct'
-    case 404:
-      return 'chat.contact.notFound'
-    default:
-      return 'chat.contact.error'
-  }
 }
 
 /** Estado del botón "Contactar vendedor", que vive en la página y se pasa al detalle. */
@@ -85,6 +75,8 @@ export default function ProductDetailPage() {
   const product = useProduct(productId)
   const isOwnProduct = useIsOwnProduct(productId, product.data?.title, currentUser?.role === 'seller')
   const isActive = product.data?.status === 'active'
+  // La notificación de reseña nueva llega con #reviews: el producto carga después de navegar.
+  useScrollToHash(Boolean(product.data))
 
   // Sin sesión, lo visto antes de este producto alimenta las recomendaciones.
   // Se calcula una vez por producto (antes de recordar el actual) para que la
@@ -218,8 +210,8 @@ function Breadcrumb({ title }: { title: string }) {
 }
 
 /**
- * Foto + nombre + calificación del vendedor. Lleva a su perfil (/users/$userId)
- * cuando el backend manda `seller.userId`; mientras no lo mande, no es clicable.
+ * Foto + nombre + calificación del vendedor. Lleva a su tienda
+ * (/sellers/$sellerId); desde ahí se llega al perfil de la persona.
  */
 function SellerIdentity({ seller }: { seller: ProductDetail['seller'] }) {
   const { t } = useLanguage()
@@ -240,13 +232,11 @@ function SellerIdentity({ seller }: { seller: ProductDetail['seller'] }) {
     </>
   )
 
-  if (!seller.userId) return <div className="flex items-center gap-3.5">{content}</div>
-
   return (
     <Link
-      to="/users/$userId"
-      params={{ userId: seller.userId }}
-      aria-label={t('chat.header.viewProfile', { name: seller.displayName })}
+      to="/sellers/$sellerId"
+      params={{ sellerId: String(seller.sellerId) }}
+      aria-label={t('store.visit', { name: seller.displayName })}
       className="group flex items-center gap-3.5 rounded-xl outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mynted-blue-mid"
     >
       {content}
@@ -341,6 +331,7 @@ function Detail({ product, contact, fitsContainer }: { product: ProductDetail; c
             finalPrice={product.finalPrice}
             discountPercent={product.discountPercent}
             currency={product.currency}
+            display={product}
             className="font-heading text-[28px] font-semibold text-mynted-ink"
           />
         )}
@@ -385,6 +376,8 @@ function Detail({ product, contact, fitsContainer }: { product: ProductDetail; c
             </button>
           )}
           {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} isSold={product.status === 'sold'} variant="outline" />}
+          {/* Avisos de precio / disponibilidad: solo si ya está en favoritos. */}
+          {product.status !== 'draft' && <FavoriteAlertsButton productId={product.id} variant="outline" />}
         </div>
         {contact.error && (
           <p role="alert" className="rounded-[10px] bg-[#fdecec] px-3.5 py-2 text-sm font-medium text-[#c62a2f]">
@@ -446,6 +439,8 @@ function Related({
                   finalPrice={item.finalPrice}
                   discountPercent={item.discountPercent}
                   currency={item.currency}
+                  display={item}
+
                   className="text-[13px] font-semibold text-mynted-ink"
                 />
                 <span className="shrink-0 text-xs font-medium text-mynted-blue">{t('itemDetail.see')} →</span>

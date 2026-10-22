@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { MessageSquare, UsersRound } from 'lucide-react'
+import { BadgeCheck, MessageSquare, Store, UsersRound } from 'lucide-react'
 import type { PublicUser } from '@/features/auth/models/auth'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
 import type { ProductListItem } from '@/features/products/models/product'
 import { getInitials } from '@/features/profile/utils/profileFormat'
+import type { StoreSearchItem } from '@/features/stores/models/store'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { SearchCommunity } from '../models/search'
 
@@ -43,9 +44,36 @@ export function ProductResultRow({ product, onNavigate }: RowProps & { product: 
           finalPrice={product.finalPrice}
           discountPercent={product.discountPercent}
           currency={product.currency}
+          display={product}
+
           showBadge={false}
           className="text-xs font-semibold text-mynted-orange"
         />
+      </span>
+    </Link>
+  )
+}
+
+/** Tienda (GET /search?type=stores): lleva a /sellers/:sellerId. */
+export function StoreResultRow({ store, onNavigate }: RowProps & { store: StoreSearchItem }) {
+  const { t } = useLanguage()
+  const details = [
+    store.ratingAverage !== null ? `★ ${store.ratingAverage.toFixed(1)}` : null,
+    t(store.activeProductsCount === 1 ? 'store.catalog.countOne' : 'store.catalog.count', { count: store.activeProductsCount }),
+    store.location?.trim() || null,
+  ].filter(Boolean)
+
+  return (
+    <Link to="/sellers/$sellerId" params={{ sellerId: String(store.sellerId) }} onClick={onNavigate} className={ROW_CLASS}>
+      <Thumb src={store.photoUrl} fallback={<Store className="size-4" aria-hidden="true" />} round />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="flex items-center gap-1 truncate text-sm font-medium text-mynted-ink">
+          <span className="truncate">{store.displayName}</span>
+          {store.isVerified && (
+            <BadgeCheck role="img" className="size-3.5 shrink-0 text-[#0d8c66]" aria-label={t('itemDetail.verifiedSeller')} />
+          )}
+        </span>
+        <span className="truncate text-xs text-mynted-gray">{details.join(' · ')}</span>
       </span>
     </Link>
   )

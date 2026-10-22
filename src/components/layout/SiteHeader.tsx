@@ -1,12 +1,11 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Bell01, LayoutAlt01, Menu02, Settings01, Package, ShoppingBag01, User01, LogOut01, X as CloseIcon } from '@untitledui/icons'
+import { LayoutAlt01, Menu02, Settings01, Package, ShoppingBag01, User01, LogOut01, X as CloseIcon } from '@untitledui/icons'
 import {
   Button as AriaButton,
   Dialog as AriaDialog,
   DialogTrigger as AriaDialogTrigger,
   Modal as AriaModal,
   ModalOverlay as AriaModalOverlay,
-  Popover as AriaPopover,
 } from 'react-aria-components'
 import { GooseIcon } from '../ui/GooseIcon'
 import { SearchBar } from '../ui/SearchBar'
@@ -16,8 +15,7 @@ import { Navigation } from '../ui/Navigation'
 import { NAV_ITEMS, isNavItemActive } from '../ui/navItems'
 import { UnreadBadge } from '@/features/chat/components/UnreadBadge'
 import { useUnreadBadge } from '@/features/chat/hooks/useUnreadBadge'
-import { popoverAnimationClass } from '@/utils/popoverAnimation'
-import { BlurAppear } from '@/components/ui/BlurAppear'
+import { NotificationsMenu } from '@/features/notifications/components/NotificationsMenu'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { AccountControl } from './AccountControl'
@@ -60,30 +58,6 @@ export function SiteHeader() {
         </div>
       </header>
     </div>
-  )
-}
-
-function NotificationsMenu() {
-  const { t } = useLanguage()
-
-  return (
-    <AriaDialogTrigger>
-      <AriaButton
-        aria-label={t('header.notifications')}
-        className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-mynted-border bg-mynted-white text-mynted-ink outline-none transition-colors hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid pressed:bg-mynted-bg"
-      >
-        <Bell01 className="size-[22px]" aria-hidden="true" />
-      </AriaButton>
-
-      <AriaPopover placement="bottom right" offset={8} className={popoverAnimationClass}>
-        <AriaDialog className="w-72 rounded-xl border border-mynted-border bg-mynted-white p-4 shadow-lg outline-none">
-          <BlurAppear>
-            <p className="text-sm font-semibold text-mynted-ink">{t('header.notifications')}</p>
-            <p className="mt-2 text-sm text-mynted-gray">{t('header.notificationsEmpty')}</p>
-          </BlurAppear>
-        </AriaDialog>
-      </AriaPopover>
-    </AriaDialogTrigger>
   )
 }
 

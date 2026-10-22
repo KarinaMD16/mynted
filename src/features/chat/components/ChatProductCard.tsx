@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { formatPrice } from '@/utils/price'
+import { formatPrice, shownPrice } from '@/utils/price'
 import type { ChatProductContext } from '../models/chat'
 
 interface ChatProductCardProps {
@@ -15,7 +15,9 @@ interface ChatProductCardProps {
  */
 export function ChatProductCard({ product, linkToProduct = true }: ChatProductCardProps) {
   const { t, language } = useLanguage()
-  const price = product.currency ? formatPrice(product.finalPrice, product.currency, language) : null
+  // Convertido a la moneda del usuario si el backend lo trae ("≈"); si no, el original.
+  const shown = product.currency ? shownPrice({ ...product, currency: product.currency }) : null
+  const price = shown ? `${shown.isConverted ? '≈ ' : ''}${formatPrice(shown.finalPrice, shown.currency, language)}` : null
 
   const content = (
     <>

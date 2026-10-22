@@ -11,6 +11,7 @@ import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetrics
 import { useCommunityDetailBySlug } from '@/features/community/hooks/useCommunitiesQueries'
 import { useForumActions, usePost, usePostReplies } from '@/features/community/hooks/useForum'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { useScrollToHash } from '@/hooks/useScrollToHash'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
@@ -33,6 +34,8 @@ export default function PostDetailPage() {
   const canSeePost = Boolean(community && (!community.isPrivate || community.isMember))
   const post = isLoggedIn && canSeePost ? postQuery.data : undefined
   const replies = isLoggedIn && canSeePost ? (repliesQuery.data ?? []) : []
+  // Desde una notificación de respuesta se llega con #reply-<id>.
+  useScrollToHash(Boolean(post) && repliesQuery.isSuccess)
 
   return (
     <section className="min-h-svh bg-mynted-bg">

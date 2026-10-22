@@ -12,17 +12,21 @@ import type { ProductListItem } from '@/features/products/models/product'
 import {
   CommunityResultRow,
   PostResultRow,
+  StoreResultRow,
   UserResultRow,
 } from '@/features/search/components/SearchResultRows'
 import { useSearchByType, useSearchSummary } from '@/features/search/hooks/useSearchQueries'
 import { SEARCH_TYPES, type SearchCommunity, type SearchType } from '@/features/search/models/search'
+import type { StoreSearchItem } from '@/features/stores/models/store'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
+import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 const TAB_LABEL: Record<SearchType | 'all', TranslationKey> = {
   all: 'search.tab.all',
   products: 'search.section.products',
+  stores: 'search.section.stores',
   communities: 'search.section.communities',
   users: 'search.section.users',
   posts: 'search.section.posts',
@@ -125,7 +129,9 @@ function AllResults({ q }: { q: string }) {
   if (summary.isError) return <ErrorBox error={summary.error} onRetry={() => void summary.refetch()} />
 
   const { products, communities, users, posts } = summary.data
-  if (products.total + communities.total + users.total + posts.total === 0) return <NoResults query={q} />
+  // Por si el backend todavía no manda el bloque de tiendas.
+  const stores = summary.data.stores ?? { data: [], total: 0 }
+  if (products.total + stores.total + communities.total + users.total + posts.total === 0) return <NoResults query={q} />
 
   return (
     <div className="flex flex-col gap-8">
@@ -137,6 +143,18 @@ function AllResults({ q }: { q: string }) {
               <StaggerItem key={product.id} index={index}>
                 <ProductCard product={product} />
               </StaggerItem>
+            ))}
+          </ul>
+        </section>
+      )}
+      {stores.total > 0 && (
+        <section className="flex flex-col gap-3">
+          <SectionHeading type="stores" total={stores.total} q={q} />
+          <ul className={LIST_CLASS}>
+            {stores.data.map((store) => (
+              <li key={store.sellerId}>
+                <StoreResultRow store={store} />
+              </li>
             ))}
           </ul>
         </section>
@@ -192,6 +210,7 @@ function ProductCard({ product }: { product: ProductListItem }) {
         finalPrice: product.finalPrice,
         discountPercent: product.discountPercent,
         currency: product.currency,
+        ...displayFieldsOf(product),
         tags: product.productTags?.map((item) => item.tag) ?? [],
         type: product.type,
       }}
@@ -247,6 +266,17 @@ function TypeResults({ type, q }: { type: SearchType; q: string }): ReactNode {
               <StaggerItem key={product.id} index={index}>
                 <ProductCard product={product} />
               </StaggerItem>
+            ))}
+        </ul>
+      )}
+      {type === 'stores' && (
+        <ul className={LIST_CLASS}>
+          {pages
+            .flatMap((page) => page.data as StoreSearchItem[])
+            .map((store) => (
+              <li key={store.sellerId}>
+                <StoreResultRow store={store} />
+              </li>
             ))}
         </ul>
       )}

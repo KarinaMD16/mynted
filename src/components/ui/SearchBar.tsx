@@ -6,6 +6,7 @@ import {
   CommunityResultRow,
   PostResultRow,
   ProductResultRow,
+  StoreResultRow,
   UserResultRow,
 } from '@/features/search/components/SearchResultRows'
 import { useSearchSummary } from '@/features/search/hooks/useSearchQueries'
@@ -19,6 +20,7 @@ const DEBOUNCE_MS = 300
 
 const SECTION_TITLE: Record<SearchType, TranslationKey> = {
   products: 'search.section.products',
+  stores: 'search.section.stores',
   communities: 'search.section.communities',
   users: 'search.section.users',
   posts: 'search.section.posts',
@@ -138,7 +140,9 @@ function SearchPanelContent({
   }
 
   const data: SearchSummary = summary.data
-  const total = data.products.total + data.communities.total + data.users.total + data.posts.total
+  // Por si el backend todavía no manda el bloque de tiendas, no se rompe el desplegable.
+  const stores = data.stores ?? { data: [], total: 0 }
+  const total = data.products.total + stores.total + data.communities.total + data.users.total + data.posts.total
   if (total === 0) {
     return (
       <p className="px-3 py-4 text-sm text-mynted-gray" role="status">
@@ -152,6 +156,11 @@ function SearchPanelContent({
       <Section type="products" total={data.products.total} query={data.q} onNavigate={onNavigate}>
         {data.products.data.slice(0, PREVIEW_COUNT).map((product) => (
           <ProductResultRow key={product.id} product={product} onNavigate={onNavigate} />
+        ))}
+      </Section>
+      <Section type="stores" total={stores.total} query={data.q} onNavigate={onNavigate}>
+        {stores.data.slice(0, PREVIEW_COUNT).map((store) => (
+          <StoreResultRow key={store.sellerId} store={store} onNavigate={onNavigate} />
         ))}
       </Section>
       <Section type="communities" total={data.communities.total} query={data.q} onNavigate={onNavigate}>
