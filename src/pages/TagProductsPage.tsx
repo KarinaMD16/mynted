@@ -10,6 +10,8 @@ import { useTag, useTagProducts } from '@/features/products/hooks/useProductQuer
 import { useLanguage } from '@/i18n/LanguageContext'
 import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /**
  * "Ver todo" de una sección del Shop: todos los productos activos de un tag
@@ -45,7 +47,7 @@ export default function TagProductsPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-7 pb-24')}>
         <ScrollReveal className="flex flex-col gap-3">
           <Link to="/" className="flex w-fit items-center gap-1.5 text-sm font-semibold text-mynted-blue hover:underline">
             <ArrowLeft className="size-4" aria-hidden="true" />

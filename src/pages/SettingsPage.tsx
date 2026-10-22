@@ -12,6 +12,8 @@ import { ProfileSettingsSection } from '@/features/settings/components/ProfileSe
 import { SETTINGS_TABS, type SettingsTab } from '@/features/settings/models/settings'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 const routeApi = getRouteApi('/settings')
 
@@ -41,7 +43,7 @@ export default function SettingsPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pt-8 pb-16 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-8 pb-16')}>
         <header>
           <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{t('settings.title')}</h1>
           <p className="mt-1 text-sm text-mynted-gray">{t('settings.subtitle')}</p>

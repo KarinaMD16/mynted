@@ -1,8 +1,8 @@
 /**
  * Detección best-effort de locale/moneda/idioma del navegador. No hay forma
- * 100% confiable de inferir la moneda o el idioma "correcto" a partir del
- * locale del navegador, así que sacamos el país del locale y lo cruzamos
- * contra tablas chicas. Cubren los mercados donde Mynted planea lanzar
+ * 100% confiable de inferir la moneda o el idioma "correcto", así que sacamos
+ * el país de la zona horaria (y, si no se puede, del locale; ver
+ * detectRegion) y lo cruzamos contra tablas chicas. Cubren los mercados donde Mynted planea lanzar
  * primero; si hace falta un país que no está acá, se agrega a ambas tablas.
  */
 const REGION_CURRENCY: Record<string, string> = {
@@ -37,22 +37,40 @@ const REGION_CURRENCY: Record<string, string> = {
 }
 
 /**
- * Zona horaria IANA → región, para los mercados de REGION_CURRENCY. Sirve
- * cuando el locale del navegador no trae país (p. ej. "es" a secas).
+ * Zona horaria IANA → región, para los mercados de REGION_CURRENCY. Es la
+ * pista principal de dónde está la persona (ver detectRegion). Las zonas que
+ * empiezan con un prefijo de TIMEZONE_PREFIX_REGION (p. ej. las de Indiana o
+ * Argentina) se resuelven aparte.
  */
 const TIMEZONE_REGION: Record<string, string> = {
   'America/Costa_Rica': 'CR',
   'America/New_York': 'US',
+  'America/Detroit': 'US',
   'America/Chicago': 'US',
+  'America/Menominee': 'US',
   'America/Denver': 'US',
+  'America/Boise': 'US',
   'America/Phoenix': 'US',
   'America/Los_Angeles': 'US',
   'America/Anchorage': 'US',
+  'America/Juneau': 'US',
+  'America/Sitka': 'US',
+  'America/Nome': 'US',
+  'America/Adak': 'US',
   'Pacific/Honolulu': 'US',
+  'America/Indianapolis': 'US',
+  'America/Louisville': 'US',
   'America/Mexico_City': 'MX',
   'America/Cancun': 'MX',
   'America/Merida': 'MX',
   'America/Monterrey': 'MX',
+  'America/Matamoros': 'MX',
+  'America/Chihuahua': 'MX',
+  'America/Ciudad_Juarez': 'MX',
+  'America/Ojinaga': 'MX',
+  'America/Hermosillo': 'MX',
+  'America/Mazatlan': 'MX',
+  'America/Bahia_Banderas': 'MX',
   'America/Tijuana': 'MX',
   'America/Panama': 'PA',
   'America/Guatemala': 'GT',
@@ -62,25 +80,69 @@ const TIMEZONE_REGION: Record<string, string> = {
   'America/Bogota': 'CO',
   'America/Lima': 'PE',
   'America/Santiago': 'CL',
+  'America/Punta_Arenas': 'CL',
+  'Pacific/Easter': 'CL',
+  // Los navegadores (ICU) devuelven los nombres antiguos de estas zonas:
+  // America/Argentina/Cordoba llega como America/Cordoba, etc.
+  'America/Buenos_Aires': 'AR',
+  'America/Cordoba': 'AR',
+  'America/Catamarca': 'AR',
+  'America/Jujuy': 'AR',
+  'America/Mendoza': 'AR',
   'America/Guayaquil': 'EC',
+  'Pacific/Galapagos': 'EC',
   'Europe/Madrid': 'ES',
   'Atlantic/Canary': 'ES',
+  'Africa/Ceuta': 'ES',
   'Europe/Berlin': 'DE',
+  'Europe/Busingen': 'DE',
   'Europe/Vienna': 'AT',
   'Europe/Zurich': 'CH',
   'Europe/Paris': 'FR',
   'Europe/Brussels': 'BE',
   'Europe/Luxembourg': 'LU',
   'Europe/Monaco': 'MC',
+  'Europe/Vaduz': 'LI',
   'America/Sao_Paulo': 'BR',
   'America/Fortaleza': 'BR',
   'America/Manaus': 'BR',
   'America/Bahia': 'BR',
   'America/Recife': 'BR',
+  'America/Belem': 'BR',
+  'America/Maceio': 'BR',
+  'America/Araguaina': 'BR',
+  'America/Santarem': 'BR',
+  'America/Cuiaba': 'BR',
+  'America/Campo_Grande': 'BR',
+  'America/Porto_Velho': 'BR',
+  'America/Boa_Vista': 'BR',
+  'America/Rio_Branco': 'BR',
+  'America/Eirunepe': 'BR',
+  'America/Noronha': 'BR',
   'Europe/Lisbon': 'PT',
+  'Atlantic/Madeira': 'PT',
+  'Atlantic/Azores': 'PT',
   'Africa/Luanda': 'AO',
   'Africa/Maputo': 'MZ',
   'Asia/Seoul': 'KR',
+}
+
+/** Zonas que comparten un prefijo (America/Indiana/Indianapolis, America/Argentina/Cordoba...). */
+const TIMEZONE_PREFIX_REGION: [prefix: string, region: string][] = [
+  ['America/Argentina/', 'AR'],
+  ['America/Indiana/', 'US'],
+  ['America/Kentucky/', 'US'],
+  ['America/North_Dakota/', 'US'],
+]
+
+function regionOfTimeZone(): string | null {
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (!zone) return null
+    return TIMEZONE_REGION[zone] ?? TIMEZONE_PREFIX_REGION.find(([prefix]) => zone.startsWith(prefix))?.[1] ?? null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -191,31 +253,34 @@ function detectLocales(): string[] {
 }
 
 /**
- * Región (país) más probable de la persona, solo con pistas reales — nunca
- * "adivinando" a partir del idioma. `new Intl.Locale('es').maximize()` da
- * "es-ES", así que alguien con el navegador en español a secas terminaba con
- * España (euro) aunque estuviera en Costa Rica. En orden:
+ * País más probable de la persona, solo con pistas reales — nunca
+ * "adivinando" a partir del idioma (`new Intl.Locale('es').maximize()` da
+ * España). De aquí salen la moneda inicial de la cuenta, el país de envío
+ * sugerido y la región del locale que se guarda. En orden:
  *
- * 1. Región explícita del locale ("es-CR" → CR).
- * 2. Región explícita de otro idioma preferido del navegador.
- * 3. Zona horaria del sistema (America/Costa_Rica → CR), que sí dice dónde está.
- * 4. Ninguna: se usa el mercado de lanzamiento (ver DEFAULT_CURRENCY).
+ * 1. Zona horaria del sistema (America/Costa_Rica → CR). Es lo que mejor dice
+ *    dónde está la persona: el idioma del navegador muchas veces no. Windows
+ *    y Chrome en "español (España)" o "English (UK)" son comunes en Costa
+ *    Rica, y antes eso daba euros o libras a alguien que vive aquí.
+ * 2. Si la zona no es de un mercado conocido: la región explícita del locale
+ *    del navegador ("es-CR" → CR) y luego la de los demás idiomas preferidos.
+ *    Solo cuentan regiones de REGION_CURRENCY: códigos como "419"
+ *    (Latinoamérica) no son un país y se saltan.
+ * 3. Ninguna: se usa el mercado de lanzamiento (ver DEFAULT_CURRENCY).
  */
 function detectRegion(locale: string, preferred: string[]): string | null {
+  const fromTimeZone = regionOfTimeZone()
+  if (fromTimeZone) return fromTimeZone
+
   for (const candidate of [locale, ...preferred]) {
     try {
-      const region = new Intl.Locale(candidate).region
-      if (region) return region.toUpperCase()
+      const region = new Intl.Locale(candidate).region?.toUpperCase()
+      if (region && region in REGION_CURRENCY) return region
     } catch {
       // locale inválido: se prueba con el siguiente
     }
   }
-  try {
-    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    return TIMEZONE_REGION[zone] ?? (zone.startsWith('America/Argentina/') ? 'AR' : null)
-  } catch {
-    return null
-  }
+  return null
 }
 
 /** Países entre los que se puede elegir "dónde recibo mis compras" (los mismos de REGION_CURRENCY). */

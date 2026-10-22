@@ -40,6 +40,8 @@ import {
 import { discountOf } from '../utils/discount'
 import { ProductPrice } from './ProductPrice'
 import { CONDITION_LABEL, errorClass, hintClass, labelClass } from './productFormShared'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /** Comunidad a la que puede ir el producto (la fija de ?community= o las de la persona). */
 export interface TargetCommunity {
@@ -66,7 +68,7 @@ export function ProductEditorLayout({ children }: { children: ReactNode }) {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-7 pb-24')}>
         {isLoading ? (
           <div className="h-64 animate-pulse rounded-2xl bg-white" aria-busy="true" />
         ) : !isLoggedIn ? (

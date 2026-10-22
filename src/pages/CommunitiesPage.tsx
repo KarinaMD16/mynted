@@ -3,6 +3,8 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CreateCommunityForm } from '@/features/community/components/create/CreateCommunityForm'
 import { ExploreCommunitiesSection } from '@/features/community/components/sections/ExploreCommunitiesSection'
 import { MyCommunitiesSection } from '@/features/community/components/sections/MyCommunitiesSection'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 
 export default function CommunitiesPage() {
@@ -12,7 +14,7 @@ export default function CommunitiesPage() {
     <section className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-4 py-10 sm:px-6 sm:py-15 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-10 py-10 sm:py-15')}>
         <MyCommunitiesSection onCreateCommunity={() => setIsCreateCommunityFormOpen(true)} />
         <ExploreCommunitiesSection />
       </main>

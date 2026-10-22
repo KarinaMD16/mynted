@@ -8,6 +8,8 @@ import type { TranslationKey } from './es'
  */
 export const en: Record<TranslationKey, string> = {
   'cookieBanner.title': 'We use cookies to improve your experience',
+  'common.close': "Close",
+  'common.breadcrumb': "Breadcrumb",
   'cookieBanner.description': 'By clicking "Allow all" you agree to the use of all cookies. Visit our',
   'cookieBanner.cookiesPolicyLinkText': 'Cookies Policy',
   'cookieBanner.descriptionSuffix': 'to learn more.',

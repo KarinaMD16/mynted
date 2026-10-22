@@ -27,6 +27,8 @@ import type {
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 const STATUS_FILTERS: { value: ProductStatus | undefined; label: TranslationKey }[] = [
   { value: undefined, label: 'myProducts.filter.all' },
@@ -119,7 +121,7 @@ export default function MyProductsPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-7 pb-24')}>
         <ScrollReveal className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="font-heading text-[26px] font-semibold text-mynted-ink">{t('myProducts.title')}</h1>

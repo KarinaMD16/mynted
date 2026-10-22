@@ -9,6 +9,7 @@ import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { cx } from '@/utils/cx'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
 
 function parseConversationId(raw: string | undefined): number | undefined {
   if (raw === undefined) return undefined
@@ -38,7 +39,7 @@ export default function MessagesPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1368px] px-4 pt-6 pb-10 sm:px-6 lg:pb-6">
+      <main className={cx(PAGE_CONTAINER, 'pt-6 pb-10 lg:pb-6')}>
         {isLoading ? (
           <div className="h-[60svh] animate-pulse rounded-2xl bg-white" aria-busy="true" />
         ) : !isLoggedIn ? (

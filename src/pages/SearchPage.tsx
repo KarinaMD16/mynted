@@ -22,6 +22,8 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 const TAB_LABEL: Record<SearchType | 'all', TranslationKey> = {
   all: 'search.tab.all',
@@ -53,7 +55,7 @@ export default function SearchPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-7 pb-24')}>
         <h1 className="font-heading text-[26px] font-semibold text-mynted-ink">
           {q ? t('search.resultsFor', { query: q }) : t('search.title')}
         </h1>

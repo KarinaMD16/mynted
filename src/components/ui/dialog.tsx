@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { cn } from '@/cuicui/utils/cn'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 /**
  * Dialog base de shadcn/ui (sobre @radix-ui/react-dialog), adaptado a los
@@ -51,6 +52,7 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const { t } = useLanguage()
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -93,7 +95,7 @@ function DialogContent({
             className="absolute top-4 right-4 rounded-full bg-white/90 p-1.5 text-mynted-gray outline-none transition-colors hover:cursor-pointer hover:bg-mynted-bg hover:text-mynted-ink"
           >
             <X className="size-5" />
-            <span className="sr-only">Cerrar</span>
+            <span className="sr-only">{t('common.close')}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

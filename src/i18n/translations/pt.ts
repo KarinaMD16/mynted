@@ -7,6 +7,8 @@ import type { TranslationKey } from './es'
  */
 export const pt: Record<TranslationKey, string> = {
   'cookieBanner.title': 'Usamos cookies para melhorar sua experiência',
+  'common.close': "Fechar",
+  'common.breadcrumb': "Trilha de navegação",
   'cookieBanner.description':
     'Ao clicar em "Aceitar todos", você concorda com o uso de todos os cookies. Acesse nossa',
   'cookieBanner.cookiesPolicyLinkText': 'Política de Cookies',

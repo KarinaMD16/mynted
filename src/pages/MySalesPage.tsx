@@ -12,6 +12,8 @@ import { useMySales, useMySalesSummary } from '@/features/payments/hooks/usePaym
 import type { PaymentPeriodFilters } from '@/features/payments/models/payment'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /**
  * "Mis ventas" (/ventas): el historial de ventas con la comisión de cada una y
@@ -38,7 +40,7 @@ export default function MySalesPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-6 px-4 py-10 sm:px-6 sm:py-12">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 py-10 sm:py-12')}>
         <div className="flex flex-col gap-2">
           <Link to="/my-products" className="flex w-fit items-center gap-1.5 text-sm font-medium text-mynted-gray hover:text-mynted-ink">
             <ArrowLeft className="size-4" aria-hidden="true" />

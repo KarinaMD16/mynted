@@ -27,6 +27,8 @@ import { getInitials } from '@/features/profile/utils/profileFormat'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
 import { Button } from '@/components/ui/Button'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 type ProfileTab = 'posts' | 'threads' | 'products' | 'purchases' | 'favorites' | 'info'
 
@@ -47,7 +49,7 @@ export default function ProfilePage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto max-w-[1320px] px-4 pt-6 pb-16 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'pt-6 pb-16')}>
         {!isLoggedIn && <SignedOutState description={t('profile.signedOutSubtitle')} />}
 
         {isLoggedIn && isLoading && (
