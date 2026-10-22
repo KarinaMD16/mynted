@@ -4,11 +4,14 @@ import type {
   FeedPost,
   ForumPost,
   MyContentEntry,
+  MyContentProduct,
   MyForumPostsQuery,
   PaginatedResponse,
 } from '../models/communityDTOs'
 
 import type {
+  ExplorePostsPage,
+  FeedSort,
   ForumFavoriteResult,
   ForumPostsPage,
   ForumPostsQuery,
@@ -16,6 +19,7 @@ import type {
   ForumVoteResult,
   GlobalPostsPage,
   GlobalPostsQuery,
+  HomePostsPage,
   VoteType,
 } from '../models/forumDTOs'
 
@@ -30,6 +34,37 @@ export const getMyContent = async (
   query: FeedPageQuery & { order?: 'asc' | 'desc' } = {},
 ): Promise<PaginatedResponse<MyContentEntry>> => {
   const { data } = await myntedAPI.get<PaginatedResponse<MyContentEntry>>('/posts/me', { params: query })
+  return data
+}
+
+/**
+ * Contenido público de otra persona (pide sesión): solo comunidades públicas y
+ * activas, y productos activos. Mismas formas que /posts/me, /forums/me y los
+ * productos de /posts/me.
+ */
+export const getUserContent = async (
+  userId: string,
+  query: FeedPageQuery & { order?: 'asc' | 'desc' } = {},
+): Promise<PaginatedResponse<MyContentEntry>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<MyContentEntry>>(`/users/${userId}/posts`, { params: query })
+  return data
+}
+
+/** GET /users/:id/forums — los hilos de otra persona. */
+export const getUserForumPosts = async (
+  userId: string,
+  query: MyForumPostsQuery = {},
+): Promise<PaginatedResponse<FeedPost>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<FeedPost>>(`/users/${userId}/forums`, { params: query })
+  return data
+}
+
+/** GET /users/:id/products — productos activos de una persona vendedora. */
+export const getUserProducts = async (
+  userId: string,
+  query: FeedPageQuery = {},
+): Promise<PaginatedResponse<MyContentProduct>> => {
+  const { data } = await myntedAPI.get<PaginatedResponse<MyContentProduct>>(`/users/${userId}/products`, { params: query })
   return data
 }
 
@@ -65,14 +100,23 @@ export const getGlobalPosts = async (query: GlobalPostsQuery = {}): Promise<Glob
 }
 
 /**
- * Feed por intereses (GET /users/me/recommended-posts): publicaciones cuyos
- * tags coinciden con los intereses del usuario, ordenadas por cuantos
- * coinciden. Es el feed del home; no acepta filtros, solo paginacion.
+ * Feed del home (GET /home/posts, sesion opcional): con sesion, posts de las
+ * comunidades a las que pertenece el usuario; sin sesion (o sin comunidades),
+ * de comunidades publicas. `meta.source` dice cual de los dos llego.
+ * `hot` (por defecto) pesa mucho lo reciente y usa los votos como empuje.
  */
-export const getRecommendedPosts = async (page: number, limit: number): Promise<GlobalPostsPage> => {
-  const { data } = await myntedAPI.get<GlobalPostsPage>('/users/me/recommended-posts', {
-    params: { page, limit },
-  })
+export const getHomePosts = async (page: number, limit: number, sort: FeedSort = 'hot'): Promise<HomePostsPage> => {
+  const { data } = await myntedAPI.get<HomePostsPage>('/home/posts', { params: { page, limit, sort } })
+  return data
+}
+
+/**
+ * "Para ti" de Explorar (GET /explore/forums/posts, sesion opcional): mezcla
+ * los intereses del usuario, los votos y la frescura, con un bonus a las
+ * comunidades donde todavia no esta. No acepta filtros, solo paginacion.
+ */
+export const getExplorePosts = async (page: number, limit: number): Promise<ExplorePostsPage> => {
+  const { data } = await myntedAPI.get<ExplorePostsPage>('/explore/forums/posts', { params: { page, limit } })
   return data
 }
 

@@ -1,3 +1,4 @@
+import { ErrorState } from '@/components/errors/ErrorState'
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
@@ -35,14 +36,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   if (!token) {
     return (
-      <div className="flex w-full flex-col gap-3.5">
-        <div>
-          <h1 className="font-heading text-[24px] font-semibold text-mynted-ink">
-            {t('auth.resetPassword.invalidLinkTitle')}
-          </h1>
-          <p className="mt-1.5 text-sm text-mynted-gray">{t('auth.resetPassword.invalidLinkBody')}</p>
-        </div>
-
+      <ErrorState kind="expired" variant="compact" className="border-0 bg-transparent p-0" description={t('auth.resetPassword.invalidLinkBody')}>
         <Button
           type="button"
           size="lg" fullWidth
@@ -50,7 +44,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         >
           {t('auth.resetPassword.requestNewLink')}
         </Button>
-      </div>
+      </ErrorState>
     )
   }
 

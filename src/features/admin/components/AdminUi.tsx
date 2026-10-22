@@ -1,3 +1,4 @@
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import type { ComponentType, ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
@@ -269,21 +270,7 @@ export function FilterSelect<T extends string>({
 /** Error al cargar los datos del tab "Resumen" (en "Gestionar" lo muestra la tabla). */
 export function LoadErrorPanel({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useLanguage()
-  return (
-    <div className="rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-      <p className="text-sm font-semibold text-mynted-ink">{t('admin.table.loadError')}</p>
-      <p className="mt-1 text-sm text-mynted-gray">{getApiErrorMessage(error)}</p>
-      <Button
-        type="button"
-        onClick={onRetry}
-        variant="secondary"
-        size="sm"
-        className="mt-4"
-      >
-        {t('communities.list.retry')}
-      </Button>
-    </div>
-  )
+  return <QueryErrorState error={error} onRetry={onRetry} texts={{ error: { description: t('admin.table.loadError') } }} />
 }
 
 /** Aviso para funciones que el backend todavía no soporta (Comunidades, Categorías). */

@@ -29,3 +29,18 @@ export function getApiErrorMessage(error: unknown, fallback = DEFAULT_ERROR_MESS
 export function isUnauthorizedError(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 401
 }
+
+/** Código HTTP de una petición fallida con axios (undefined si no hubo respuesta: red caída, CORS, etc.). */
+export function getHttpStatus(error: unknown): number | undefined {
+  return axios.isAxiosError(error) ? error.response?.status : undefined
+}
+
+/** `true` si el backend respondió 404 (el recurso no existe o fue borrado). */
+export function isNotFoundError(error: unknown): boolean {
+  return getHttpStatus(error) === 404
+}
+
+/** `true` si el backend respondió 403 (hay sesión, pero sin permiso para esto). */
+export function isForbiddenError(error: unknown): boolean {
+  return getHttpStatus(error) === 403
+}

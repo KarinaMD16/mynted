@@ -1,14 +1,20 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
-import { getApiErrorMessage } from '@/api/apiError'
-import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useShopFeed } from '../hooks/useProductQueries'
 import type { ShopSection } from '../models/product'
 import { ShopProductCard } from './ShopProductCard'
 
-export const SHOP_GRID_CLASS = 'grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-4'
+/**
+ * Grilla de productos. En móvil van 2 columnas con tarjetas compactas, como en
+ * Vinted, Depop, Etsy o Wallapop: se ven 4–6 productos por pantalla en vez de 1.
+ */
+export const SHOP_GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4'
+/** Alto del placeholder de carga: más bajo en móvil, donde la tarjeta es compacta. */
+export const PRODUCT_CARD_SKELETON_CLASS = 'h-[250px] animate-pulse rounded-[14px] bg-white sm:h-[300px]'
 
 /**
  * Pantalla principal de la tienda ("Shop"): una sección por tag con sus
@@ -40,7 +46,7 @@ export function ShopFeed() {
         <div className="h-8 w-48 animate-pulse rounded-lg bg-white" />
         <div className={SHOP_GRID_CLASS}>
           {Array.from({ length: 4 }, (_, index) => (
-            <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
+            <div key={index} className={PRODUCT_CARD_SKELETON_CLASS} />
           ))}
         </div>
       </div>
@@ -49,13 +55,7 @@ export function ShopFeed() {
 
   if (query.isError) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center" role="alert">
-        <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-        <p className="text-sm text-mynted-gray">{getApiErrorMessage(query.error)}</p>
-        <Button type="button" onClick={() => void query.refetch()} variant="secondary" size="sm" className="mt-2">
-          {t('communities.list.retry')}
-        </Button>
-      </div>
+      <QueryErrorState error={query.error} onRetry={() => void query.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
     )
   }
 
@@ -63,10 +63,7 @@ export function ShopFeed() {
 
   if (sections.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-        <p className="text-sm font-semibold text-mynted-ink">{t('shop.empty.title')}</p>
-        <p className="text-sm text-mynted-gray">{t('shop.empty.body')}</p>
-      </div>
+      <ErrorState kind="empty" title={t('shop.empty.title')} description={t('shop.empty.body')} />
     )
   }
 

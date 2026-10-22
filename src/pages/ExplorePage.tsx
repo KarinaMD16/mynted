@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { SlidersHorizontal, X } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
-import { getApiErrorMessage, isUnauthorizedError } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
+import { FilterChip } from '@/components/ui/FilterChip'
 import { FilterGroup } from '@/components/ui/FilterGroup'
 import { TalkFeed } from '@/features/community/components/sections/TalkFeed'
-import { LoginPrompt } from '@/components/ui/LoginPrompt'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
+import { PRODUCT_CARD_SKELETON_CLASS } from '@/features/products/components/ShopFeed'
 import { ShopProductCard } from '@/features/products/components/ShopProductCard'
 import { useExploreProducts } from '@/features/products/hooks/useProductQueries'
 import {
@@ -19,9 +22,11 @@ import {
   type ProductType,
 } from '@/features/products/models/product'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useShipTo } from '@/features/region/hooks/useShipTo'
 import { useDisplayCurrency } from '@/features/auth/hooks/useDisplayCurrency'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { INTL_LOCALES } from '@/utils/locale'
+import { INTL_LOCALES, regionName } from '@/utils/locale'
+import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
 
 type ExploreTab = 'shop' | 'talk'
@@ -31,7 +36,8 @@ const EXPLORE_TABS: { id: ExploreTab; labelKey: TranslationKey }[] = [
   { id: 'talk', labelKey: 'shop.tab.talk' },
 ]
 
-const EXPLORE_GRID_CLASS = 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'
+// 2 columnas también en móvil (tarjetas compactas), como en otros marketplaces.
+const EXPLORE_GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3'
 
 /** Conteo de resultados: entra con un fade y se anima otra vez cuando cambia el número (al filtrar). */
 function ResultsCount({ total }: { total: number }) {
@@ -68,19 +74,43 @@ const LAST_STEP = PRICE_STEPS.length - 1
 
 /**
  * Explorar: catálogo general de productos activos (GET /products) con filtros
- * por categoría, tipo, condición y rango de precio, y scroll infinito. Se ve
- * sin sesión: si el backend responde 401 (GET /products todavía exige login),
- * se muestra una invitación a entrar en vez del catálogo.
+ * por categoría, tipo, condición, rango de precio y, si la persona lo pide,
+ * solo lo que se envía a su país; con scroll infinito. La pestaña Shop es
+ * pública (GET /products no pide sesión); la pestaña Talk sí necesita sesión.
+ * El rango de precio se aplica al precio final (con descuento) y se manda con
+ * la moneda de referencia.
  */
 export default function ExplorePage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const { shipTo } = useShipTo()
 
   const [category, setCategory] = useState<number | undefined>()
   const [type, setType] = useState<ProductType | undefined>()
   const [condition, setCondition] = useState<ProductCondition | undefined>()
+  const [onlyMyCountry, setOnlyMyCountry] = useState(false)
   const [priceSteps, setPriceSteps] = useState<[number, number]>([0, LAST_STEP])
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<ExploreTab>('shop')
+  // La pestana vive en la URL (?tab=), no en el estado: asi volver de una
+  // publicacion devuelve la pestana en la que se estaba (ver exploreRoute).
+  const { tab: activeTab } = useSearch({ from: '/explore' })
+  const navigate = useNavigate({ from: '/explore' })
+
+  /**
+   * Pestanas que ya se abrieron alguna vez. Una vez montada, la pestana se queda
+   * en el arbol y solo se oculta: asi cambiar de pestana no vuelve a disparar las
+   * animaciones de entrada ni pierde el scroll, los filtros o lo que haya escrito.
+   * La que no se visito todavia ni se monta, para no pedir datos que nadie pidio.
+   */
+  const [openedTabs, setOpenedTabs] = useState<ExploreTab[]>(() =>
+    activeTab === 'shop' ? ['shop'] : ['shop', activeTab],
+  )
+
+  function openTab(tab: ExploreTab) {
+    setOpenedTabs((current) => (current.includes(tab) ? current : [...current, tab]))
+    // `replace` para que cambiar de pestana no llene el historial: el boton
+    // atras tiene que salir de Explorar, no recorrer las pestanas visitadas.
+    void navigate({ search: (prev) => ({ ...prev, tab }), replace: true })
+  }
 
   const filters: ExploreFilters = {
     ...(category !== undefined && { category }),
@@ -88,9 +118,13 @@ export default function ExplorePage() {
     ...(condition && { condition }),
     ...(priceSteps[0] > 0 && { priceMin: PRICE_STEPS[priceSteps[0]] }),
     ...(priceSteps[1] < LAST_STEP && { priceMax: PRICE_STEPS[priceSteps[1]] }),
+    ...(onlyMyCountry && shipTo && { shipTo }),
   }
   const activeCount = Object.keys(filters).length
 
+  // El rango se interpreta en la moneda de visualización, que ya viaja en el
+  // header X-Display-Currency. NO se manda `currency`: ese parámetro filtra
+  // "solo productos publicados en esa moneda" y escondería los demás.
   const products = useExploreProducts(filters)
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = products
 
@@ -115,6 +149,7 @@ export default function ExplorePage() {
     setCategory(undefined)
     setType(undefined)
     setCondition(undefined)
+    setOnlyMyCountry(false)
     setPriceSteps([0, LAST_STEP])
   }
 
@@ -133,7 +168,7 @@ export default function ExplorePage() {
                   variant="ghost"
                   role="tab"
                   aria-selected={isActive}
-                  onClick={() => setActiveTab(id)}
+                  onClick={() => openTab(id)}
                   className={`rounded-[10px] px-[18px] text-[15px] ${
                     isActive
                       ? 'bg-[#ffdfd1] font-semibold text-mynted-orange hover:bg-[#ffdfd1] hover:text-mynted-orange'
@@ -174,14 +209,23 @@ export default function ExplorePage() {
           )}
         </ScrollReveal>
 
-        {activeTab === 'talk' ? (
-          <TalkFeed source="all" />
-        ) : (
+        {/*
+          `contents` deja el contenedor sin caja propia, asi la pestana visible
+          sigue siendo hija directa del main y conserva el `gap` del layout.
+        */}
+        {openedTabs.includes('talk') && (
+          <div className={activeTab === 'talk' ? 'contents' : 'hidden'}>
+            <TalkFeed />
+          </div>
+        )}
+
+        <div className={activeTab === 'shop' ? 'contents' : 'hidden'}>
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:items-start lg:gap-8">
             <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
               <aside
                 aria-label={t('explore.filters.title')}
-                className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5"
+                // En pantallas bajas los filtros no caben: la barra lateral es fija, así que se desplaza por dentro.
+                className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5 lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto"
               >
                 <div className="flex items-center justify-between">
                   <h2 className="font-heading text-base font-semibold text-mynted-ink">{t('explore.filters.title')}</h2>
@@ -200,29 +244,37 @@ export default function ExplorePage() {
                 <CategoryFilter value={category} onChange={setCategory} />
 
                 <FilterGroup label={t('explore.filters.type')}>
-                  <Chip selected={type === undefined} onClick={() => setType(undefined)}>
+                  <FilterChip selected={type === undefined} onClick={() => setType(undefined)}>
                     {t('explore.filters.all')}
-                  </Chip>
-                  <Chip selected={type === 'sale'} onClick={() => setType('sale')}>
+                  </FilterChip>
+                  <FilterChip selected={type === 'sale'} onClick={() => setType('sale')}>
                     {t('products.type.sale')}
-                  </Chip>
-                  <Chip selected={type === 'exchange'} onClick={() => setType('exchange')}>
+                  </FilterChip>
+                  <FilterChip selected={type === 'exchange'} onClick={() => setType('exchange')}>
                     {t('products.type.exchange')}
-                  </Chip>
+                  </FilterChip>
                 </FilterGroup>
 
                 <FilterGroup label={t('explore.filters.condition')}>
-                  <Chip selected={condition === undefined} onClick={() => setCondition(undefined)}>
+                  <FilterChip selected={condition === undefined} onClick={() => setCondition(undefined)}>
                     {t('explore.filters.all')}
-                  </Chip>
+                  </FilterChip>
                   {PRODUCT_CONDITIONS.map((item) => (
-                    <Chip key={item} selected={condition === item} onClick={() => setCondition(item)}>
+                    <FilterChip key={item} selected={condition === item} onClick={() => setCondition(item)}>
                       {t(CONDITION_LABEL[item])}
-                    </Chip>
+                    </FilterChip>
                   ))}
                 </FilterGroup>
 
                 <PriceSlider value={priceSteps} onChange={setPriceSteps} />
+
+                {shipTo && (
+                  <FilterGroup label={t('explore.filters.shipping')}>
+                    <FilterChip selected={onlyMyCountry} onClick={() => setOnlyMyCountry((value) => !value)}>
+                      {t('explore.filters.shipToMine', { country: regionName(shipTo, language) })}
+                    </FilterChip>
+                  </FilterGroup>
+                )}
               </aside>
             </ScrollReveal>
 
@@ -233,32 +285,19 @@ export default function ExplorePage() {
               {products.isPending ? (
                 <div className={EXPLORE_GRID_CLASS} aria-busy="true">
                   {Array.from({ length: 6 }, (_, index) => (
-                    <div key={index} className="h-[300px] animate-pulse rounded-[14px] bg-white" />
+                    <div key={index} className={PRODUCT_CARD_SKELETON_CLASS} />
                   ))}
                 </div>
-              ) : products.isError && isUnauthorizedError(products.error) ? (
-                <LoginPrompt message={t('explore.loginPrompt')} />
               ) : products.isError ? (
-                <div
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"
-                  role="alert"
-                >
-                  <p className="text-sm font-semibold text-mynted-ink">{t('products.list.loadError')}</p>
-                  <p className="text-sm text-mynted-gray">{getApiErrorMessage(products.error)}</p>
-                  <Button type="button" onClick={() => void products.refetch()} variant="secondary" size="sm" className="mt-2">
-                    {t('communities.list.retry')}
-                  </Button>
-                </div>
+                <QueryErrorState error={products.error} onRetry={() => void products.refetch()} texts={{ error: { description: t('products.list.loadError') } }} />
               ) : items.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center">
-                  <p className="text-sm font-semibold text-mynted-ink">{t('explore.empty.title')}</p>
-                  <p className="max-w-sm text-sm text-mynted-gray">{t('explore.empty.body')}</p>
+                <ErrorState kind={activeCount > 0 ? 'noResults' : 'empty'} title={t('explore.empty.title')} description={t('explore.empty.body')}>
                   {activeCount > 0 && (
                     <Button type="button" variant="secondary" size="sm" className="mt-2" onClick={clearFilters}>
                       {t('explore.filters.clear')}
                     </Button>
                   )}
-                </div>
+                </ErrorState>
               ) : (
                 <>
                   <ul className={EXPLORE_GRID_CLASS}>
@@ -270,7 +309,10 @@ export default function ExplorePage() {
                             title: product.title,
                             imageUrl: product.imageUrl,
                             price: product.price,
+                            finalPrice: product.finalPrice,
+                            discountPercent: product.discountPercent,
                             currency: product.currency,
+                            ...displayFieldsOf(product),
                             tags: product.productTags?.map((item) => item.tag) ?? [],
                             type: product.type,
                           }}
@@ -287,26 +329,9 @@ export default function ExplorePage() {
               )}
             </section>
           </div>
-        )}
+        </div>
       </main>
     </div>
-  )
-}
-
-function Chip({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors hover:cursor-pointer ${
-        selected
-          ? 'border-mynted-orange bg-mynted-orange/10 text-mynted-orange'
-          : 'border-mynted-border text-mynted-ink hover:border-mynted-orange/60'
-      }`}
-    >
-      {children}
-    </button>
   )
 }
 
@@ -389,15 +414,15 @@ function CategoryFilter({ value, onChange }: { value: number | undefined; onChan
 
   return (
     <FilterGroup label={t('explore.filters.category')}>
-      <Chip selected={value === undefined} onClick={() => onChange(undefined)}>
+      <FilterChip selected={value === undefined} onClick={() => onChange(undefined)}>
         {t('explore.filters.all')}
-      </Chip>
+      </FilterChip>
       {categories.isPending &&
         Array.from({ length: 3 }, (_, index) => <span key={index} className="h-7 w-16 animate-pulse rounded-full bg-mynted-bg" />)}
       {categories.data?.map((category) => (
-        <Chip key={category.categoryId} selected={value === category.categoryId} onClick={() => onChange(category.categoryId)}>
+        <FilterChip key={category.categoryId} selected={value === category.categoryId} onClick={() => onChange(category.categoryId)}>
           {category.name}
-        </Chip>
+        </FilterChip>
       ))}
     </FilterGroup>
   )

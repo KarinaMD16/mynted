@@ -2,16 +2,20 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { CommunityListItem } from '@/features/community/models/communityDTOs'
-import { EXPLORE_DOT_COLORS, EXPLORE_LIMIT, hintClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
+import { EXPLORE_DOT_COLORS, hintClasses, labelClasses } from '@/features/community/types/DEFAULT_VALUES'
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
+import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 import { MyCommunityCard } from '@/features/community/components/cards/MyCommunityCard'
 
 /**
- * Ancho real del contenido de /communities en una pantalla de escritorio
- * (1280px menos el padding horizontal de la pagina). La vista previa se arma
- * con este ancho y despues se achica, asi las proporciones son las reales.
+ * Ancho real del contenido de /communities en una pantalla de escritorio: el
+ * max-w-[1320px] de la pagina menos su padding (lg:px-14). La vista previa se
+ * arma con este ancho y despues se achica, asi las proporciones son las reales.
  */
-const REAL_PAGE_WIDTH = 1168
+const REAL_PAGE_WIDTH = 1320 - 56 * 2
+
+/** Tarjetas por fila en "Explorar" (lg:grid-cols-4, igual que la tienda). */
+const EXPLORE_COLUMNS = 4
 
 /**
  * Vista previa del formulario de crear comunidad: la comunidad que se esta
@@ -49,9 +53,9 @@ export function CommunityCardsPreview({ community }: { community: CommunityListI
           <span className="text-xs font-medium text-mynted-gray">{t('communities.create.previewExplore')}</span>
           <ScaledToFit realWidth={REAL_PAGE_WIDTH}>
             {/* Misma fila que "Explorar": la tarjeta nueva y el lugar de las demas */}
-            <div className="grid grid-cols-6 gap-3">
+            <div className={SHOP_GRID_CLASS}>
               <ExploreCommunityCard community={community} dotClassName={EXPLORE_DOT_COLORS[0]} />
-              {Array.from({ length: EXPLORE_LIMIT - 1 }, (_, index) => (
+              {Array.from({ length: EXPLORE_COLUMNS - 1 }, (_, index) => (
                 <div key={index} aria-hidden="true" className="rounded-xl border-2 border-dashed border-mynted-border" />
               ))}
             </div>

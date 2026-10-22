@@ -1,3 +1,4 @@
+import { ErrorState } from '@/components/errors/ErrorState'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { CornerDownRight, MessageSquare } from 'lucide-react'
@@ -43,7 +44,7 @@ export function ForumReplyTree({ postId, replies, canReply, authorProfileId }: F
   const roots = childrenByParent.get(null) ?? []
 
   if (replies.length === 0) {
-    return <p className="text-sm text-mynted-gray">{t('forum.replies.empty')}</p>
+    return <ErrorState kind="empty" variant="compact" description={t('forum.replies.empty')} />
   }
 
   return (
@@ -86,7 +87,11 @@ function ReplyNode({ postId, reply, index, depth, canReply, childrenByParent, au
 
   return (
     <li>
-      <div className="flex flex-col gap-2.5 rounded-2xl border border-mynted-border bg-white p-4">
+      {/* id: la notificación de una respuesta enlaza a #reply-<id> (ver useScrollToHash en PostDetailPage). */}
+      <div
+        id={`reply-${reply.id}`}
+        className="flex scroll-mt-28 flex-col gap-2.5 rounded-2xl border border-mynted-border bg-white p-4 target:ring-2 target:ring-mynted-orange"
+      >
         <ForumAuthorLine
           displayName={reply.author?.displayName ?? t('community.detail.deletedAuthor')}
           photoUrl={reply.author?.photoUrl}

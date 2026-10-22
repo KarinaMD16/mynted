@@ -1,3 +1,5 @@
+import type { ResponseTime } from '@/features/stores/models/store'
+
 export const OAUTH_PROVIDERS = ['google', 'facebook'] as const
 
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
@@ -40,15 +42,62 @@ export interface AuthUser {
   bio?: string | null
   location?: string | null
   sellerRequestStatus?: SellerRequestStatus
-  /** Moneda en la que el usuario publica sus precios (ISO 4217, p. ej. CRC). */
+  /**
+   * Moneda en la que el usuario publica sus precios (ISO 4217, p. ej. CRC).
+   * Para publicar productos es OBLIGATORIA: ya no hay USD por defecto.
+   */
   currency?: string | null
+  /**
+   * Moneda en la que la persona VE los precios (se elige en /settings). null si
+   * nunca la eligió: entonces se usa `currency`. Solo afecta la visualización.
+   */
+  displayCurrency?: string | null
+  /** País de la persona (ISO 3166-1 alfa-2, p. ej. CR): "dónde recibo mis compras". */
+  country?: string | null
   locale?: string | null
   /** Preferencias de notificación (ver /settings, pestaña Notificaciones). */
   emailNotifications?: boolean
   pushNotifications?: boolean
+  /** Pedir confirmación antes de quitar un favorito (el backend no lo impone; lo aplica el front). */
+  confirmUnfavorite?: boolean
   /** Cuándo aceptó la Política de Privacidad y qué versión (ver /settings, pestaña Privacidad). */
   acceptedPrivacyPolicyAt?: string | null
   privacyPolicyVersion?: string
+  /**
+   * Su tienda, solo si es vendedor APROBADO (un pendiente o rechazado no lo
+   * trae). Con `sellerId` se abre /sellers/:sellerId.
+   */
+  seller?: PublicSeller
+}
+
+/** Objeto `seller` del perfil público y de GET /users/me: solo vendedores aprobados. */
+export interface PublicSeller {
+  /** Id de la tienda (no el User.id): para abrir /sellers/:sellerId. */
+  sellerId: number
+  displayName: string
+  isVerified: boolean
+  /** Promedio de las reseñas de sus productos; null si no tiene. */
+  ratingAverage: number | null
+  reviewsCount: number
+  /** null si tiene menos de 3 conversaciones respondidas. */
+  responseTime: ResponseTime | null
+}
+
+/**
+ * Vista pública de un usuario (GET /users/:id, /users/by-username/:username,
+ * /users/search y /search): nunca trae correo, locale, moneda, preferencias ni
+ * datos de la solicitud de vendedor. (Un superadmin recibe el usuario completo.)
+ */
+export interface PublicUser {
+  id: string
+  username: string
+  photoUrl: string | null
+  bio: string | null
+  location: string | null
+  role: UserRole
+  createdAt: string
+  /** Solo si es vendedor aprobado. */
+  seller?: PublicSeller
 }
 
 export interface LogoutResponse {

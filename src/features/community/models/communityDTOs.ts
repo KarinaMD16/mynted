@@ -1,3 +1,5 @@
+import type { DisplayPriceFields } from '@/utils/price'
+
 export interface CreateCommunityPayload {
   name: string
   description: string
@@ -204,18 +206,25 @@ export interface MyForumPostsQuery extends FeedPageQuery {
   order?: 'asc' | 'desc'
 }
 
-/** Producto dentro de GET /posts/me (buildProductCards en el backend). */
-export interface MyContentProduct {
+/**
+ * Producto dentro de GET /posts/me, /favorites/me y /users/:id/posts
+ * (buildProductCards en el backend).
+ */
+export interface MyContentProduct extends DisplayPriceFields {
   id: number
   title: string
   price: number | string
+  discountPercent?: number | string | null
+  /** Precio con descuento; si falta se muestra `price`. */
+  finalPrice?: number | null
   currency: string
   imageUrl: string
   status: 'active' | 'sold' | 'inactive'
   type: 'sale' | 'exchange'
   condition: 'new' | 'like_new' | 'good_condition' | 'used_with_details'
   tags: FeedPostTag[]
-  community: { id: number; name: string }
+  /** null = producto sin comunidad. */
+  community: { id: number; name: string } | null
   seller: { sellerId: number; displayName: string; photoUrl: string | null; isVerified: boolean }
   isSaved: boolean
 }

@@ -1,7 +1,6 @@
-import { Link } from '@tanstack/react-router'
+import { SignedOutState } from '@/components/errors/QueryErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { useLanguage } from '@/i18n/LanguageContext'
 
@@ -25,17 +24,7 @@ export default function FavoritesPage() {
         )}
 
         {!isLoadingSession && !isLoggedIn && (
-          <CommunityNotice
-            title={t('favorites.signedOutTitle')}
-            description={t('favorites.signedOutDescription')}
-          >
-            <Link
-              to="/login"
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-mynted-ink hover:bg-mynted-orange-hover"
-            >
-              {t('favorites.signIn')}
-            </Link>
-          </CommunityNotice>
+          <SignedOutState description={t('favorites.signedOutDescription')} />
         )}
 
         {isLoggedIn && <MyFavoritesTab />}

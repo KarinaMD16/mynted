@@ -1,6 +1,7 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { ArrowRight } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
-import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import {
@@ -15,6 +16,7 @@ import {
   MY_COMMUNITIES_QUERY,
 } from '@/features/community/types/DEFAULT_VALUES'
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
+import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 
 
 export function ExploreCommunitiesSection() {
@@ -55,7 +57,7 @@ export function ExploreCommunitiesSection() {
 
       <div className="mt-4">
         {exploreQuery.isPending && (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          <div className={SHOP_GRID_CLASS}>
             {Array.from({ length: EXPLORE_LIMIT }, (_, index) => (
               <div key={index} className="aspect-square animate-pulse rounded-xl bg-white" />
             ))}
@@ -63,17 +65,15 @@ export function ExploreCommunitiesSection() {
         )}
 
         {exploreQuery.isError && (
-          <p className="text-sm text-red-500" role="alert">
-            {t('communities.explore.loadError')} {getApiErrorMessage(exploreQuery.error)}
-          </p>
+          <QueryErrorState error={exploreQuery.error} onRetry={() => void exploreQuery.refetch()} variant="compact" texts={{ error: { description: t('communities.explore.loadError') } }} />
         )}
 
         {exploreQuery.isSuccess && visibleCommunities.length === 0 && (
-          <p className="text-sm text-mynted-gray">{t('communities.explore.empty')}</p>
+          <ErrorState kind="empty" variant="compact" description={t('communities.explore.empty')} />
         )}
 
         {visibleCommunities.length > 0 && (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          <div className={SHOP_GRID_CLASS}>
             {visibleCommunities.map((community, index) => (
               <ExploreCommunityCard
                 key={community.id}

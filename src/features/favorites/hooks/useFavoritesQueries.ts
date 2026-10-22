@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { getMyFavorites } from '../services/favoritesService'
-import type { FavoritesFilter } from '../models/favorites'
+import { getMyFavoriteIds, getMyFavorites } from '../services/favoritesService'
+import type { FavoriteIdsResult, FavoritesFilter, SavedProductItem } from '../models/favorites'
 
 export const favoriteKeys = {
   all: ['favorites'] as const,
@@ -10,11 +10,6 @@ export const favoriteKeys = {
 }
 
 const PAGE_SIZE = 12
-/** GET /favorites/me acepta hasta 50 por página. */
-const MAX_PAGE_SIZE = 50
-/** Tope de páginas al armar el set de ids (50 × 20 = 1000 favoritos) para no iterar sin fin. */
-const MAX_PAGES = 20
-
 /** Pestaña "Favoritos" del perfil: lo guardado, filtrado por tipo, con "Cargar más". */
 export function useMyFavorites(filter: FavoritesFilter, enabled = true) {
   return useInfiniteQuery({
@@ -27,33 +22,43 @@ export function useMyFavorites(filter: FavoritesFilter, enabled = true) {
   })
 }
 
-const toIdSet = (ids: number[]) => new Set(ids)
+const toIdSet = (items: SavedProductItem[]) => new Set(items.map((item) => item.id))
+
+/** `items` trae los avisos; si no viniera, se arma con los ids y avisos apagados. */
+function toSavedItems(result: FavoriteIdsResult): SavedProductItem[] {
+  return result.items ?? result.ids.map((id) => ({ id, notifyPrice: false, notifyAvailability: false }))
+}
+
+async function fetchSavedProducts(): Promise<SavedProductItem[]> {
+  return toSavedItems(await getMyFavoriteIds('products'))
+}
 
 /**
- * Ids de los productos que el usuario tiene en favoritos. Los endpoints de
- * productos (shop, explorar, detalle) no dicen si ya es favorito, así que el
- * estado del corazón se saca de GET /favorites/me?type=products, recorriendo
- * todas sus páginas una vez y compartiendo el resultado en cache entre todas
- * las tarjetas.
+ * Ids de los productos que el usuario tiene en favoritos, para pintar el
+ * corazón de las tarjetas. Los listados también traen `isSaved`, pero esa
+ * respuesta no cambia sola al guardar: este set se actualiza al instante (ver
+ * useToggleProductFavorite) y se comparte en cache entre todas las tarjetas.
+ * Se pide una sola vez con GET /favorites/me/ids.
  */
 export function useSavedProductIds(enabled: boolean) {
   return useQuery({
     queryKey: favoriteKeys.savedProducts(),
-    queryFn: async () => {
-      const ids: number[] = []
-      let page = 1
-      let totalPages = 1
-      while (page <= totalPages && page <= MAX_PAGES) {
-        const result = await getMyFavorites('products', page, MAX_PAGE_SIZE)
-        for (const entry of result.data) {
-          if (entry.type === 'product') ids.push(entry.product.id)
-        }
-        totalPages = result.pagination.totalPages
-        page += 1
-      }
-      return ids
-    },
+    queryFn: fetchSavedProducts,
     select: toIdSet,
+    enabled,
+    staleTime: 1000 * 60,
+  })
+}
+
+/**
+ * Avisos de un producto guardado (misma consulta que useSavedProductIds, así
+ * no se pide nada más). `undefined` si no está guardado o todavía no cargó.
+ */
+export function useSavedProductAlerts(productId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: favoriteKeys.savedProducts(),
+    queryFn: fetchSavedProducts,
+    select: (items: SavedProductItem[]) => items.find((item) => item.id === productId),
     enabled,
     staleTime: 1000 * 60,
   })

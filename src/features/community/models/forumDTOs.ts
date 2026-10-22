@@ -86,6 +86,34 @@ export interface ForumFavoriteResult {
  */
 export type GlobalPostsPage = PaginatedResponse<FeedPost>
 
+/**
+ * Orden de los feeds de posts (ver post-ranking.ts en el backend):
+ * hot = votos netos + frescura (por defecto) · new = solo recientes · top = más votos netos.
+ */
+export type FeedSort = 'hot' | 'new' | 'top'
+
+/**
+ * GET /home/posts. `source`: "joined" = posts de las comunidades a las que
+ * pertenece el usuario; "public" = comunidades públicas (sin sesión, o si
+ * todavía no está en ninguna comunidad o las suyas no tienen posts).
+ */
+export interface HomePostsPage extends GlobalPostsPage {
+  meta: { source: 'joined' | 'public' }
+}
+
+/** Post del "para ti" de Explorar: además trae cuántos de sus tags coinciden con los intereses. */
+export interface ExploreFeedPost extends FeedPost {
+  matchedTagCount?: number
+}
+
+/**
+ * GET /explore/forums/posts. `personalized` es false sin sesión o si el
+ * usuario no tiene intereses: el orden es solo popularidad + frescura.
+ */
+export interface ExplorePostsPage extends PaginatedResponse<ExploreFeedPost> {
+  meta: { personalized: boolean }
+}
+
 export interface GlobalPostsQuery {
   page?: number
   /** Maximo 50 (ver GetGlobalPostsQueryDto). */

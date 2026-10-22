@@ -26,8 +26,10 @@ export interface SaveInterestsPayload {
   privacyPolicyVersion?: string
   /** Locale detectado del navegador (ej. "es-CR"). */
   locale?: string
-  /** Moneda detectada del navegador (ej. "CRC"). */
+  /** Moneda detectada del navegador (ej. "CRC"): moneda de venta si luego publica. */
   currency?: string
+  /** Moneda en la que ve los precios: la misma que veía antes de crear la cuenta. */
+  displayCurrency?: string
 }
 
 /**
@@ -43,5 +45,11 @@ export async function saveInterestsRequest(payload: SaveInterestsPayload): Promi
 /** GET /users/me/tags — intereses ya elegidos por el usuario logueado. */
 export async function getMyInterestsRequest(): Promise<Interest[]> {
   const { data } = await myntedAPI.get<Interest[]>('/users/me/tags')
+  return data
+}
+
+/** GET /users/:id/tags — intereses de otra persona (perfil público; pide sesión). */
+export async function getUserInterestsRequest(userId: string): Promise<Interest[]> {
+  const { data } = await myntedAPI.get<Interest[]>(`/users/${userId}/tags`)
   return data
 }

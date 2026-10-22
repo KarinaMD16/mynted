@@ -1,10 +1,10 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import { ArrowLeft, Plus, Shield, ShoppingBag } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { ArrowLeft, Plus, Shield } from 'lucide-react'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { CommunityDetailHeader } from '@/features/community/components/detail/CommunityDetailHeader'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { CommunitySidebar } from '@/features/community/components/detail/CommunitySidebar'
 import { CreatePostDialog } from '@/features/community/components/create/CreatePostDialog'
 import { ForumPostCard } from '@/features/community/components/cards/ForumPostCard'
@@ -22,26 +22,21 @@ export default function CommunityDetailPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug' })
   const navigate = useNavigate()
-  const { isLoggedIn, isLoading: isLoadingSession, data: currentUser } = useCurrentUser()
+  const { data: currentUser } = useCurrentUser()
   const [activeTab, setActiveTab] = useState<CommunityTab>('talk')
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   // Publicar productos es exclusivo de vendedores (el backend lo exige con SellerGuard).
   const isSeller = currentUser?.role === 'seller'
 
-  const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
-  // Sin sesion no se usa lo que haya quedado en cache (trae rol y datos privados)
-  const community = isLoggedIn ? communityQuery.data : undefined
+  // Ver la comunidad y su foro no pide sesion (OptionalJwtAuthGuard). De una
+  // privada se devuelve la vitrina —nombre, descripcion, reglas— pero el foro
+  // responde 403: quien decide que podes leer es el servidor, no el frontend.
+  const communityQuery = useCommunityDetailBySlug(slug)
+  const community = communityQuery.data
   const productsQuery = useCommunityProducts(community?.id, activeTab === 'shop')
-  // En una comunidad privada el foro es solo para miembros: el backend responde
-  // 403, asi que aca ni se pide y se explica en vez de mostrar un error.
-  const canSeeForum = Boolean(community && (!community.isPrivate || community.isMember))
   // El foro ya no sale del detalle: tiene su propio endpoint paginado
-  const postsQuery = useCommunityPosts(
-    community?.id ?? 0,
-    { limit: 20 },
-    isLoggedIn && activeTab === 'talk' && canSeeForum,
-  )
-  const posts = isLoggedIn && canSeeForum ? (postsQuery.data?.data ?? []) : []
+  const postsQuery = useCommunityPosts(community?.id ?? 0, { limit: 20 }, activeTab === 'talk')
+  const posts = postsQuery.data?.data ?? []
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -90,18 +85,7 @@ export default function CommunityDetailPage() {
           </div>
         </div>
 
-        {!isLoadingSession && !isLoggedIn && (
-          <CommunityNotice title={t('community.detail.signedOutTitle')} description={t('community.detail.signedOutDescription')}>
-            <Link
-              to="/login"
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-            >
-              {t('communities.list.signIn')}
-            </Link>
-          </CommunityNotice>
-        )}
-
-        {(isLoadingSession || (isLoggedIn && communityQuery.isPending)) && (
+        {communityQuery.isPending && (
           <div className="flex flex-col gap-6">
             <div className="h-56 animate-pulse rounded-2xl bg-white" />
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -111,20 +95,12 @@ export default function CommunityDetailPage() {
           </div>
         )}
 
-        {isLoggedIn && communityQuery.isError && (
-          <CommunityNotice
-            title={t('community.detail.loadError')}
-            description={getApiErrorMessage(communityQuery.error)}
-          >
-            <Button
-              type="button"
-              onClick={() => void communityQuery.refetch()}
-              variant="secondary"
-              size="sm"
-            >
-              {t('communities.list.retry')}
-            </Button>
-          </CommunityNotice>
+        {communityQuery.isError && (
+          <QueryErrorState
+            error={communityQuery.error}
+            onRetry={() => void communityQuery.refetch()}
+            texts={{ notFound: { description: t('errors.notFound.community') }, error: { description: t('community.detail.loadError') } }}
+          />
         )}
 
         {community && (
@@ -148,31 +124,28 @@ export default function CommunityDetailPage() {
                     </Button>
                   )}
 
-                  {!canSeeForum ? (
-                    <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                      {t('community.detail.privateForum')}
-                    </p>
-                  ) : (
-                    <>
-                      {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
+                  {postsQuery.isPending && <div className="h-40 animate-pulse rounded-2xl bg-white" />}
 
-                      {postsQuery.isError && (
-                        <p className="text-sm text-red-500" role="alert">
-                          {t('forum.loadError')} {getApiErrorMessage(postsQuery.error)}
-                        </p>
-                      )}
-
-                      {posts.length > 0
-                        ? posts.map((post, index) => (
-                            <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
-                          ))
-                        : postsQuery.isSuccess && (
-                            <p className="rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center text-sm text-mynted-gray">
-                              {t('community.detail.noPosts')}
-                            </p>
-                          )}
-                    </>
+                  {postsQuery.isError && (
+                    <QueryErrorState
+                      error={postsQuery.error}
+                      onRetry={() => void postsQuery.refetch()}
+                      variant="compact"
+                      texts={{
+                        // 403 = la comunidad es privada y no sos miembro.
+                        forbidden: { description: t('community.detail.privateForum') },
+                        error: { description: t('forum.loadError') },
+                      }}
+                    />
                   )}
+
+                  {posts.length > 0
+                    ? posts.map((post, index) => (
+                        <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
+                      ))
+                    : postsQuery.isSuccess && (
+                        <ErrorState kind="empty" variant="compact" description={t('community.detail.noPosts')} />
+                      )}
                 </div>
 
                 <CommunitySidebar community={community} />
@@ -194,10 +167,7 @@ export default function CommunityDetailPage() {
                 <ProductGrid
                   query={productsQuery}
                   emptyState={
-                    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-mynted-border bg-white px-6 py-14 text-center">
-                      <ShoppingBag className="size-6 text-mynted-orange" aria-hidden="true" />
-                      <p className="font-heading text-base font-semibold text-mynted-ink">{t('products.shop.emptyTitle')}</p>
-                      <p className="max-w-md text-sm text-mynted-gray">{t('products.shop.emptySubtitle')}</p>
+                    <ErrorState kind="empty" variant="compact" title={t('products.shop.emptyTitle')} description={t('products.shop.emptySubtitle')}>
                       {isSeller && (
                         <Button
                           type="button"
@@ -210,7 +180,7 @@ export default function CommunityDetailPage() {
                           {t('products.create.inCommunityCta')}
                         </Button>
                       )}
-                    </div>
+                    </ErrorState>
                   }
                 />
               </div>

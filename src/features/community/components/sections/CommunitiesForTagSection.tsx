@@ -7,6 +7,7 @@ import { getCommunities } from '@/features/community/services/communityService'
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
 import type { CommunityTagItem } from '@/features/community/models/communityDTOs'
 import { EXPLORE_DOT_COLORS, EXPLORE_LIMIT } from '@/features/community/types/DEFAULT_VALUES'
+import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 
 interface CommunitiesForTagSectionProps {
   /** Los tags del producto, en orden. */
@@ -57,7 +58,7 @@ export function CommunitiesForTagSection({ tags }: CommunitiesForTagSectionProps
         </Link>
       </div>
 
-      <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+      <ul className={SHOP_GRID_CLASS}>
         {communities.map((community, position) => (
           <li key={community.id}>
             <ExploreCommunityCard

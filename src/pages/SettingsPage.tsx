@@ -1,4 +1,6 @@
-import { Link, getRouteApi, useNavigate } from '@tanstack/react-router'
+import { ErrorState } from '@/components/errors/ErrorState'
+import { getRouteApi, useNavigate } from '@tanstack/react-router'
+import { SignedOutState } from '@/components/errors/QueryErrorState'
 import { Bell, Lock, type LucideIcon, UserRound, UserSquare2 } from 'lucide-react'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { Loader } from '@/components/ui/Loader'
@@ -51,13 +53,10 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {!isLoading && !isLoggedIn && !isError && <SignedOutState />}
+        {!isLoading && !isLoggedIn && !isError && <SignedOutState description={t('settings.signedOutSubtitle')} />}
 
         {!isLoading && (isError || (isLoggedIn && !user)) && (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white py-24 text-center">
-            <h2 className="font-heading text-xl font-semibold text-mynted-ink">{t('profile.loadErrorTitle')}</h2>
-            <p className="max-w-sm text-sm text-mynted-gray">{t('profile.loadErrorSubtitle')}</p>
-          </div>
+          <ErrorState kind="error" description={t('profile.loadErrorSubtitle')} />
         )}
 
         {user && (
@@ -101,22 +100,6 @@ export default function SettingsPage() {
           </div>
         )}
       </main>
-    </div>
-  )
-}
-
-function SignedOutState() {
-  const { t } = useLanguage()
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-mynted-border bg-white py-24 text-center">
-      <h2 className="font-heading text-xl font-semibold text-mynted-ink">{t('settings.signedOutTitle')}</h2>
-      <p className="max-w-sm text-sm text-mynted-gray">{t('settings.signedOutSubtitle')}</p>
-      <Link
-        to="/login"
-        className="mt-2 rounded-[10px] bg-mynted-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-mynted-orange-hover"
-      >
-        {t('profile.goToLogin')}
-      </Link>
     </div>
   )
 }

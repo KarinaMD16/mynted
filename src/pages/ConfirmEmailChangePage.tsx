@@ -1,7 +1,8 @@
+import { ErrorState } from '@/components/errors/ErrorState'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { LoaderCircle } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, getHttpStatus } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { AuthShell } from '@/features/auth/components/AuthShell'
 import { useConfirmEmailChangeMutation } from '@/features/auth/hooks/useAuthMutations'
@@ -37,11 +38,11 @@ export default function ConfirmEmailChangePage() {
   let content
   if (!token) {
     content = (
-      <Message title={t('settings.confirmEmail.invalidTitle')} body={t('settings.confirmEmail.invalidBody')}>
+      <ErrorState kind="expired" variant="compact" className="border-0 bg-transparent p-0" description={t('settings.confirmEmail.invalidBody')}>
         <Button type="button" size="lg" fullWidth onClick={goToSettings}>
           {t('settings.confirmEmail.goToSettings')}
         </Button>
-      </Message>
+      </ErrorState>
     )
   } else if (confirmEmailChange.isSuccess) {
     content = (
@@ -50,6 +51,15 @@ export default function ConfirmEmailChangePage() {
           {t('settings.confirmEmail.goToSettings')}
         </Button>
       </Message>
+    )
+  } else if (confirmEmailChange.isError && getHttpStatus(confirmEmailChange.error) === 400) {
+    // 400 = token vencido, inválido o ya usado (ver AuthService.confirmEmailChange).
+    content = (
+      <ErrorState kind="expired" variant="compact" className="border-0 bg-transparent p-0">
+        <Button type="button" size="lg" fullWidth onClick={goToSettings}>
+          {t('settings.confirmEmail.requestAgain')}
+        </Button>
+      </ErrorState>
     )
   } else if (confirmEmailChange.isError) {
     content = (

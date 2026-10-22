@@ -1,6 +1,7 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import type { ReactNode } from 'react'
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
-import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
@@ -37,25 +38,13 @@ export function ProfileFeedFrame<TPage extends PaginatedResponse<unknown>>({
 
   if (query.isError) {
     return (
-      <div
-        className="flex flex-col items-center gap-2 rounded-2xl border border-mynted-border bg-white px-6 py-14 text-center"
-        role="alert"
-      >
-        <p className="text-sm font-semibold text-mynted-ink">{t('forum.list.loadError')}</p>
-        <p className="text-sm text-mynted-gray">{getApiErrorMessage(query.error)}</p>
-        <Button type="button" onClick={() => void query.refetch()} variant="secondary" size="sm" className="mt-2">
-          {t('communities.list.retry')}
-        </Button>
-      </div>
+      <QueryErrorState error={query.error} onRetry={() => void query.refetch()} texts={{ error: { description: t('forum.list.loadError') } }} />
     )
   }
 
   if (isEmpty) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-mynted-border bg-mynted-white px-6 py-16 text-center">
-        <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t(emptyTitle)}</h2>
-        <p className="max-w-sm text-sm text-mynted-gray">{t(emptySubtitle)}</p>
-      </div>
+      <ErrorState kind="empty" variant="compact" title={t(emptyTitle)} description={t(emptySubtitle)} />
     )
   }
 

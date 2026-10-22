@@ -1,6 +1,7 @@
+import { ErrorState } from '@/components/errors/ErrorState'
+import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorState'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
@@ -8,7 +9,6 @@ import {
   MY_COMMUNITIES_BENTO_LIMIT,
   MY_COMMUNITIES_QUERY,
 } from '@/features/community/types/DEFAULT_VALUES'
-import { CommunityNotice } from '@/features/community/components/ui/CommunityNotice'
 import { MyCommunityCard } from '@/features/community/components/cards/MyCommunityCard'
 import { Button } from '@/components/ui/Button'
 
@@ -62,37 +62,17 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
         )}
 
         {!isLoadingSession && !isLoggedIn && (
-          <CommunityNotice
-            title={t('communities.list.signedOutTitle')}
-            description={t('communities.list.signedOutDescription')}
-          >
-            <Link
-              to="/login"
-              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
-            >
-              {t('communities.list.signIn')}
-            </Link>
-          </CommunityNotice>
+          <SignedOutState description={t('communities.list.signedOutDescription')} />
         )}
 
         {isLoggedIn && myCommunitiesQuery.isError && (
-          <CommunityNotice
-            title={t('communities.list.loadError')}
-            description={getApiErrorMessage(myCommunitiesQuery.error)}
-          >
-            <Button
-              type="button"
-              onClick={() => void myCommunitiesQuery.refetch()}
-              variant="secondary"
-              size="sm"
-            >
-              {t('communities.list.retry')}
-            </Button>
-          </CommunityNotice>
+          <QueryErrorState error={myCommunitiesQuery.error} onRetry={() => void myCommunitiesQuery.refetch()} texts={{ error: { description: t('communities.list.loadError') } }} />
         )}
 
         {isLoggedIn && myCommunitiesQuery.isSuccess && communities.length === 0 && (
-          <CommunityNotice
+          <ErrorState
+            kind="empty"
+            variant="compact"
             title={t('communities.list.emptyTitle')}
             description={t('communities.list.emptyDescription')}
           >
@@ -104,7 +84,7 @@ export function MyCommunitiesSection({ onCreateCommunity }: { onCreateCommunity:
             >
               {t('communities.createCommunity')}
             </Button>
-          </CommunityNotice>
+          </ErrorState>
         )}
 
         {bentoCommunities.length > 0 && (

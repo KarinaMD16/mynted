@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCookie } from '@/cuicui/hooks/use-cookies'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { COOKIE_CONSENT_NAME, COOKIE_CONSENT_OPTIONS, DEFAULT_COOKIE_CONSENT, type CookieConsent } from '@/utils/cookieConsent'
 import { currencyOfRegion } from '@/utils/locale'
@@ -21,20 +22,23 @@ function wasDismissed(): boolean {
 
 /**
  * Al entrar, pregunta a qué país se envían las compras ("¿Dónde recibes tus
- * compras?") para no depender del idioma del navegador: el país elegido manda
- * la moneda de referencia de los precios (ver useDisplayCurrency). Arranca con
+ * compras?") para no depender del idioma del navegador. Sin sesión, el país
+ * elegido también define la moneda de los precios; con sesión esa moneda se
+ * elige en /settings (ver utils/displayCurrency.ts). Arranca con
  * el país detectado. Solo aparece si todavía no eligió uno, y después de
- * resolver el banner de cookies para no apilar avisos. "Ahora no" lo oculta
+ * resolver el banner de cookies para no apilar avisos y de saber si hay sesión
+ * (con sesión, el país sale de la cuenta). "Ahora no" lo oculta
  * solo durante esta visita.
  */
 export function ShipToDialog() {
   const { t } = useLanguage()
-  const { shipTo, setShipTo, options, detectedRegion } = useShipTo()
+  const { shipTo, setShipTo, options, detectedRegion, isLoading } = useShipTo()
+  const { isLoggedIn } = useCurrentUser()
   const [consent] = useCookie<CookieConsent>(COOKIE_CONSENT_NAME, DEFAULT_COOKIE_CONSENT, COOKIE_CONSENT_OPTIONS)
   const [dismissed, setDismissed] = useState(wasDismissed)
   const [draft, setDraft] = useState<string | null>(null)
 
-  const isOpen = consent.consent && shipTo === null && !dismissed
+  const isOpen = consent.consent && !isLoading && shipTo === null && !dismissed
   const selected = draft ?? detectedRegion
 
   function dismiss() {
@@ -68,7 +72,9 @@ export function ShipToDialog() {
             placeholder={t('shipTo.countryPlaceholder')}
             onChange={setDraft}
           />
-          <span className="text-xs text-mynted-gray">{t('shipTo.currencyNote', { currency: currencyOfRegion(selected) })}</span>
+          {!isLoggedIn && (
+            <span className="text-xs text-mynted-gray">{t('shipTo.currencyNote', { currency: currencyOfRegion(selected) })}</span>
+          )}
         </div>
 
         <DialogFooter>

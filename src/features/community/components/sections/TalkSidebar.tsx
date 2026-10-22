@@ -8,7 +8,7 @@ import { useJoinCommunity } from '@/features/community/hooks/useCommunitiesMutat
 import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
 import type { CommunityListItem } from '@/features/community/models/communityDTOs'
 import { useExploreProducts } from '@/features/products/hooks/useProductQueries'
-import { formatPrice } from '@/utils/price'
+import { formatPrice, shownPrice } from '@/utils/price'
 
 const SIDEBAR_PRODUCTS = 2
 const SIDEBAR_COMMUNITIES = 3
@@ -45,35 +45,41 @@ function SuggestedProducts() {
 
   const items = (products.data?.pages[0]?.data ?? []).slice(0, SIDEBAR_PRODUCTS)
 
-  if (products.isPending) return <SidebarSkeleton rows={SIDEBAR_PRODUCTS} />
+  // `isLoading` solo es true
+  // mientras de verdad esta pidiendo.
+  if (products.isLoading) return <SidebarSkeleton rows={SIDEBAR_PRODUCTS} />
   if (items.length === 0) return <p className="text-xs text-mynted-gray">{t('talk.sidebar.noProducts')}</p>
 
   return (
     <ul className="flex flex-col gap-3">
-      {items.map((product) => (
-        <li key={product.id}>
-          <Link
-            to="/products/$productId"
-            params={{ productId: String(product.id) }}
-            className="group flex items-center gap-3 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
-          >
-            <img
-              src={product.imageUrl}
-              alt=""
-              loading="lazy"
-              className="size-11 shrink-0 rounded-lg bg-mynted-bg object-cover"
-            />
-            <span className="flex min-w-0 flex-col">
-              <span className="truncate text-[13px] font-semibold text-mynted-ink group-hover:underline">
-                {product.title}
+      {items.map((product) => {
+        const shown = shownPrice(product)
+        return (
+          <li key={product.id}>
+            <Link
+              to="/products/$productId"
+              params={{ productId: String(product.id) }}
+              className="group flex items-center gap-3 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+            >
+              <img
+                src={product.imageUrl}
+                alt=""
+                loading="lazy"
+                className="size-11 shrink-0 rounded-lg bg-mynted-bg object-cover"
+              />
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-[13px] font-semibold text-mynted-ink group-hover:underline">
+                  {product.title}
+                </span>
+                <span className="text-xs text-mynted-gray">
+                  {shown.isConverted ? '≈ ' : ''}
+                  {formatPrice(shown.finalPrice, shown.currency, language)}
+                </span>
               </span>
-              <span className="text-xs text-mynted-gray">
-                {formatPrice(product.price, product.currency, language)}
-              </span>
-            </span>
-          </Link>
-        </li>
-      ))}
+            </Link>
+          </li>
+        )
+      })}
     </ul>
   )
 }
