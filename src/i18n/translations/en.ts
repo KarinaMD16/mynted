@@ -1157,6 +1157,7 @@ export const en: Record<TranslationKey, string> = {
   'forum.replies.title': 'Replies',
   'forum.replies.empty': 'No replies yet. Be the first to answer.',
   'forum.replies.membersOnly': 'Join the community to reply.',
+  'forum.replies.signedOut': 'Sign in to join the conversation.',
   'forum.replies.reply': 'Reply',
   'forum.replies.showMore': 'Show {{count}} more replies',
   'forum.replies.placeholder': 'Write a reply…',

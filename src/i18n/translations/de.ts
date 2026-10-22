@@ -1144,6 +1144,7 @@ export const de: Record<TranslationKey, string> = {
   'forum.replies.title': 'Antworten',
   'forum.replies.empty': 'Noch keine Antworten. Antworte als Erste oder Erster.',
   'forum.replies.membersOnly': 'Tritt der Community bei, um zu antworten.',
+  'forum.replies.signedOut': 'Melde dich an, um mitzureden.',
   'forum.replies.reply': 'Antworten',
   'forum.replies.showMore': '{{count}} weitere Antworten anzeigen',
   'forum.replies.placeholder': 'Schreib eine Antwort…',

@@ -1147,6 +1147,7 @@ export const es = {
   'forum.replies.title': 'Respuestas',
   'forum.replies.empty': 'Todavía no hay respuestas. Sé la primera persona en contestar.',
   'forum.replies.membersOnly': 'Únete a la comunidad para responder.',
+  'forum.replies.signedOut': 'Inicia sesión para unirte a la conversación.',
   'forum.replies.reply': 'Responder',
   'forum.replies.showMore': 'Ver {{count}} respuestas más',
   'forum.replies.placeholder': 'Escribe una respuesta…',

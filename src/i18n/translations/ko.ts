@@ -1145,6 +1145,7 @@ export const ko: Record<TranslationKey, string> = {
   'forum.replies.title': '답글',
   'forum.replies.empty': '아직 답글이 없습니다. 첫 답글을 남겨보세요.',
   'forum.replies.membersOnly': '답글을 쓰려면 커뮤니티에 가입하세요.',
+  'forum.replies.signedOut': '대화에 참여하려면 로그인하세요.',
   'forum.replies.reply': '답글',
   'forum.replies.showMore': '답글 {{count}}개 더 보기',
   'forum.replies.placeholder': '답글을 작성하세요…',
