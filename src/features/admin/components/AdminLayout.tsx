@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ExternalLink, FolderTree, LogOut, Store, Users, UsersRound } from 'lucide-react'
+import { ExternalLink, FolderTree, LogOut, Percent, Store, Users, UsersRound } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { Logo } from '@/components/ui/Logo'
 import { GooseIcon } from '@/components/ui/GooseIcon'
@@ -34,9 +34,14 @@ const SECTION_META: Record<
     descriptionKey: 'admin.sections.sellerRequestsDescription',
     icon: Store,
   },
+  commissions: {
+    labelKey: 'admin.sections.commissions',
+    descriptionKey: 'admin.sections.commissionsDescription',
+    icon: Percent,
+  },
 }
 
-const SECTION_ORDER: AdminSection[] = ['communities', 'categories', 'users', 'sellerRequests']
+const SECTION_ORDER: AdminSection[] = ['communities', 'categories', 'users', 'sellerRequests', 'commissions']
 
 const TAB_LABELS: Record<AdminTab, TranslationKey> = {
   overview: 'admin.tabs.overview',
