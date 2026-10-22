@@ -1,6 +1,7 @@
 import { ErrorState } from '@/components/errors/ErrorState'
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { SlidersHorizontal, X } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Slider as AriaSlider, SliderThumb as AriaSliderThumb, SliderTrack as AriaSliderTrack } from 'react-aria-components'
@@ -88,7 +89,27 @@ export default function ExplorePage() {
   const [onlyMyCountry, setOnlyMyCountry] = useState(false)
   const [priceSteps, setPriceSteps] = useState<[number, number]>([0, LAST_STEP])
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<ExploreTab>('shop')
+  // La pestana vive en la URL (?tab=), no en el estado: asi volver de una
+  // publicacion devuelve la pestana en la que se estaba (ver exploreRoute).
+  const { tab: activeTab } = useSearch({ from: '/explore' })
+  const navigate = useNavigate({ from: '/explore' })
+
+  /**
+   * Pestanas que ya se abrieron alguna vez. Una vez montada, la pestana se queda
+   * en el arbol y solo se oculta: asi cambiar de pestana no vuelve a disparar las
+   * animaciones de entrada ni pierde el scroll, los filtros o lo que haya escrito.
+   * La que no se visito todavia ni se monta, para no pedir datos que nadie pidio.
+   */
+  const [openedTabs, setOpenedTabs] = useState<ExploreTab[]>(() =>
+    activeTab === 'shop' ? ['shop'] : ['shop', activeTab],
+  )
+
+  function openTab(tab: ExploreTab) {
+    setOpenedTabs((current) => (current.includes(tab) ? current : [...current, tab]))
+    // `replace` para que cambiar de pestana no llene el historial: el boton
+    // atras tiene que salir de Explorar, no recorrer las pestanas visitadas.
+    void navigate({ search: (prev) => ({ ...prev, tab }), replace: true })
+  }
 
   const filters: ExploreFilters = {
     ...(category !== undefined && { category }),
@@ -146,7 +167,7 @@ export default function ExplorePage() {
                   variant="ghost"
                   role="tab"
                   aria-selected={isActive}
-                  onClick={() => setActiveTab(id)}
+                  onClick={() => openTab(id)}
                   className={`rounded-[10px] px-[18px] text-[15px] ${
                     isActive
                       ? 'bg-[#ffdfd1] font-semibold text-mynted-orange hover:bg-[#ffdfd1] hover:text-mynted-orange'
@@ -187,9 +208,17 @@ export default function ExplorePage() {
           )}
         </ScrollReveal>
 
-        {activeTab === 'talk' ? (
-          <TalkFeed />
-        ) : (
+        {/*
+          `contents` deja el contenedor sin caja propia, asi la pestana visible
+          sigue siendo hija directa del main y conserva el `gap` del layout.
+        */}
+        {openedTabs.includes('talk') && (
+          <div className={activeTab === 'talk' ? 'contents' : 'hidden'}>
+            <TalkFeed />
+          </div>
+        )}
+
+        <div className={activeTab === 'shop' ? 'contents' : 'hidden'}>
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:items-start lg:gap-8">
             <ScrollReveal className={`${filtersOpen ? 'block' : 'hidden'} lg:sticky lg:top-28 lg:block`}>
               <aside
@@ -298,7 +327,7 @@ export default function ExplorePage() {
               )}
             </section>
           </div>
-        )}
+        </div>
       </main>
     </div>
   )

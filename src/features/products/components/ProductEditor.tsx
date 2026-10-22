@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Select'
 import { TextField } from '@/components/ui/TextField'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useTags } from '@/features/community/hooks/useCommunitiesQueries'
+import { CommissionPreview } from '@/features/payments/components/CommissionPreview'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { getFieldErrorMessage } from '@/utils/form'
 import { useObjectUrl } from '../hooks/useObjectUrl'
@@ -536,7 +537,12 @@ export function ProductEditorForm({
                           onBlur={field.handleBlur}
                           error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
                         />
-                        {type === 'exchange' && <span className={hintClass}>{t('products.create.priceExchangeHint')}</span>}
+                        {type === 'exchange' ? (
+                          <span className={hintClass}>{t('products.create.priceExchangeHint')}</span>
+                        ) : (
+                          // Cuánto queda después de la comisión, con el precio que se está escribiendo.
+                          <CommissionPreview price={field.state.value} currency={currency} />
+                        )}
                       </div>
                     )}
                   </form.Field>

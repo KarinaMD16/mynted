@@ -49,7 +49,7 @@ export interface SellerRequestDetail {
 /** Decisión sobre una solicitud de vendedor (ver UpdateSellerStatusDto en el backend). */
 export type SellerDecision = 'approved' | 'rejected'
 
-export const ADMIN_SECTIONS = ['communities', 'categories', 'users', 'sellerRequests'] as const
+export const ADMIN_SECTIONS = ['communities', 'categories', 'users', 'sellerRequests', 'commissions'] as const
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]
 
 export const ADMIN_TABS = ['overview', 'manage'] as const

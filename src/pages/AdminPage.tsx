@@ -3,6 +3,7 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { AdminLayout } from '@/features/admin/components/AdminLayout'
 import { useAdminUsers } from '@/features/admin/hooks/useAdminQueries'
 import { CategoriesSection } from '@/features/admin/sections/CategoriesSection'
+import { CommissionsSection } from '@/features/admin/sections/CommissionsSection'
 import { CommunitiesSection } from '@/features/admin/sections/CommunitiesSection'
 import { SellerRequestsSection } from '@/features/admin/sections/SellerRequestsSection'
 import { UsersSection } from '@/features/admin/sections/UsersSection'
@@ -57,6 +58,7 @@ export default function AdminPage() {
       {section === 'categories' && <CategoriesSection tab={tab} />}
       {section === 'users' && <UsersSection tab={tab} currentUserId={user.id} />}
       {section === 'sellerRequests' && <SellerRequestsSection tab={tab} currentUserId={user.id} />}
+      {section === 'commissions' && <CommissionsSection tab={tab} />}
     </AdminLayout>
   )
 }
