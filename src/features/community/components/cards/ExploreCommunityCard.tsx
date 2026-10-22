@@ -19,7 +19,8 @@ export function ExploreCommunityCard({ community, dotClassName }: ExploreCommuni
       aria-label={t('community.card.open', { name: community.name })}
       className="group flex flex-col overflow-hidden rounded-xl border border-mynted-border bg-white transition-transform hover:scale-[1.02]"
     >
-      <div className="aspect-square w-full overflow-hidden bg-mynted-bg">
+      {/* Mismo alto que la tarjeta de producto: cuadrada en móvil, 170px de ahí en adelante. */}
+      <div className="aspect-square w-full overflow-hidden bg-mynted-bg sm:aspect-auto sm:h-[170px]">
         {community.imageUrl ? (
           <img
             src={community.imageUrl}

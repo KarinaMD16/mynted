@@ -6,6 +6,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import type { CommunityListItem } from '@/features/community/models/communityDTOs'
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
 import { EXPLORE_DOT_COLORS } from '@/features/community/types/DEFAULT_VALUES'
+import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
 
 interface CommunityGridPageProps {
   title: string
@@ -29,7 +30,7 @@ export function CommunityGridPage({ title, subtitle, communities, isLoading, not
         <SiteHeader />
       </div>
 
-      <main className="flex flex-col gap-6 px-6 py-10 sm:px-14">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 py-10 sm:px-6 lg:px-14">
         <div className="flex flex-col gap-2">
           <Link
             to="/communities"
@@ -44,7 +45,7 @@ export function CommunityGridPage({ title, subtitle, communities, isLoading, not
         </div>
 
         {isLoading && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className={SHOP_GRID_CLASS}>
             {Array.from({ length: 10 }, (_, index) => (
               <div key={index} className="aspect-square animate-pulse rounded-xl bg-white" />
             ))}
@@ -54,7 +55,7 @@ export function CommunityGridPage({ title, subtitle, communities, isLoading, not
         {notice}
 
         {communities.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className={SHOP_GRID_CLASS}>
             {communities.map((community, index) => (
               <ExploreCommunityCard
                 key={community.id}
