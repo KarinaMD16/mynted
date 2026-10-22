@@ -199,7 +199,19 @@ export default function ProductDetailPage() {
             <>
               <Breadcrumb title={product.data.title} />
               <Detail key={product.data.id} product={product.data} contact={contact} purchase={purchase} fitsContainer={isDesktop} />
-              {isActive && <ProductReviews productId={product.data.id} isOwnProduct={isOwnProduct} />}
+              {/*
+                También en un producto vendido: es justo después de comprarlo
+                cuando se reseña, y esconderlas ahí borraba de la pantalla
+                todas las reseñas que ya tenía. Solo se ocultan en un borrador,
+                que todavía no existe para nadie más.
+              */}
+              {product.data.status !== 'draft' && (
+                <ProductReviews
+                  productId={product.data.id}
+                  canComment={product.data.canComment ?? false}
+                  isOwnProduct={isOwnProduct}
+                />
+              )}
               {related.data && related.data.length > 0 && (
                 <Related title={t('itemDetail.relatedBySeller')} items={related.data} horizontal />
               )}

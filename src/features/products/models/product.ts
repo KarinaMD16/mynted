@@ -72,6 +72,12 @@ export interface ProductSeller {
   /** null si todavía no tiene reseñas. */
   ratingAverage: number | null
   reviewsCount: number
+  /**
+   * Si quien mira puede reseñarlo AHORA. Lo decide el backend con la misma
+   * regla que valida POST /products/:id/reviews: hay sesion, no es suyo, no es
+   * un intercambio, lo compro (compra completada) y todavia no lo reseño.
+   */
+  canComment?: boolean
 }
 
 /**
