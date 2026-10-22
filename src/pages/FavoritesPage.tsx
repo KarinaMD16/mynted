@@ -3,6 +3,8 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 export default function FavoritesPage() {
   const { t } = useLanguage()
@@ -12,7 +14,7 @@ export default function FavoritesPage() {
     <section className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="flex flex-col gap-6 px-6 py-10 sm:px-14 sm:py-15">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 py-10 sm:py-15')}>
         <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{t('favorites.page.title')}</h1>
 
         {isLoadingSession && (

@@ -1,5 +1,7 @@
 import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from './SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /**
  * Layout compartido para las pantallas del nav que todavía no tienen
@@ -12,7 +14,7 @@ export function PlaceholderPage({ title, description }: { title: string; descrip
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex max-w-[1320px] justify-center px-4 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'flex justify-center')}>
         {/* El ganso con megáfono anuncia que la sección viene pronto; su nombre va como etiqueta. */}
         <ErrorState kind="comingSoon" variant="page" eyebrow={title} description={description} />
       </main>

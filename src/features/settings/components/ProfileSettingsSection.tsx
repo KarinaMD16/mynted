@@ -233,12 +233,16 @@ function SellerCard({ user }: { user: AuthUser }) {
           <CurrencyForm user={user} />
         </div>
       ) : status === 'pending' ? (
-        <StatusBanner
-          tone="neutral"
-          icon={<Clock className="size-5" aria-hidden="true" />}
-          title={t('settings.profile.sellerPendingTitle')}
-          body={t('settings.profile.sellerPendingBody')}
-        />
+        <div className="flex flex-col gap-5">
+          <StatusBanner
+            tone="neutral"
+            icon={<Clock className="size-5" aria-hidden="true" />}
+            title={t('settings.profile.sellerPendingTitle')}
+            body={t('settings.profile.sellerPendingBody')}
+          />
+          {/* Sin moneda el superadmin no puede aprobar la solicitud (400): se elige aquí mientras está pendiente. */}
+          <CurrencyForm user={user} />
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {status === 'rejected' && (

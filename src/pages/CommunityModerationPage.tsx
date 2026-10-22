@@ -15,6 +15,8 @@ import {
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 type ModerationTab = 'reports' | 'requests' | 'members' | 'rules' | 'settings'
 
@@ -52,7 +54,7 @@ export default function CommunityModerationPage() {
     <section className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 sm:px-10">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 py-8')}>
         <Link
           to="/communities/$slug"
           params={{ slug }}

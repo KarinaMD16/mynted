@@ -22,6 +22,8 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3'
 
@@ -51,7 +53,7 @@ export default function StorePage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex max-w-[1320px] flex-col gap-8 px-4 pt-6 pb-24 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-8 pt-6 pb-24')}>
         {sellerId !== undefined && store.isPending ? (
           <div className="flex justify-center py-24">
             <Loader label={t('store.loading')} />

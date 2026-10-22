@@ -13,6 +13,8 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useScrollToHash } from '@/hooks/useScrollToHash'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /** Publicacion del foro con sus respuestas (ver forum.controller.ts) */
 export default function PostDetailPage() {
@@ -41,11 +43,9 @@ export default function PostDetailPage() {
 
   return (
     <section className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 sm:px-10">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 py-8')}>
         {/*
           A la publicacion se llega desde la comunidad, desde el home o desde
           Explorar, asi que volver sigue el historial. Solo cuando no hay nada

@@ -36,6 +36,7 @@ import { cx } from '@/utils/cx'
 
 import { readRecentProductIds, rememberRecentProduct } from '@/utils/recentProducts'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
 
 const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
   new: 'products.condition.new',
@@ -182,7 +183,7 @@ export default function ProductDetailPage() {
             'flex w-full flex-col gap-10 pt-7 pb-24',
             isDesktop
               ? cx('@container min-w-0 flex-1 transition-[padding]', CHAT_DOCK_CSS_TRANSITION, isDocked ? 'px-4' : 'px-14')
-              : 'mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-14',
+              : PAGE_CONTAINER,
           )}
         >
           {product.isPending && productId !== undefined ? (
@@ -223,7 +224,7 @@ function Breadcrumb({ title }: { title: string }) {
   const { t } = useLanguage()
   return (
     <ScrollReveal>
-      <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-2">
+      <nav aria-label={t('common.breadcrumb')} className="flex flex-wrap items-center gap-2">
         <Link to="/" className="rounded-[10px] bg-[#f3f3f2] px-[18px] py-[9px] text-[15px] font-medium text-mynted-gray hover:text-mynted-ink">
           {t('shop.tab.shop')}
         </Link>
