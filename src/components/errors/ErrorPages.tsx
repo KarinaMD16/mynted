@@ -5,6 +5,8 @@ import { useLanguage, type TranslateFn } from '@/i18n/LanguageContext'
 import { es, type TranslationKey } from '@/i18n/translations/es'
 import { ErrorState, ErrorStateView } from './ErrorState'
 import { getErrorKind } from './errorKind'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /** Estilo de los enlaces de salida, igual al botón primario del resto de la app. */
 export const errorPrimaryLinkClass =
@@ -35,7 +37,7 @@ export function NotFoundPage() {
   return (
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
-      <main className="mx-auto flex max-w-[1320px] justify-center px-4 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'flex justify-center')}>
         <ErrorState kind="notFound" variant="page">
           <DefaultActions />
         </ErrorState>
@@ -54,7 +56,7 @@ export function ForbiddenPage({ title, description }: ForbiddenPageProps) {
   return (
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
-      <main className="mx-auto flex max-w-[1320px] justify-center px-4 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'flex justify-center')}>
         <ErrorState kind="forbidden" variant="page" title={title} description={description}>
           <DefaultActions />
         </ErrorState>

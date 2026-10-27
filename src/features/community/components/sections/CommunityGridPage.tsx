@@ -7,6 +7,8 @@ import type { CommunityListItem } from '@/features/community/models/communityDTO
 import { ExploreCommunityCard } from '@/features/community/components/cards/ExploreCommunityCard'
 import { EXPLORE_DOT_COLORS } from '@/features/community/types/DEFAULT_VALUES'
 import { SHOP_GRID_CLASS } from '@/features/products/components/ShopFeed'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 interface CommunityGridPageProps {
   title: string
@@ -26,11 +28,9 @@ export function CommunityGridPage({ title, subtitle, communities, isLoading, not
 
   return (
     <section className="min-h-svh bg-mynted-bg">
-      <div className="px-4 pt-5 sm:px-6">
-        <SiteHeader />
-      </div>
+      <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 py-10 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 py-10')}>
         <div className="flex flex-col gap-2">
           <Link
             to="/communities"

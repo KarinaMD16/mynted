@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useForm } from '@tanstack/react-form'
+import { z } from 'zod'
 import { Banknote, LoaderCircle, Wallet } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { getFieldErrorMessage } from '@/utils/form'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { Select } from '@/components/ui/Select'
 import { TextField } from '@/components/ui/TextField'
+import { currencyOptions } from '@/utils/currencyOptions'
+import { SUPPORTED_CURRENCIES, detectCurrency } from '@/utils/locale'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useRequestSellerMutation } from '../hooks/useAuthMutations'
+import { useCurrentUser } from '../hooks/useCurrentUser'
+import { useRequestSellerMutation, useUpdateProfileMutation } from '../hooks/useAuthMutations'
 import { makeRequestSellerSchema } from '../schema/sellerSchema'
 import type { PaymentType } from '../models/auth'
 import { Button } from '@/components/ui/Button'
@@ -33,11 +38,27 @@ export function BecomeSellerForm({ isOpen, onClose }: BecomeSellerFormProps) {
 }
 
 function BecomeSellerDialogBody({ onClose }: { onClose: () => void }) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [isDone, setIsDone] = useState(false)
+  const accountCurrency = useCurrentUser().data?.currency ?? null
 
-  const requestSellerSchema = useMemo(() => makeRequestSellerSchema(t), [t])
+  // La moneda no va en POST /users/me/request-seller: se guarda antes con
+  // PATCH /users/me. Es obligatoria para que el superadmin pueda aprobar la
+  // solicitud, y normalmente se elige sola en el onboarding; este campo cubre
+  // las cuentas que se lo saltaron (y deja confirmarla o cambiarla).
+  const requestSellerSchema = useMemo(
+    () =>
+      makeRequestSellerSchema(t).extend({
+        currency: z.string().refine((code) => SUPPORTED_CURRENCIES.includes(code), {
+          message: t('validation.seller.currencyRequired'),
+        }),
+      }),
+    [t],
+  )
+  const options = useMemo(() => currencyOptions(language), [language])
   const requestSellerMutation = useRequestSellerMutation()
+  const updateProfileMutation = useUpdateProfileMutation()
+  const submitError = updateProfileMutation.error ?? requestSellerMutation.error
 
   const form = useForm({
     defaultValues: {
@@ -48,11 +69,18 @@ function BecomeSellerDialogBody({ onClose }: { onClose: () => void }) {
       type: 'bank_account' as PaymentType,
       name: '',
       number: '',
+      currency: accountCurrency && SUPPORTED_CURRENCIES.includes(accountCurrency) ? accountCurrency : detectCurrency(),
     },
     validators: { onChange: requestSellerSchema },
     onSubmit: async ({ value }) => {
+      const { currency, ...request } = value
       try {
-        await requestSellerMutation.mutateAsync(value)
+        if (currency !== accountCurrency) {
+          const formData = new FormData()
+          formData.append('currency', currency)
+          await updateProfileMutation.mutateAsync(formData)
+        }
+        await requestSellerMutation.mutateAsync(request)
         setIsDone(true)
       } catch {
         // el hook muestra el error abajo del form
@@ -152,6 +180,33 @@ function BecomeSellerDialogBody({ onClose }: { onClose: () => void }) {
                   onBlur={field.handleBlur}
                   error={error}
                 />
+              )
+            }}
+          </form.Field>
+
+          <form.Field name="currency">
+            {(field) => {
+              const error = field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined
+              return (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="become-seller-currency" className="text-[13px] font-medium text-mynted-ink">
+                    {t('profile.becomeSeller.currencyLabel')}
+                  </label>
+                  <Select
+                    id="become-seller-currency"
+                    value={field.state.value}
+                    options={options}
+                    placeholder={t('settings.profile.currencyPlaceholder')}
+                    searchable
+                    searchPlaceholder={t('profile.becomeSeller.currencySearch')}
+                    invalid={Boolean(error)}
+                    onChange={field.handleChange}
+                    onBlur={field.handleBlur}
+                  />
+                  <p className={error ? 'text-xs text-red-500' : 'text-xs text-mynted-gray'}>
+                    {error ?? t('profile.becomeSeller.currencyHint')}
+                  </p>
+                </div>
               )
             }}
           </form.Field>
@@ -257,9 +312,9 @@ function BecomeSellerDialogBody({ onClose }: { onClose: () => void }) {
           </form.Subscribe>
         </div>
 
-        {requestSellerMutation.isError && (
+        {submitError && (
           <p className="mt-4 text-right text-sm text-red-500" role="alert">
-            {getApiErrorMessage(requestSellerMutation.error)}
+            {getApiErrorMessage(submitError)}
           </p>
         )}
 
@@ -277,11 +332,11 @@ function BecomeSellerDialogBody({ onClose }: { onClose: () => void }) {
             {([canSubmit, isSubmitting]) => (
               <Button
                 type="submit"
-                disabled={!canSubmit || requestSellerMutation.isPending}
+                disabled={!canSubmit || requestSellerMutation.isPending || updateProfileMutation.isPending}
                 variant="primary"
                 size="md"
               >
-                {isSubmitting || requestSellerMutation.isPending ? (
+                {isSubmitting || requestSellerMutation.isPending || updateProfileMutation.isPending ? (
                   <>
                     <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
                     {t('profile.becomeSeller.submitting')}

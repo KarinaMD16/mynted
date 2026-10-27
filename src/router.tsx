@@ -108,8 +108,9 @@ const exploreRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore',
   component: ExplorePage,
-  validateSearch: (search: Record<string, unknown>): { tab: 'shop' | 'talk' } => ({
-    tab: search.tab === 'talk' ? 'talk' : 'shop',
+  // Opcional: así los enlaces a /explore no tienen que mandar ?tab= (sin él, Shop).
+  validateSearch: (search: Record<string, unknown>): { tab?: 'shop' | 'talk' } => ({
+    tab: search.tab === 'talk' ? 'talk' : undefined,
   }),
 })
 

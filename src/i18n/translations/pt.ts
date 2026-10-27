@@ -7,6 +7,8 @@ import type { TranslationKey } from './es'
  */
 export const pt: Record<TranslationKey, string> = {
   'cookieBanner.title': 'Usamos cookies para melhorar sua experiência',
+  'common.close': "Fechar",
+  'common.breadcrumb': "Trilha de navegação",
   'cookieBanner.description':
     'Ao clicar em "Aceitar todos", você concorda com o uso de todos os cookies. Acesse nossa',
   'cookieBanner.cookiesPolicyLinkText': 'Política de Cookies',
@@ -447,6 +449,9 @@ export const pt: Record<TranslationKey, string> = {
     'Conte aos colecionadores o que você vende e o que torna seus itens especiais…',
   'profile.becomeSeller.locationLabel': 'Localização',
   'profile.becomeSeller.locationPlaceholder': 'Ex.: San José, Costa Rica',
+  'profile.becomeSeller.currencyLabel': "Moeda em que você vai vender",
+  'profile.becomeSeller.currencyHint': "Seus produtos são publicados e cobrados nesta moeda. Você pode mudá-la depois em Configurações.",
+  'profile.becomeSeller.currencySearch': "Buscar moeda",
   'profile.becomeSeller.ownerFullNameLabel': 'Nome completo do titular da conta',
   'profile.becomeSeller.ownerFullNamePlaceholder': 'Seu nome completo',
   'profile.becomeSeller.paymentTypeLabel': 'Forma de pagamento',
@@ -836,6 +841,7 @@ export const pt: Record<TranslationKey, string> = {
   'validation.seller.descriptionMaxLength': 'Não pode ter mais de 1000 caracteres',
   'validation.seller.locationRequired': 'A localização é obrigatória',
   'validation.seller.locationMaxLength': 'Não pode ter mais de 150 caracteres',
+  'validation.seller.currencyRequired': "Escolha a moeda em que você vai vender",
   'validation.seller.ownerFullNameRequired': 'O nome completo do titular da conta é obrigatório',
   'validation.seller.ownerFullNameMaxLength': 'Não pode ter mais de 150 caracteres',
   'validation.seller.paymentNameRequired': 'Este campo é obrigatório',

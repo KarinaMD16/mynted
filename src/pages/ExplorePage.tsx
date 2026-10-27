@@ -28,6 +28,8 @@ import type { TranslationKey } from '@/i18n/translations/es'
 import { INTL_LOCALES, regionName } from '@/utils/locale'
 import { displayFieldsOf } from '@/utils/price'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 type ExploreTab = 'shop' | 'talk'
 
@@ -92,7 +94,8 @@ export default function ExplorePage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   // La pestana vive en la URL (?tab=), no en el estado: asi volver de una
   // publicacion devuelve la pestana en la que se estaba (ver exploreRoute).
-  const { tab: activeTab } = useSearch({ from: '/explore' })
+  const { tab } = useSearch({ from: '/explore' })
+  const activeTab: ExploreTab = tab ?? 'shop'
   const navigate = useNavigate({ from: '/explore' })
 
   /**
@@ -109,7 +112,7 @@ export default function ExplorePage() {
     setOpenedTabs((current) => (current.includes(tab) ? current : [...current, tab]))
     // `replace` para que cambiar de pestana no llene el historial: el boton
     // atras tiene que salir de Explorar, no recorrer las pestanas visitadas.
-    void navigate({ search: (prev) => ({ ...prev, tab }), replace: true })
+    void navigate({ search: (prev) => ({ ...prev, tab: tab === 'talk' ? tab : undefined }), replace: true })
   }
 
   const filters: ExploreFilters = {
@@ -157,7 +160,7 @@ export default function ExplorePage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-7 pb-24')}>
         <ScrollReveal>
           <div role="tablist" className="flex items-center gap-2">
             {EXPLORE_TABS.map(({ id, labelKey }) => {

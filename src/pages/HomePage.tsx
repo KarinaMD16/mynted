@@ -10,6 +10,8 @@ import type { CommunityListItem } from '@/features/community/models/communityDTO
 import { ShopFeed } from '@/features/products/components/ShopFeed'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { SiteHeader } from '../components/layout/SiteHeader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /**
  * Home. De arriba a abajo:
@@ -33,7 +35,7 @@ export default function HomePage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-16 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-16 pt-7 pb-24')}>
         {/* Mientras se resuelve la sesión no se muestra, para que no aparezca y desaparezca. */}
         {!isLoading && !isLoggedIn && <Hero />}
 

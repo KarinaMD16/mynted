@@ -40,6 +40,8 @@ import {
 import { discountOf } from '../utils/discount'
 import { ProductPrice } from './ProductPrice'
 import { CONDITION_LABEL, errorClass, hintClass, labelClass } from './productFormShared'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 /** Comunidad a la que puede ir el producto (la fija de ?community= o las de la persona). */
 export interface TargetCommunity {
@@ -66,7 +68,7 @@ export function ProductEditorLayout({ children }: { children: ReactNode }) {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-4 pt-7 pb-24 sm:px-6 lg:px-14">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 pt-7 pb-24')}>
         {isLoading ? (
           <div className="h-64 animate-pulse rounded-2xl bg-white" aria-busy="true" />
         ) : !isLoggedIn ? (
@@ -335,7 +337,7 @@ export function ProductEditorForm({
 
   return (
     <>
-      {/* Barra superior: volver, título y acciones */}
+      {/* Barra superior: volver y título. Las acciones van al final del formulario. */}
       <ScrollReveal className={`${CARD_CLASS} flex flex-wrap items-center justify-between gap-4 py-4`}>
         <div className="flex min-w-0 items-center gap-3">
           <Button
@@ -355,28 +357,6 @@ export function ProductEditorForm({
               {t(isEdit ? 'myProducts.edit.subtitle' : 'products.create.subtitle')}
             </p>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" size="md" onClick={goBack} disabled={isPending}>
-            {t('profile.edit.cancel')}
-          </Button>
-          {(!isEdit || isDraftProduct) && (
-            <Button type="button" variant="secondary" size="md" onClick={() => submitAs('draft')} disabled={isPending}>
-              {t('products.create.saveDraft')}
-            </Button>
-          )}
-          <Button
-            type="submit"
-            form={FORM_ID}
-            variant="primary"
-            size="md"
-            disabled={isPending || !canPublish}
-            isLoading={isPending}
-          >
-            {isEdit && !isDraftProduct
-              ? t(isPending ? 'profile.edit.saving' : 'myProducts.edit.save')
-              : t(isPending ? 'products.create.publishing' : 'products.create.submit')}
-          </Button>
         </div>
       </ScrollReveal>
 
@@ -653,6 +633,23 @@ export function ProductEditorForm({
               {getApiErrorMessage(submitError)}
             </p>
           )}
+
+          {/* Acciones al final: se publica después de llenar todo, sin volver arriba. */}
+          <div className="mt-6 flex flex-col-reverse gap-2 border-t border-mynted-border pt-5 sm:flex-row sm:justify-end">
+            <Button type="button" variant="secondary" size="md" onClick={goBack} disabled={isPending}>
+              {t('profile.edit.cancel')}
+            </Button>
+            {(!isEdit || isDraftProduct) && (
+              <Button type="button" variant="secondary" size="md" onClick={() => submitAs('draft')} disabled={isPending}>
+                {t('products.create.saveDraft')}
+              </Button>
+            )}
+            <Button type="submit" variant="primary" size="md" disabled={isPending || !canPublish} isLoading={isPending}>
+              {isEdit && !isDraftProduct
+                ? t(isPending ? 'profile.edit.saving' : 'myProducts.edit.save')
+                : t(isPending ? 'products.create.publishing' : 'products.create.submit')}
+            </Button>
+          </div>
         </ScrollReveal>
       </form>
     </>

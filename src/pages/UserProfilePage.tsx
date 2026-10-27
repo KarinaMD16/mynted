@@ -24,6 +24,8 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import type { AppLanguage } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { cx } from '@/utils/cx'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -58,7 +60,7 @@ export default function UserProfilePage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto max-w-[1320px] px-4 pt-6 pb-16 sm:px-6">
+      <main className={cx(PAGE_CONTAINER, 'pt-6 pb-16')}>
         {isLoadingSession || (isLoggedIn && userQuery.isPending) ? (
           <div className="flex justify-center py-24">
             <Loader label={t('profile.loadingProfile')} />
