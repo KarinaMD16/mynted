@@ -282,6 +282,8 @@ function StoreCatalog({ sellerId }: { sellerId: number }) {
                         tags: product.productTags?.map((item) => item.tag) ?? [],
                         type: product.type,
                         status: product.status,
+                        // Destacados del vendedor (Pro): GET /sellers/:id/products ya los manda primero.
+                        isFeatured: product.isFeatured,
                       }}
                     />
                   </StaggerItem>

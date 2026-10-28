@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="pro-fill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fd8552"/>
+      <stop offset="0.55" stop-color="#c45fd6"/>
+      <stop offset="1" stop-color="#2f5fff"/>
+    </linearGradient>
+    <linearGradient id="pro-ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff6c8"/>
+      <stop offset="0.5" stop-color="#e0a526"/>
+      <stop offset="1" stop-color="#b8860b"/>
+    </linearGradient>
+    <radialGradient id="pro-gloss" cx="0.35" cy="0.25" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="512" cy="512" r="440" fill="url(#pro-ring)"/>
+  <circle cx="512" cy="512" r="396" fill="url(#pro-fill)"/>
+  <circle cx="512" cy="512" r="396" fill="url(#pro-gloss)"/>
+  <path d="M512 228c22 150 72 214 214 236-142 22-192 86-214 236-22-150-72-214-214-236 142-22 192-86 214-236Z" fill="#ffffff"/>
+  <path d="M724 252c9 58 28 78 84 88-56 10-75 30-84 88-9-58-28-78-84-88 56-10 75-30 84-88Z" fill="#ffffff" opacity="0.9"/>
+  <path d="M318 640c7 42 21 57 62 64-41 7-55 22-62 64-7-42-21-57-62-64 41-7 55-22 62-64Z" fill="#ffffff" opacity="0.8"/>
+  <text x="512" y="842" text-anchor="middle" font-family="Poppins, Inter, system-ui, sans-serif" font-size="120" font-weight="700" letter-spacing="12" fill="#ffffff">PRO</text>
+</svg>

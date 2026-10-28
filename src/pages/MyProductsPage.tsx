@@ -3,21 +3,29 @@ import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PackageCheck, PauseCircle, Pencil, Play, Plus, Receipt, Rocket, Search, Trash2 } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, getHttpStatus } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { CommissionCard } from '@/features/payments/components/CommissionCard'
+import {
+  FeaturedPauseNote,
+  FeaturedSlotsCard,
+  FeaturedStatus,
+  FeaturedToggleButton,
+} from '@/features/products/components/FeaturedControls'
 import { CONDITION_LABEL } from '@/features/products/components/productFormShared'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
 import {
   useDeleteProductMutation,
   usePublishProductMutation,
+  useToggleFeaturedMutation,
   useUpdateProductStatusMutation,
 } from '@/features/products/hooks/useProductMutations'
-import { useMyProductsDashboard, useMyProductsStats } from '@/features/products/hooks/useProductQueries'
+import { useFeaturedSummary, useMyProductsDashboard, useMyProductsStats } from '@/features/products/hooks/useProductQueries'
 import type {
+  FeaturedSummary,
   MyProductCard,
   MyProductsFilters,
   ProductStatus,
@@ -71,6 +79,8 @@ export default function MyProductsPage() {
   const navigate = useNavigate()
   const { data: user, isLoggedIn, isLoading: isLoadingUser } = useCurrentUser()
   const isSeller = user?.role === 'seller'
+  // Destacar exige Pro vigente (GET /users/me trae `isPro`, calculado por el backend).
+  const isPro = user?.isPro === true
 
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined)
   const [type, setType] = useState<ProductType | undefined>(undefined)
@@ -90,6 +100,29 @@ export default function MyProductsPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const publishMutation = usePublishProductMutation()
   const statusMutation = useUpdateProductStatusMutation()
+  const featuredMutation = useToggleFeaturedMutation()
+  const featuredSummary = useFeaturedSummary(isSeller && isPro)
+
+  /** Destacar / quitar el destacado; los errores esperables se explican en palabras. */
+  function toggleFeatured(productId: number, featured: boolean) {
+    setActionError(null)
+    featuredMutation.mutate(
+      { productId, featured },
+      { onError: (error) => setActionError(featuredErrorMessage(error, featuredSummary.data)) },
+    )
+  }
+
+  function featuredErrorMessage(error: unknown, summary: FeaturedSummary | undefined): string {
+    switch (getHttpStatus(error)) {
+      case 403:
+        return t('featured.error.needsPro')
+      // El 409 cubre dos casos: sin cupos o producto no activo. Los cupos lo distinguen.
+      case 409:
+        return summary && summary.remaining <= 0 ? t('featured.error.limit') : t('featured.error.notActive')
+      default:
+        return getApiErrorMessage(error)
+    }
+  }
 
   /** Acciones sin confirmación: publicar un borrador y reactivar uno pausado. */
   async function runDirectAction(action: () => Promise<unknown>) {
@@ -150,6 +183,11 @@ export default function MyProductsPage() {
         ) : (
           <>
             <Stats />
+
+            {/* Cupos de destacados (Pro) o la invitación a hacerse Pro. */}
+            <ScrollReveal>
+              <FeaturedSlotsCard isPro={isPro} />
+            </ScrollReveal>
 
             {/* Nivel y matriz de comisión: lo que el vendedor paga por vender. */}
             <CommissionCard />
@@ -221,6 +259,17 @@ export default function MyProductsPage() {
                               void runDirectAction(() => statusMutation.mutateAsync({ productId: product.id, status: 'active' }))
                             }
                             onChange={(kind) => setPendingChange({ product, kind })}
+                            featured={
+                              <FeaturedToggleButton
+                                product={product}
+                                isPro={isPro}
+                                summary={featuredSummary.data}
+                                isBusy={featuredMutation.isPending}
+                                onToggle={(featured) => toggleFeatured(product.id, featured)}
+                                onUpsell={() => void navigate({ to: '/pro' })}
+                              />
+                            }
+                            isPro={isPro}
                           />
                         </StaggerItem>
                       ))}
@@ -333,12 +382,17 @@ interface PendingChange {
 function ProductRow({
   product,
   isBusy,
+  isPro,
+  featured,
   onPublish,
   onReactivate,
   onChange,
 }: {
   product: MyProductCard
   isBusy: boolean
+  isPro: boolean
+  /** Botón de destacar / quitar destacado (ver FeaturedToggleButton). */
+  featured: React.ReactNode
   onPublish: () => void
   onReactivate: () => void
   onChange: (kind: PendingKind) => void
@@ -379,6 +433,7 @@ function ProductRow({
               {t('myProducts.badge.hidden')}
             </span>
           )}
+          <FeaturedStatus product={product} isPro={isPro} />
         </div>
         {product.price !== null && product.currency ? (
           <ProductPrice
@@ -399,6 +454,7 @@ function ProductRow({
             </li>
           ))}
         </ul>
+        <FeaturedPauseNote product={product} isPro={isPro} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -414,6 +470,7 @@ function ProductRow({
             {t('myProducts.action.reactivate')}
           </Button>
         )}
+        {featured}
         <Link
           to="/products/$productId/edit"
           params={{ productId: String(product.id) }}

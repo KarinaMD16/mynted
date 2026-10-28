@@ -4,7 +4,22 @@ import { SignedOutState } from '@/components/errors/QueryErrorState'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Edit05, Heart as HeartOutline, Mail01 } from '@untitledui/icons'
-import { Info, LayoutGrid, type LucideIcon, Link2, MessageCircle, Plus, Receipt, ShoppingBag, Store, TrendingUp } from 'lucide-react'
+import {
+  Award,
+  CalendarDays,
+  Info,
+  LayoutGrid,
+  MessageCircle,
+  Package,
+  Palette,
+  Plus,
+  Receipt,
+  ShoppingBag,
+  Star,
+  Store,
+  UsersRound,
+} from 'lucide-react'
+import type { FC } from 'react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
 import { BecomeSellerForm } from '@/features/auth/components/BecomeSellerForm'
 import { BadgesCard } from '@/features/badges/components/BadgesCard'
@@ -13,6 +28,9 @@ import { MyFavoritesTab } from '@/features/favorites/components/MyFavoritesTab'
 import { MyPurchasesTab } from '@/features/payments/components/MyPurchasesTab'
 import { MyPublicationsTab } from '@/features/community/components/profile/MyPublicationsTab'
 import { MyThreadsTab } from '@/features/community/components/profile/MyThreadsTab'
+import { useMyCommunities } from '@/features/community/hooks/useCommunitiesQueries'
+import { useMyContent } from '@/features/community/hooks/useForumQueries'
+import { useStore } from '@/features/stores/hooks/useStoreQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useMyInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
 import { ProductGrid } from '@/features/products/components/ProductGrid'
@@ -22,8 +40,12 @@ import type { TranslationKey } from '@/i18n/translations/es'
 import type { AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
 import type { Interest } from '@/features/auth/models/interests'
-import { AboutCard, CoverBanner } from '@/features/profile/components/ProfileParts'
-import { getInitials } from '@/features/profile/utils/profileFormat'
+import { AboutCard, CoverBanner, HeaderStat, HeaderStatSkeleton } from '@/features/profile/components/ProfileParts'
+import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
+import { ProBadge } from '@/features/pro/components/ProBadge'
+import { SkinnedGoose } from '@/features/pro/components/SkinnedGoose'
+import { formatMemberSince, getInitials } from '@/features/profile/utils/profileFormat'
+import { INTL_LOCALES } from '@/utils/locale'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { Loader } from '../components/ui/Loader'
 import { Button } from '@/components/ui/Button'
@@ -69,6 +91,7 @@ export default function ProfilePage() {
               onEditProfile={() => void navigate({ to: '/settings', search: { tab: 'profile' } })}
               onBecomeSeller={() => setIsBecomeSellerOpen(true)}
               onCreateProduct={() => void navigate({ to: '/products/new' })}
+              onCustomize={() => void navigate({ to: '/settings', search: { tab: 'appearance' } })}
             />
 
             <ProfileTabsBar activeTab={activeTab} onChange={setActiveTab} isSeller={isSeller} />
@@ -114,16 +137,17 @@ function LoadErrorState() {
 
 function ProfileHeader({
   user,
-  language,
   onEditProfile,
   onBecomeSeller,
   onCreateProduct,
+  onCustomize,
 }: {
   user: AuthUser
   language: AppLanguage
   onEditProfile: () => void
   onBecomeSeller: () => void
   onCreateProduct: () => void
+  onCustomize: () => void
 }) {
   const { t } = useLanguage()
   const isSeller = user.role === 'seller'
@@ -131,9 +155,14 @@ function ProfileHeader({
 
   return (
     <div>
-      <CoverBanner />
+      <CoverBanner banner={user.cosmetics?.banner} />
 
       <div className="relative -mt-10 rounded-2xl border border-mynted-border bg-mynted-white pt-16 pb-6 shadow-[0_16px_40px_-8px_rgba(13,13,20,0.08)] sm:pb-8">
+        {/* El ganso con la skin elegida, como "sticker" del perfil. */}
+        <span className="absolute -top-7 left-4 z-10 flex size-14 items-center justify-center rounded-full border-4 border-mynted-white bg-white shadow-sm sm:left-6">
+          <SkinnedGoose skin={user.cosmetics?.gooseSkin} className="size-10" />
+        </span>
+
         <div className="absolute -top-5 right-4 z-10 flex items-center gap-2 sm:right-6">
           {!isSeller &&
             (isSellerRequestPending ? (
@@ -184,6 +213,19 @@ function ProfileHeader({
 
           <Button
             type="button"
+            onClick={onCustomize}
+            aria-label={t('profile.customize')}
+            title={t('profile.customize')}
+            variant="secondary"
+            size="icon-md"
+            // En móvil no entra junto a los demás botones: ahí se llega desde Configuración.
+            className="max-sm:hidden"
+          >
+            <Palette className="size-4" aria-hidden="true" />
+          </Button>
+
+          <Button
+            type="button"
             onClick={onEditProfile}
             aria-label={t('profile.editProfile')}
             variant="secondary"
@@ -195,22 +237,27 @@ function ProfileHeader({
           </Button>
         </div>
 
-        <span className="absolute -top-14 left-1/2 z-20 flex size-28 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
-          {user.photoUrl ? (
-            // Las fotos de Google se sirven solo sin Referer; con el de la app dan 429.
-            <img
-              src={user.photoUrl}
-              alt={user.username}
-              referrerPolicy="no-referrer"
-              className="size-full object-cover"
-            />
-          ) : (
-            getInitials(user.username)
-          )}
-        </span>
+        <AvatarFrame frame={user.cosmetics?.frame} size="lg" className="absolute -top-14 left-1/2 z-20 size-28 -translate-x-1/2">
+          <span className="flex size-full items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
+            {user.photoUrl ? (
+              // Las fotos de Google se sirven solo sin Referer; con el de la app dan 429.
+              <img
+                src={user.photoUrl}
+                alt={user.username}
+                referrerPolicy="no-referrer"
+                className="size-full object-cover"
+              />
+            ) : (
+              getInitials(user.username)
+            )}
+          </span>
+        </AvatarFrame>
 
         <div className="flex flex-col items-center px-6 text-center">
-          <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{user.username}</h1>
+          <h1 className="flex items-center gap-2 font-heading text-2xl font-semibold text-mynted-ink">
+            {user.username}
+            {user.isPro && <ProBadge size="md" />}
+          </h1>
           <p className="text-sm text-mynted-gray">@{user.username}</p>
 
           <span className="mt-3 flex items-center gap-1.5 text-sm text-mynted-gray">
@@ -219,46 +266,97 @@ function ProfileHeader({
           </span>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-4 border-t border-mynted-border px-6 pt-5 sm:px-8">
-          <StatPlaceholder />
-          <SocialLinksPlaceholder />
-        </div>
+        <ProfileStats user={user} />
       </div>
     </div>
   )
 }
 
-function StatPlaceholder() {
-  const { t } = useLanguage()
+/**
+ * Franja de cifras al pie de la cabecera, con el mismo formato que la de la
+ * tienda. Todo sale de endpoints que ya existen:
+ * - Vendedor aprobado: ventas y productos activos (GET /sellers/:id),
+ *   calificación (`seller` de GET /users/me) y comunidades.
+ * - Resto: publicaciones (GET /posts/me), comunidades (GET /users/me/communities),
+ *   insignias (GET /users/me/badges) y desde cuándo es miembro.
+ * Las consultas son las mismas que usan las pestañas y tarjetas del perfil,
+ * así que comparten caché y no se piden dos veces.
+ */
+function ProfileStats({ user }: { user: AuthUser }) {
+  const { t, language } = useLanguage()
+  const seller = user.seller
+  const store = useStore(seller?.sellerId)
+  // Solo interesa el total: con limit=1 la respuesta es mínima.
+  const communities = useMyCommunities({ limit: 1 })
+  const content = useMyContent(!seller)
+  const badges = useMyBadges(!seller)
+
+  const number = (value: number) => value.toLocaleString(INTL_LOCALES[language])
+  /** Valor de una cifra: el número, un hueco mientras carga o "—" si falló. */
+  const show = (query: { isPending: boolean; isError: boolean }, value: number | undefined) =>
+    query.isError ? '—' : query.isPending || value === undefined ? <HeaderStatSkeleton /> : number(value)
+
+  const communitiesStat = (
+    <HeaderStat
+      icon={<UsersRound className="size-4" />}
+      label={t('profile.stats.communities')}
+      value={show(communities, communities.data?.pagination.total)}
+    />
+  )
+
   return (
-    <div className="flex items-center gap-2" title={t('profile.comingSoon')}>
-      <TrendingUp className="size-4 text-mynted-orange" aria-hidden="true" />
-      <span className="font-heading text-lg leading-none font-semibold text-mynted-ink">—</span>
-      <span className="text-xs font-medium tracking-wide text-mynted-gray uppercase">
-        {t('profile.stats.placeholderLabel')}
-      </span>
-    </div>
+    <dl
+      aria-label={t('profile.stats.label')}
+      className="mt-6 grid grid-cols-2 gap-px overflow-hidden border-t border-mynted-border bg-mynted-border sm:grid-cols-4"
+    >
+      {seller ? (
+        <>
+          <HeaderStat
+            icon={<ShoppingBag className="size-4" />}
+            label={t('store.stats.sales')}
+            value={show(store, store.data?.completedSalesCount)}
+          />
+          <HeaderStat
+            icon={<Package className="size-4" />}
+            label={t('store.stats.activeProducts')}
+            value={show(store, store.data?.activeProductsCount)}
+          />
+          <HeaderStat
+            icon={<Star className="size-4" />}
+            label={t('profile.stats.rating')}
+            value={
+              seller.ratingAverage !== null
+                ? `${seller.ratingAverage.toFixed(1)} (${number(seller.reviewsCount)})`
+                : t('profile.stats.noRating')
+            }
+          />
+          {communitiesStat}
+        </>
+      ) : (
+        <>
+          <HeaderStat
+            icon={<LayoutGrid className="size-4" />}
+            label={t('profile.tabs.posts')}
+            value={show(content, content.data?.pages[0]?.pagination.total)}
+          />
+          {communitiesStat}
+          <HeaderStat
+            icon={<Award className="size-4" />}
+            label={t('profile.badges.titleNoCount')}
+            value={show(badges, badges.data?.length)}
+          />
+          <HeaderStat
+            icon={<CalendarDays className="size-4" />}
+            label={t('profile.stats.memberSince')}
+            value={formatMemberSince(user.createdAt, language)}
+          />
+        </>
+      )}
+    </dl>
   )
 }
 
-function SocialLinksPlaceholder() {
-  const { t } = useLanguage()
-  return (
-    <div role="group" aria-label={t('profile.social.groupLabel')} className="flex items-center gap-2">
-      {[0, 1, 2].map((slot) => (
-        <span
-          key={slot}
-          title={t('profile.comingSoon')}
-          className="flex size-9 cursor-not-allowed items-center justify-center rounded-full border border-mynted-border text-mynted-gray opacity-60"
-        >
-          <Link2 className="size-4" aria-hidden="true" />
-        </span>
-      ))}
-    </div>
-  )
-}
-
-const PROFILE_TABS: { id: ProfileTab; labelKey: TranslationKey; icon: LucideIcon; sellerOnly?: boolean; mobileOnly?: boolean }[] = [
+const PROFILE_TABS: { id: ProfileTab; labelKey: TranslationKey; icon: FC<{ className?: string }>; sellerOnly?: boolean; mobileOnly?: boolean }[] = [
   { id: 'posts', labelKey: 'profile.tabs.posts', icon: LayoutGrid },
   { id: 'threads', labelKey: 'profile.tabs.threads', icon: MessageCircle },
   { id: 'products', labelKey: 'profile.tabs.products', icon: ShoppingBag, sellerOnly: true },

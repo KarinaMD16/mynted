@@ -6,6 +6,7 @@ import { QueryErrorState, SignedOutState } from '@/components/errors/QueryErrorS
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { CheckoutForm } from '@/features/payments/components/CheckoutForm'
 import { CheckoutSummary } from '@/features/payments/components/CheckoutSummary'
+import { PaymentNotice } from '@/features/payments/components/PaymentNotice'
 import { readCheckoutFailure, useCheckoutMutation, type CheckoutFailure } from '@/features/payments/hooks/usePaymentMutations'
 import { usePaymentQuote } from '@/features/payments/hooks/usePaymentQueries'
 import type { PaymentCardPayload, PaymentFailureReason } from '@/features/payments/models/payment'
@@ -160,38 +161,4 @@ function FailureNotice({ failure }: { failure: CheckoutFailure }) {
   }
 }
 
-function PaymentNotice({
-  tone,
-  message,
-  hint,
-  backToShop = false,
-}: {
-  tone: 'error' | 'warning'
-  message: string
-  hint?: string
-  /** Agrega el enlace de vuelta al marketplace (producto vendido o inexistente). */
-  backToShop?: boolean
-}) {
-  const { t } = useLanguage()
-  const isError = tone === 'error'
 
-  return (
-    <div
-      role={isError ? 'alert' : 'status'}
-      className={`flex flex-col items-start gap-2 rounded-xl px-3.5 py-3 ${
-        isError ? 'bg-[#fdecec] text-[#c62a2f]' : 'bg-[#fff4d6] text-[#8a5a00]'
-      }`}
-    >
-      <p className="text-sm font-medium">{message}</p>
-      {hint && <p className="text-xs opacity-90">{hint}</p>}
-      {backToShop && (
-        <Link
-          to="/explore"
-          className="mt-1 rounded-lg border border-current/25 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-white/70"
-        >
-          {t('checkout.failure.backToShop')}
-        </Link>
-      )}
-    </div>
-  )
-}

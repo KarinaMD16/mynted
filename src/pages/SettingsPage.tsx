@@ -1,14 +1,16 @@
 import { ErrorState } from '@/components/errors/ErrorState'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { SignedOutState } from '@/components/errors/QueryErrorState'
-import { Bell, Lock, type LucideIcon, UserRound, UserSquare2 } from 'lucide-react'
+import { Bell, Lock, type LucideIcon, Palette, Sparkles, UserRound, UserSquare2 } from 'lucide-react'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { Loader } from '@/components/ui/Loader'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { AccountSettingsSection } from '@/features/settings/components/AccountSettingsSection'
+import { AppearanceSettingsSection } from '@/features/settings/components/AppearanceSettingsSection'
 import { NotificationsSettingsSection } from '@/features/settings/components/NotificationsSettingsSection'
 import { PrivacySettingsSection } from '@/features/settings/components/PrivacySettingsSection'
 import { ProfileSettingsSection } from '@/features/settings/components/ProfileSettingsSection'
+import { SubscriptionSettingsSection } from '@/features/settings/components/SubscriptionSettingsSection'
 import { SETTINGS_TABS, type SettingsTab } from '@/features/settings/models/settings'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
@@ -20,6 +22,8 @@ const routeApi = getRouteApi('/settings')
 const TAB_META: Record<SettingsTab, { labelKey: TranslationKey; icon: LucideIcon }> = {
   account: { labelKey: 'settings.tabs.account', icon: UserRound },
   profile: { labelKey: 'settings.tabs.profile', icon: UserSquare2 },
+  appearance: { labelKey: 'settings.tabs.appearance', icon: Palette },
+  subscription: { labelKey: 'settings.tabs.subscription', icon: Sparkles },
   privacy: { labelKey: 'settings.tabs.privacy', icon: Lock },
   notifications: { labelKey: 'settings.tabs.notifications', icon: Bell },
 }
@@ -96,6 +100,8 @@ export default function SettingsPage() {
               {/* key: al cambiar de usuario (otra sesión) los formularios arrancan de cero. */}
               {activeTab === 'account' && <AccountSettingsSection key={user.id} user={user} />}
               {activeTab === 'profile' && <ProfileSettingsSection key={user.id} user={user} />}
+              {activeTab === 'appearance' && <AppearanceSettingsSection key={user.id} user={user} />}
+              {activeTab === 'subscription' && <SubscriptionSettingsSection key={user.id} />}
               {activeTab === 'privacy' && <PrivacySettingsSection key={user.id} user={user} />}
               {activeTab === 'notifications' && <NotificationsSettingsSection key={user.id} user={user} />}
             </div>

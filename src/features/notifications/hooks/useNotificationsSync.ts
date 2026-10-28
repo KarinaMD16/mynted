@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { chatSocket } from '@/features/chat/socket/chatSocket'
+import { invalidateProState } from '@/features/pro/hooks/proKeys'
 import type { AppNotification, NotificationNewPayload, NotificationUnreadCountPayload } from '../models/notifications'
 import { setNotificationsUnread, upsertNotification } from '../utils/notificationCache'
 import { notificationKeys } from './notificationKeys'
@@ -38,6 +39,9 @@ export function useNotificationsSync(userId: string | null, onNew: (notification
     const handleNew = ({ notification, unreadCount }: NotificationNewPayload) => {
       setNotificationsUnread(queryClient, userId, unreadCount)
       upsertNotification(queryClient, userId, notification)
+      // Un aviso de la suscripción (pago confirmado, por vencer, vencido) cambia
+      // si es Pro: badge, cosméticos, destacados… Se refresca sin recargar.
+      if (notification.type.startsWith('subscription_')) invalidateProState(queryClient)
       onNewRef.current(notification)
     }
     const handleUnreadCount = ({ unreadCount }: NotificationUnreadCountPayload) => {

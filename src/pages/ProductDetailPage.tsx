@@ -16,6 +16,9 @@ import { FavoriteAlertsButton } from '@/features/favorites/components/FavoriteAl
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
+import { FeaturedTag } from '@/features/products/components/FeaturedControls'
+import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
+import { ProBadge } from '@/features/pro/components/ProBadge'
 import { ProductReviews } from '@/features/products/components/ProductReviews'
 import { useRecordProductViewMutation } from '@/features/products/hooks/useProductMutations'
 import { useProduct, useRecommendedProducts, useRelatedProducts } from '@/features/products/hooks/useProductQueries'
@@ -247,9 +250,14 @@ function SellerIdentity({ seller }: { seller: ProductDetail['seller'] }) {
   const { t } = useLanguage()
   const content = (
     <>
-      <SellerAvatar name={seller.displayName} photoUrl={seller.photoUrl} />
+      <AvatarFrame frame={seller.frame} size="md" className="size-11">
+        <SellerAvatar name={seller.displayName} photoUrl={seller.photoUrl} />
+      </AvatarFrame>
       <span className="flex flex-col">
-        <span className="font-heading text-base font-semibold text-mynted-ink group-hover:underline">{seller.displayName}</span>
+        <span className="flex items-center gap-1.5">
+          <span className="font-heading text-base font-semibold text-mynted-ink group-hover:underline">{seller.displayName}</span>
+          {seller.isPro && <ProBadge size="xs" />}
+        </span>
         {seller.ratingAverage != null ? (
           <span className="flex items-center gap-1.5 text-xs text-mynted-gray">
             <Rating value={seller.ratingAverage} size={12} />
@@ -284,14 +292,14 @@ function SellerAvatar({ name, photoUrl }: { name: string; photoUrl: string | nul
         // Las fotos de Google no cargan si se manda el Referer (ver avatar.tsx).
         referrerPolicy="no-referrer"
         onError={() => setFailedUrl(photoUrl)}
-        className="size-11 rounded-full bg-mynted-bg object-cover"
+        className="size-full rounded-full bg-mynted-bg object-cover"
       />
     )
   }
   return (
     <span
       aria-hidden="true"
-      className="flex size-11 items-center justify-center rounded-full bg-mynted-yellow font-heading text-[15px] font-semibold text-white"
+      className="flex size-full items-center justify-center rounded-full bg-mynted-yellow font-heading text-[15px] font-semibold text-white"
     >
       {getInitials(name)}
     </span>
@@ -342,6 +350,9 @@ function Detail({
             {t(notice)}
           </p>
         )}
+
+        {/* Destacado de un vendedor Pro: el detalle también lo dice (sección 11 de la guía Pro). */}
+        {product.isFeatured && <FeaturedTag />}
 
         <h1 className="font-heading text-[30px] font-semibold text-mynted-ink">{product.title}</h1>
 

@@ -47,6 +47,8 @@ interface CheckoutFormProps {
    * no tiene sentido reintentar con otra tarjeta.
    */
   disabled?: boolean
+  /** Texto del botón (por defecto "Pagar"); el checkout de Pro muestra el monto: "Pagar US$41.99". */
+  submitLabel?: string
   /** Mensajes de estado del pago (rechazo, producto vendido…), bajo el botón. */
   children?: React.ReactNode
 }
@@ -61,7 +63,7 @@ interface CheckoutFormProps {
  * la tarjeta: vive en el estado del formulario mientras la pantalla está
  * abierta y se manda una sola vez.
  */
-export function CheckoutForm({ onPay, isPaying, disabled = false, children }: CheckoutFormProps) {
+export function CheckoutForm({ onPay, isPaying, disabled = false, submitLabel, children }: CheckoutFormProps) {
   const { t } = useLanguage()
 
   const form = useForm({
@@ -176,7 +178,7 @@ export function CheckoutForm({ onPay, isPaying, disabled = false, children }: Ch
       </form.Subscribe>
 
       <Button type="submit" size="lg" fullWidth isLoading={isPaying} disabled={disabled}>
-        {isPaying ? t('checkout.form.processing') : t('checkout.form.submit')}
+        {isPaying ? t('checkout.form.processing') : (submitLabel ?? t('checkout.form.submit'))}
       </Button>
 
       {children}
