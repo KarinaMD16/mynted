@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ChevronDown, ImagePlus, Palette, Rocket, Sparkles } from 'lucide-react'
+import { ImagePlus, Palette, Rocket, Sparkles } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
 import { SiteHeader } from '@/components/layout/SiteHeader'
+import { Accordion } from '@/components/ui/Accordion'
+import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { formatPaymentDate } from '@/features/payments/utils/paymentFormat'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
@@ -63,15 +66,20 @@ export default function ProPage() {
       <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-12 pt-6 pb-24')}>
         <ProHero />
 
-        {subscription.data && status !== 'none' && <CurrentPlanNotice subscription={subscription.data} />}
+        {subscription.data && status !== 'none' && (
+          <ScrollReveal>
+            <CurrentPlanNotice subscription={subscription.data} />
+          </ScrollReveal>
+        )}
 
         <section aria-labelledby="pro-plans-title" className="flex flex-col gap-6">
-          <div className="flex flex-col gap-1">
-            <h2 id="pro-plans-title" className="font-heading text-[26px] font-semibold text-mynted-ink">
+          <ScrollReveal className="flex flex-col gap-1">
+            {/* scroll-mt: al llegar con "Ver planes" el título no queda tapado por el header fijo. */}
+            <h2 id="pro-plans-title" className="scroll-mt-28 font-heading text-[26px] font-semibold text-mynted-ink">
               {t('pro.plans.title')}
             </h2>
             <p className="text-sm text-mynted-gray">{t('pro.plans.subtitle')}</p>
-          </div>
+          </ScrollReveal>
 
           {plans.isPending ? (
             <div className="grid gap-5 md:grid-cols-3" aria-busy="true">
@@ -87,55 +95,66 @@ export default function ProPage() {
             />
           ) : (
             <>
-              <div className="grid items-stretch gap-5 pt-3 md:grid-cols-3">
-                {sortedPlans.map((plan) => (
-                  <PlanCard
-                    key={plan.period}
-                    plan={plan}
-                    highlighted={plan.period === RECOMMENDED_PERIOD}
-                    ctaLabel={t(CTA_LABEL[status])}
-                    isLoggedIn={isLoggedIn}
-                  />
+              <ul className="grid items-stretch gap-5 pt-3 md:grid-cols-3">
+                {sortedPlans.map((plan, index) => (
+                  // eager: si los planes ya se ven al cargar, entran de una vez (escalonados).
+                  <StaggerItem key={plan.period} index={index} eager className="flex *:w-full">
+                    <PlanCard
+                      plan={plan}
+                      highlighted={plan.period === RECOMMENDED_PERIOD}
+                      ctaLabel={t(CTA_LABEL[status])}
+                      isLoggedIn={isLoggedIn}
+                    />
+                  </StaggerItem>
                 ))}
-              </div>
-              <p className="text-xs text-mynted-gray">{t('pro.plans.footnote')}</p>
+              </ul>
+              <ScrollReveal>
+                <p className="text-xs text-mynted-gray">{t('pro.plans.footnote')}</p>
+              </ScrollReveal>
             </>
           )}
         </section>
 
         <section aria-labelledby="pro-benefits-title" className="flex flex-col gap-6">
-          <h2 id="pro-benefits-title" className="font-heading text-[26px] font-semibold text-mynted-ink">
-            {t('pro.benefits.title')}
-          </h2>
+          <ScrollReveal>
+            <h2 id="pro-benefits-title" className="font-heading text-[26px] font-semibold text-mynted-ink">
+              {t('pro.benefits.title')}
+            </h2>
+          </ScrollReveal>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {BENEFITS.map((benefit) => (
-              <li key={benefit.title} className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5">
-                <span className="flex size-10 items-center justify-center rounded-xl bg-mynted-orange/10 text-mynted-orange" aria-hidden="true">
+            {BENEFITS.map((benefit, index) => (
+              <StaggerItem
+                key={benefit.title}
+                index={index}
+                className="group flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5 transition-[border-color,box-shadow] duration-300 hover:border-mynted-orange/40 hover:shadow-[0_12px_30px_-14px_rgba(253,133,82,0.45)]"
+              >
+                <span
+                  className="flex size-10 items-center justify-center rounded-xl bg-mynted-orange/10 text-mynted-orange transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:transform-none"
+                  aria-hidden="true"
+                >
                   {benefit.icon}
                 </span>
                 <h3 className="font-heading text-base font-semibold text-mynted-ink">{t(benefit.title)}</h3>
                 <p className="text-sm text-mynted-gray">{t(benefit.body)}</p>
-              </li>
+              </StaggerItem>
             ))}
           </ul>
-          <p className="text-sm text-mynted-gray">{t('pro.benefits.freeStaysFree')}</p>
+          <ScrollReveal>
+            <p className="text-sm text-mynted-gray">{t('pro.benefits.freeStaysFree')}</p>
+          </ScrollReveal>
         </section>
 
         <section aria-labelledby="pro-faq-title" className="flex flex-col gap-4">
-          <h2 id="pro-faq-title" className="font-heading text-[26px] font-semibold text-mynted-ink">
-            {t('pro.faq.title')}
-          </h2>
-          <div className="flex flex-col divide-y divide-mynted-border rounded-2xl border border-mynted-border bg-white">
-            {FAQ.map((item) => (
-              <details key={item.question} className="group px-5 py-4">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-mynted-ink outline-none focus-visible:underline">
-                  {t(item.question)}
-                  <ChevronDown className="size-4 shrink-0 text-mynted-gray transition-transform group-open:rotate-180" aria-hidden="true" />
-                </summary>
-                <p className="mt-2 text-sm text-mynted-gray">{t(item.answer)}</p>
-              </details>
-            ))}
-          </div>
+          <ScrollReveal>
+            <h2 id="pro-faq-title" className="font-heading text-[26px] font-semibold text-mynted-ink">
+              {t('pro.faq.title')}
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <Accordion
+              items={FAQ.map((item) => ({ id: item.question, title: t(item.question), content: t(item.answer) }))}
+            />
+          </ScrollReveal>
         </section>
       </main>
     </div>
@@ -143,8 +162,24 @@ export default function ProPage() {
 }
 
 /** Cabecera de la página: qué es Pro, con un avatar de ejemplo (marco neón y ganso astronauta). */
+const HERO_EASE = [0.22, 1, 0.36, 1] as const
+
 function ProHero() {
   const { t } = useLanguage()
+  const reduceMotion = useReducedMotion()
+
+  /** Entrada escalonada de cada pieza del hero al cargar (solo fundido con "reducir movimiento"). */
+  const enter = (index: number) => ({
+    initial: { opacity: 0, y: reduceMotion ? 0 : 24 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.7, ease: HERO_EASE, delay: reduceMotion ? 0 : 0.1 + index * 0.1 },
+  })
+
+  function goToPlans() {
+    document
+      .getElementById('pro-plans-title')
+      ?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+  }
 
   return (
     <section
@@ -152,32 +187,66 @@ function ProHero() {
       className="relative overflow-hidden rounded-3xl px-6 py-10 text-white sm:px-12 sm:py-14"
       style={{ background: 'linear-gradient(150deg, #0b1437 0%, #1b1450 55%, #3a1747 100%)' }}
     >
-      <div aria-hidden="true" className="absolute -top-24 -left-16 size-72 rounded-full bg-mynted-orange/35 blur-3xl" />
-      <div aria-hidden="true" className="absolute -right-10 -bottom-28 size-80 rounded-full bg-mynted-blue/40 blur-3xl" />
+      {/* Luces del fondo: se desplazan despacio, en bucle. */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute -top-24 -left-16 size-72 rounded-full bg-mynted-orange/35 blur-3xl"
+        animate={reduceMotion ? undefined : { x: [0, 40, 0], y: [0, 24, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        aria-hidden="true"
+        className="absolute -right-10 -bottom-28 size-80 rounded-full bg-mynted-blue/40 blur-3xl"
+        animate={reduceMotion ? undefined : { x: [0, -36, 0], y: [0, -20, 0] }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+      />
 
       <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
         <div className="flex max-w-xl flex-col items-start gap-4">
-          <ProBadge size="md" />
-          <h1 id="pro-hero-title" className="font-heading text-[32px] leading-tight font-semibold sm:text-[40px]">
+          <motion.div {...enter(0)}>
+            <ProBadge size="md" />
+          </motion.div>
+          <motion.h1
+            id="pro-hero-title"
+            className="font-heading text-[32px] leading-tight font-semibold sm:text-[40px]"
+            {...enter(1)}
+          >
             {t('pro.hero.title')}
-          </h1>
-          <p className="text-base text-white/80">{t('pro.hero.subtitle')}</p>
-          <button
+          </motion.h1>
+          <motion.p className="text-base text-white/80" {...enter(2)}>
+            {t('pro.hero.subtitle')}
+          </motion.p>
+          <motion.button
             type="button"
-            onClick={() => document.getElementById('pro-plans-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            onClick={goToPlans}
             className={cx(proLinkButtonClass, 'cursor-pointer bg-mynted-orange text-white hover:bg-mynted-orange-hover')}
+            whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+            {...enter(3)}
           >
             {t('pro.hero.cta')}
-          </button>
+          </motion.button>
         </div>
 
-        <div aria-hidden="true" className="flex shrink-0 items-center justify-center self-center">
-          <AvatarFrame frame={{ code: 'frame_neon', assetUrl: null }} size="lg" className="size-40 sm:size-48">
-            <span className="flex size-full items-center justify-center rounded-full border-4 border-[#1b1450] bg-white/95">
-              <SkinnedGoose skin={{ code: 'goose_astronaut', assetUrl: null }} className="size-[78%]" />
-            </span>
-          </AvatarFrame>
-        </div>
+        <motion.div
+          aria-hidden="true"
+          className="flex shrink-0 items-center justify-center self-center"
+          initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: HERO_EASE, delay: reduceMotion ? 0 : 0.25 }}
+        >
+          {/* El ganso astronauta "flota" suavemente. */}
+          <motion.div
+            animate={reduceMotion ? undefined : { y: [0, -10, 0], rotate: [0, 1.5, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <AvatarFrame frame={{ code: 'frame_neon', assetUrl: null }} size="lg" className="size-40 sm:size-48">
+              <span className="flex size-full items-center justify-center rounded-full border-4 border-[#1b1450] bg-white/95">
+                <SkinnedGoose skin={{ code: 'goose_astronaut', assetUrl: null }} className="size-[78%]" />
+              </span>
+            </AvatarFrame>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )
