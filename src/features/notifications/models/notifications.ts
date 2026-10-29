@@ -25,6 +25,7 @@ export const NOTIFICATION_TYPES = [
   'seller_request_rejected',
   'post_replied',
   'reply_replied',
+  'community_moderation_warning',
 ] as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
@@ -78,6 +79,11 @@ export interface NotificationDataByType {
   seller_request_rejected: Record<string, never>
   post_replied: PostReplyData
   reply_replied: PostReplyData & { parentReplyId: number }
+  /**
+   * El superadmin resolvió un reporte contra la comunidad de quien la creó.
+   * Es genérica a propósito: no trae el reporte ni su motivo, ni el slug.
+   */
+  community_moderation_warning: { communityId: number; communityName: string }
 }
 
 /** Notificación tal como llega del backend (REST o socket). */

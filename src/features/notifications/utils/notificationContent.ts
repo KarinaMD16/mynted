@@ -7,6 +7,7 @@ import {
   PackageCheck,
   PackageX,
   Receipt,
+  ShieldAlert,
   ShoppingBag,
   Star,
   Store,
@@ -165,6 +166,13 @@ export function getNotificationContent(notification: AppNotification, t: Transla
       }
     case 'seller_request_rejected':
       return { text: t('notifications.sellerRejected'), icon: CircleX, target: null }
+    case 'community_moderation_warning':
+      // Sin slug no hay ruta a la comunidad.
+      return {
+        text: t('notifications.communityWarning', { community: notification.data.communityName }),
+        icon: ShieldAlert,
+        target: null,
+      }
     case 'post_replied':
     case 'reply_replied': {
       const { postId, postTitle, replyId, communitySlug, authorUsername } = notification.data
