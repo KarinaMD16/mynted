@@ -44,7 +44,7 @@ export function ModerationRulesSection({ community }: { community: CommunityDeta
           return (
             <li
               key={rule.communityRuleId}
-              className="flex items-start gap-3 rounded-xl border border-mynted-border bg-white px-3.5 py-2.5"
+              className="flex items-center gap-3 rounded-xl border border-mynted-border bg-white px-3.5 py-2.5"
             >
               <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-mynted-bg text-xs text-mynted-ink">
                 {index + 1}
