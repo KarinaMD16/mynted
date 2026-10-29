@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useRouterState } from '@tanstack/react-router'
 import { Globe } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -37,8 +38,11 @@ export function ShipToDialog() {
   const [consent] = useCookie<CookieConsent>(COOKIE_CONSENT_NAME, DEFAULT_COOKIE_CONSENT, COOKIE_CONSENT_OPTIONS)
   const [dismissed, setDismissed] = useState(wasDismissed)
   const [draft, setDraft] = useState<string | null>(null)
+  // En el panel de administración no se compra: preguntar ahí solo estorba.
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const onAdmin = /^\/admin(\/|$)/.test(pathname)
 
-  const isOpen = consent.consent && !isLoading && shipTo === null && !dismissed
+  const isOpen = consent.consent && !isLoading && shipTo === null && !dismissed && !onAdmin
   const selected = draft ?? detectedRegion
 
   function dismiss() {

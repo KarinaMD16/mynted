@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   estimateCommission,
   getAdminCommissionTiers,
@@ -20,7 +20,7 @@ import type {
 
 export const paymentKeys = {
   all: ['payments'] as const,
-  quote: (productId: number) => [...paymentKeys.all, 'quote', productId] as const,
+  quote: (productId: number, quantity = 1) => [...paymentKeys.all, 'quote', productId, quantity] as const,
   receipt: (transactionId: string) => [...paymentKeys.all, 'receipt', transactionId] as const,
   purchases: () => [...paymentKeys.all, 'purchases'] as const,
   sales: () => [...paymentKeys.all, 'sales'] as const,
@@ -39,12 +39,15 @@ const HISTORY_PAGE_SIZE = 10
  * producto propio, la comisión. No se cachea mucho a propósito — es el monto
  * que la persona está a punto de pagar.
  */
-export function usePaymentQuote(productId: number | undefined, enabled = true) {
+export function usePaymentQuote(productId: number | undefined, quantity = 1, enabled = true) {
   return useQuery({
-    queryKey: paymentKeys.quote(productId ?? 0),
-    queryFn: () => getQuote(productId ?? 0),
+    queryKey: paymentKeys.quote(productId ?? 0, quantity),
+    queryFn: () => getQuote(productId ?? 0, quantity),
     enabled: enabled && productId !== undefined,
     staleTime: 0,
+    // Al cambiar la cantidad se sigue mostrando el total anterior mientras
+    // llega el nuevo, en vez de volver al esqueleto de carga.
+    placeholderData: keepPreviousData,
   })
 }
 

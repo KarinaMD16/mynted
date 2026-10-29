@@ -39,6 +39,7 @@ function appendProductFields(formData: FormData, payload: CreateProductPayload |
   if (payload.discountPercent !== undefined) formData.append('discountPercent', String(payload.discountPercent))
   if (payload.isVisible !== undefined) formData.append('isVisible', String(payload.isVisible))
   if (payload.shipsTo !== undefined) formData.append('shipsTo', JSON.stringify(payload.shipsTo))
+  if (payload.quantity !== undefined) formData.append('quantity', String(payload.quantity))
   if (payload.relatedProductIds !== undefined) {
     formData.append('relatedProductIds', JSON.stringify(payload.relatedProductIds))
   }

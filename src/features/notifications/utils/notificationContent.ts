@@ -1,18 +1,29 @@
 import {
   Award,
+  Ban,
   Bell,
   CalendarClock,
   CalendarX,
   CircleCheck,
   CircleX,
+  EyeOff,
+  Globe,
+  Lock,
   MessageSquareReply,
   PackageCheck,
   PackageX,
+  RotateCcw,
+  Truck,
   Receipt,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldOff,
+  UserMinus,
   ShoppingBag,
   Sparkles,
   Star,
   Store,
+  Trash2,
   TrendingDown,
   TrendingUp,
   UserPlus,
@@ -22,10 +33,42 @@ import { getBadgeTexts } from '@/features/badges/utils/badgeDisplay'
 import type { BadgeRarity } from '@/features/badges/models/badges'
 import { formatPaymentDate } from '@/features/payments/utils/paymentFormat'
 import { PERIOD_LABEL } from '@/features/pro/utils/subscriptionFormat'
+import { REPORT_REASON_LABEL, type ReportReason } from '@/features/reports/models/report'
 import type { TranslateFn } from '@/i18n/LanguageContext'
+import type { TranslationKey } from '@/i18n/translations/es'
 import type { AppLanguage } from '@/utils/locale'
 import { formatPrice } from '@/utils/price'
-import { isKnownNotification, type AppNotification } from '../models/notifications'
+import { isKnownNotification, type AppNotification, type ModeratedItemType } from '../models/notifications'
+
+/*
+ * Lo moderado se nombra por tipo (y no con una palabra suelta) para que cada
+ * idioma arme la frase con su propio género y artículo.
+ */
+const WARNING_TEXT: Record<ModeratedItemType, TranslationKey> = {
+  post: 'notifications.moderationWarning.post',
+  reply: 'notifications.moderationWarning.reply',
+  product: 'notifications.moderationWarning.product',
+  conversation: 'notifications.moderationWarning.conversation',
+}
+
+const HIDDEN_TEXT: Record<ModeratedItemType, TranslationKey> = {
+  post: 'notifications.contentHidden.post',
+  reply: 'notifications.contentHidden.reply',
+  product: 'notifications.contentHidden.product',
+  conversation: 'notifications.contentHidden.conversation',
+}
+
+const RESTORED_TEXT: Record<ModeratedItemType, TranslationKey> = {
+  post: 'notifications.contentRestored.post',
+  reply: 'notifications.contentRestored.reply',
+  product: 'notifications.contentRestored.product',
+  conversation: 'notifications.contentRestored.conversation',
+}
+
+/** Solo un producto se abre con lo que trae el aviso: una publicación necesitaría el slug. */
+function moderatedTarget(itemType: ModeratedItemType, itemId: number): NotificationTarget | null {
+  return itemType === 'product' ? { kind: 'product', productId: itemId } : null
+}
 
 /**
  * A dónde lleva tocar una notificación (sección 4 de la guía). Es una lista
@@ -38,11 +81,15 @@ export type NotificationTarget =
   | { kind: 'store'; sellerId: number }
   | { kind: 'community'; slug: string }
   | { kind: 'communityRequests'; slug: string }
+  /** El panel de moderación de la comunidad, en su pestaña inicial. */
+  | { kind: 'communityModeration'; slug: string }
   | { kind: 'post'; slug: string; postId: number; replyId?: number }
   /** /settings?tab=subscription: estado de Mynted Pro e historial de pagos. */
   | { kind: 'subscription' }
   /** /pro: los planes, para renovar. */
   | { kind: 'proPlans' }
+  /** /compras/:id: el recibo con el seguimiento del pedido. */
+  | { kind: 'receipt'; transactionId: string }
 
 export interface NotificationContent {
   text: string
@@ -120,6 +167,36 @@ export function getNotificationContent(notification: AppNotification, t: Transla
         target: { kind: 'product', productId },
       }
     }
+    case 'order_shipped':
+      return {
+        text: t('notifications.orderShipped', { product: notification.data.productTitle }),
+        icon: Truck,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'order_delivered':
+      return {
+        text: t('notifications.orderDelivered', { product: notification.data.productTitle }),
+        icon: PackageCheck,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'order_cancelled':
+      return {
+        text: t('notifications.orderCancelled', { product: notification.data.productTitle }),
+        icon: PackageX,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'payment_refunded':
+      return {
+        text: t('notifications.paymentRefunded', { product: notification.data.productTitle }),
+        icon: RotateCcw,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'payment_dispute_closed':
+      return {
+        text: t('notifications.paymentDisputeClosed', { product: notification.data.productTitle }),
+        icon: CircleCheck,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
     case 'review_received': {
       const { productId, productTitle, rating, authorUsername } = notification.data
       return {
@@ -166,6 +243,31 @@ export function getNotificationContent(notification: AppNotification, t: Transla
         icon: CircleX,
         target: null,
       }
+    case 'community_member_removed': {
+      const { communityName, communitySlug, reason } = notification.data
+      return {
+        text: t('notifications.memberRemoved', { community: communityName, reason }),
+        icon: UserMinus,
+        // Sigue pudiendo verla y volver a unirse.
+        target: { kind: 'community', slug: communitySlug },
+      }
+    }
+    case 'community_moderator_added': {
+      const { communityName, communitySlug } = notification.data
+      return {
+        text: t('notifications.moderatorAdded', { community: communityName }),
+        icon: ShieldCheck,
+        target: { kind: 'communityModeration', slug: communitySlug },
+      }
+    }
+    case 'community_moderator_removed': {
+      const { communityName, communitySlug } = notification.data
+      return {
+        text: t('notifications.moderatorRemoved', { community: communityName }),
+        icon: ShieldOff,
+        target: { kind: 'community', slug: communitySlug },
+      }
+    }
     case 'seller_request_approved':
       return {
         text: t('notifications.sellerApproved', { store: notification.data.displayName }),
@@ -174,6 +276,97 @@ export function getNotificationContent(notification: AppNotification, t: Transla
       }
     case 'seller_request_rejected':
       return { text: t('notifications.sellerRejected'), icon: CircleX, target: null }
+    case 'community_moderation_warning':
+      // Sin slug no hay ruta a la comunidad.
+      return {
+        text: t('notifications.communityWarning', { community: notification.data.communityName }),
+        icon: ShieldAlert,
+        target: null,
+      }
+    case 'moderation_warning': {
+      const { itemType, itemId } = notification.data
+      return {
+        text: t(WARNING_TEXT[itemType] ?? 'notifications.moderationWarning.generic'),
+        icon: ShieldAlert,
+        target: moderatedTarget(itemType, itemId),
+      }
+    }
+    case 'content_hidden': {
+      const { itemType, itemId, reason } = notification.data
+      const reasonKey = reason ? REPORT_REASON_LABEL[reason as ReportReason] : undefined
+      const text = t(HIDDEN_TEXT[itemType] ?? 'notifications.contentHidden.generic')
+      return {
+        text: reasonKey ? `${text} ${t('notifications.moderationReason', { reason: t(reasonKey) })}` : text,
+        icon: EyeOff,
+        // Oculto lo sigue viendo su dueño, así que el producto se puede abrir.
+        target: moderatedTarget(itemType, itemId),
+      }
+    }
+    case 'content_restored': {
+      const { itemType, itemId } = notification.data
+      return {
+        text: t(RESTORED_TEXT[itemType] ?? 'notifications.contentRestored.generic'),
+        icon: ShieldCheck,
+        target: moderatedTarget(itemType, itemId),
+      }
+    }
+    case 'product_deactivated':
+      return {
+        text: t('notifications.productDeactivated', { reason: notification.data.reason }),
+        icon: Ban,
+        target: { kind: 'product', productId: notification.data.productId },
+      }
+    case 'product_activated':
+      return {
+        text: t('notifications.productActivated'),
+        icon: PackageCheck,
+        target: { kind: 'product', productId: notification.data.productId },
+      }
+    case 'product_deleted':
+      // Borrado ya no tiene detalle.
+      return { text: t('notifications.productDeleted', { reason: notification.data.reason }), icon: Trash2, target: null }
+    case 'seller_revoked':
+      return { text: t('notifications.sellerRevoked', { reason: notification.data.reason }), icon: Ban, target: null }
+    case 'seller_restored':
+      return { text: t('notifications.sellerRestored'), icon: Store, target: { kind: 'myProducts' } }
+    case 'user_deactivated':
+      return { text: t('notifications.userDeactivated', { reason: notification.data.reason }), icon: Ban, target: null }
+    case 'user_reactivated':
+      return { text: t('notifications.userReactivated'), icon: CircleCheck, target: { kind: 'profile' } }
+    // Al equipo de la comunidad. Sin slug no hay ruta a la comunidad.
+    case 'community_deactivated':
+      return {
+        text: t('notifications.communityDeactivated', { community: notification.data.communityName }),
+        icon: Ban,
+        target: null,
+      }
+    case 'community_activated':
+      return {
+        text: t('notifications.communityActivated', { community: notification.data.communityName }),
+        icon: CircleCheck,
+        target: null,
+      }
+    case 'community_made_public':
+      return {
+        text: t('notifications.communityMadePublic', { community: notification.data.communityName }),
+        icon: Globe,
+        target: null,
+      }
+    case 'community_made_private':
+      return {
+        text: t('notifications.communityMadePrivate', { community: notification.data.communityName }),
+        icon: Lock,
+        target: null,
+      }
+    case 'community_deleted':
+      return {
+        text: t('notifications.communityDeleted', {
+          community: notification.data.communityName,
+          reason: notification.data.reason,
+        }),
+        icon: Trash2,
+        target: null,
+      }
     case 'post_replied':
     case 'reply_replied': {
       const { postId, postTitle, replyId, communitySlug, authorUsername } = notification.data

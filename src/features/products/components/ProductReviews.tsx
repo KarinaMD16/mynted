@@ -245,12 +245,23 @@ function ReviewItem({ review, productId }: { review: ProductReview; productId: n
 
 /**
  * Reseñas de un producto: promedio, lista paginada (GET /products/:id/reviews,
- * sin sesión) y, con sesión, formulario para reseñar o editar la propia (no se
- * muestra en un producto propio, `isOwnProduct`). El
- * backend no deja reseñar el producto propio (403) ni dos veces (409) y todavía
- * no exige haberlo comprado.
+ * sin sesión) y, con sesión, formulario para reseñar o editar la propia.
+ *
+ * Quién puede reseñar lo decide el backend y viene en `canComment` del detalle
+ * del producto: hay que haberlo comprado (compra completada), no ser el dueño,
+ * no ser un intercambio y no haberlo reseñado antes. Es la misma regla que
+ * valida POST /products/:id/reviews, así que si `canComment` es true el envío
+ * funciona, y si es false responde 403 o 409.
  */
-export function ProductReviews({ productId, isOwnProduct = false }: { productId: number; isOwnProduct?: boolean }) {
+export function ProductReviews({
+  productId,
+  canComment = false,
+  isOwnProduct = false,
+}: {
+  productId: number
+  canComment?: boolean
+  isOwnProduct?: boolean
+}) {
   const { t } = useLanguage()
   const { isLoggedIn } = useCurrentUser()
   const query = useProductReviews(productId)
@@ -275,8 +286,9 @@ export function ProductReviews({ productId, isOwnProduct = false }: { productId:
       </div>
 
       {isLoggedIn ? (
-        // Nadie reseña su propio producto: ni formulario ni mensaje, solo las reseñas de los demás.
-        !hasMine && !isOwnProduct && <ReviewForm productId={productId} />
+        // `hasMine` cubre el hueco entre reseñar y volver a pedir el detalle:
+        // hasta ese momento `canComment` sigue diciendo true.
+        canComment && !hasMine && !isOwnProduct && <ReviewForm productId={productId} />
       ) : (
         <p className="rounded-2xl border border-mynted-border bg-white px-5 py-4 text-sm text-mynted-gray">
           <Link to="/login" className="font-semibold text-mynted-orange hover:underline">

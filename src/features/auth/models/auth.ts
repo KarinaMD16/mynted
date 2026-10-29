@@ -9,7 +9,7 @@ export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 export type UserRole = 'user' | 'seller' | 'superadmin'
 
 /** Espeja el enum SellerRequestStatus del backend. */
-export type SellerRequestStatus = 'none' | 'pending' | 'approved' | 'rejected'
+export type SellerRequestStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'revoked'
 
 /** Espeja el enum PaymentType del backend (sellers/entities/payment-info.entity.ts). */
 export type PaymentType = 'bank_account' | 'paypal'

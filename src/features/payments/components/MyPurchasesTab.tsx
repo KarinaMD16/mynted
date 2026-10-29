@@ -5,6 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { formatPrice } from '@/utils/price'
 import { useMyPurchases } from '../hooks/usePaymentQueries'
 import type { PurchaseItem } from '../models/payment'
+import { OrderStatusPill } from './OrderTracking'
 import { formatPaymentDateShort, maskedCard } from '../utils/paymentFormat'
 
 /**
@@ -57,6 +58,9 @@ function PurchaseRow({ purchase }: { purchase: PurchaseItem }) {
         <p className="truncate text-xs text-mynted-gray">
           {t('checkout.summary.seller', { name: purchase.seller.displayName })}
         </p>
+        <div className="mt-1">
+          <OrderStatusPill paymentStatus={purchase.paymentStatus} shippingStatus={purchase.shippingStatus} />
+        </div>
         <p className="flex flex-wrap items-center gap-x-2 text-xs text-mynted-gray">
           <span>{formatPaymentDateShort(purchase.completedAt, language)}</span>
           <span aria-hidden="true">·</span>

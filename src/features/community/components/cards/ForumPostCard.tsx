@@ -5,6 +5,8 @@ import { useForumActions } from '@/features/community/hooks/useForum'
 import type { ForumPost } from '@/features/community/models/forumDTOs'
 import { ForumAuthorLine } from '@/features/community/components/ui/ForumAuthorLine'
 import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetricsBar'
+import { HiddenContentNotice } from '@/features/reports/components/HiddenContentNotice'
+import { ReportMenu } from '@/features/reports/components/ReportMenu'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
 interface ForumPostCardProps {
@@ -12,6 +14,10 @@ interface ForumPostCardProps {
   /** Para enlazar al detalle de la publicacion. */
   communitySlug: string
   index: number
+  /** Id de la comunidad; hace falta para restaurar lo que se oculto. */
+  communityId?: number
+  /** Si quien mira puede volver a mostrar el contenido oculto. */
+  canModerate?: boolean
 }
 
 /**
@@ -19,7 +25,7 @@ interface ForumPostCardProps {
  * abre la publicacion: el enlace del titulo se estira sobre ella con un
  * pseudo-elemento, y lo que se pueda tocar aparte va en una capa por encima.
  */
-export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps) {
+export function ForumPostCard({ post, communitySlug, index, communityId, canModerate = false }: ForumPostCardProps) {
   const { t, language } = useLanguage()
   const { voteOnPost, favoritePost } = useForumActions()
   const { isLoggedIn } = useCurrentUser()
@@ -36,6 +42,7 @@ export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps
         postedAt={post.postedAt}
         relativeTime={formatRelativeTime(post.postedAt, language)}
         index={index}
+        actions={<ReportMenu itemType="post" itemId={post.id} />}
       />
 
       <Link
@@ -45,6 +52,17 @@ export function ForumPostCard({ post, communitySlug, index }: ForumPostCardProps
       >
         {post.title}
       </Link>
+
+      {/* Solo llega aca si el backend dejo verlo: autor o equipo de la comunidad. */}
+      {post.isHidden && (
+        <HiddenContentNotice
+          itemType="post"
+          itemId={post.id}
+          communityId={communityId}
+          canRestore={canModerate}
+          reason={post.hiddenReason}
+        />
+      )}
 
       <p className="text-sm whitespace-pre-line text-mynted-gray">{post.body}</p>
 

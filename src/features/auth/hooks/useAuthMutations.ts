@@ -31,14 +31,44 @@ export const authKeys = {
  * claves para que ninguna consulta nueva se quede afuera por olvido; lo
  * publico (categorias, tags) simplemente se vuelve a pedir.
  */
-function clearSessionCache(queryClient: QueryClient) {
+async function clearSessionCache(queryClient: QueryClient) {
+  // Primero se cancela lo que haya en vuelo. clear() vacia el cache, pero no
+  // detiene las peticiones ya salidas: una respuesta de la cuenta anterior que
+  // llegara despues se escribiria en el cache recien vaciado y esa pantalla
+  // quedaria con datos ajenos hasta que algo la volviera a pedir. Pasa al
+  // cerrar sesion desde una pantalla que estaba cargando (el perfil o el panel
+  // del vendedor piden varias cosas a la vez).
+  await queryClient.cancelQueries()
   queryClient.clear()
 }
 
-/** Al entrar con una cuenta: fuera lo de la sesion anterior y guardar el usuario nuevo. */
-function startSession(queryClient: QueryClient, user: AuthUser) {
-  clearSessionCache(queryClient)
+/**
+ * Al entrar con una cuenta: fuera lo de la sesion anterior y guardar el
+ * usuario nuevo.
+ *
+ * POST /auth/login devuelve un usuario RECORTADO: solo id, username, email,
+ * photoUrl y las fechas. No trae `role`, ni la moneda, ni el idioma, ni el
+ * estado de vendedor. Escribirlo tal cual dejaba la sesion a medias —sin
+ * `role` el menu no ofrece el panel de admin ni el perfil muestra las
+ * pestanas de vendedor— y, como la consulta de sesion se considera fresca
+ * durante SESSION_STALE_TIME, eso duraba hasta recargar la pagina.
+ *
+ * Asi que se escribe lo que vino (el header muestra la sesion al instante) y
+ * acto seguido se pide /users/me completo, con staleTime 0 para que no
+ * devuelva lo que acabamos de escribir.
+ */
+async function startSession(queryClient: QueryClient, user: AuthUser) {
+  await clearSessionCache(queryClient)
   queryClient.setQueryData<AuthUser>(authKeys.me, user)
+
+  try {
+    await queryClient.fetchQuery({ queryKey: authKeys.me, queryFn: getCurrentUserRequest, staleTime: 0 })
+  } catch {
+    // La sesion ya esta abierta; solo fallo traer el resto del usuario. Se
+    // marca como vencida para que el proximo montaje la vuelva a pedir en vez
+    // de quedarse cinco minutos con los datos a medias.
+    await queryClient.invalidateQueries({ queryKey: authKeys.me })
+  }
 }
 
 /**

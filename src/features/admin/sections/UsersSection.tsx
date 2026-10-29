@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Ban, CalendarPlus, RotateCcw, Store, UserCheck, UserSearch, UserX, Users } from 'lucide-react'
+import { CalendarPlus, UserCheck, UserSearch, UserX, Users } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import type { UserRole } from '@/features/auth/models/auth'
@@ -9,6 +9,7 @@ import { AdminDataTable, type AdminColumn } from '../components/AdminDataTable'
 import {
   Avatar,
   ConfirmDialog,
+  ConfirmWithReasonDialog,
   DistributionList,
   FilterSelect,
   IconAction,
@@ -23,7 +24,7 @@ import {
 import { UserHoverName } from '../components/HoverSummary'
 import { UserReviewDrawer } from '../components/UserReviewDrawer'
 import { useAdminUsers, useSetUserActiveMutation } from '../hooks/useAdminQueries'
-import type { AdminTab, AdminUser } from '../models/admin'
+import type { AdminSection, AdminTab, AdminUser } from '../models/admin'
 
 const ROLE_LABEL: Record<UserRole, TranslationKey> = {
   user: 'admin.users.role.user',
@@ -118,10 +119,6 @@ function UsersOverview({
 
         <Panel title={t('admin.users.rolesTitle')}>
           <DistributionList items={stats.byRole} emptyLabel={t('admin.table.empty')} />
-          <div className="mt-5 flex items-center gap-3 rounded-xl bg-mynted-bg px-4 py-3 text-sm text-mynted-ink">
-            <Store className="size-4 text-mynted-blue-mid" aria-hidden="true" />
-            {t('admin.users.stats.sellers')}: <strong className="font-semibold">{stats.sellers.toLocaleString(language)}</strong>
-          </div>
         </Panel>
       </div>
 
@@ -221,70 +218,56 @@ function UsersManage({
           />
         }
         renderActions={(user) => {
-          const isSelf = user.id === currentUserId
           const review = (
             <IconAction icon={UserSearch} label={t('admin.review.open')} onPress={() => setReviewUserId(user.id)} />
           )
-          return user.isActive ? (
-            <>
-            {review}
-            <IconAction
-              icon={Ban}
-              label={t('admin.users.deactivate')}
-              tone="danger"
-              disabled={isSelf}
-              disabledReason={t('admin.users.cannotDeactivateSelf')}
-              onPress={() => {
-                mutation.reset()
-                setPending({ user, active: false })
-              }}
-            />
-            </>
-          ) : (
-            <>
-            {review}
-            <IconAction
-              icon={RotateCcw}
-              label={t('admin.users.activate')}
-              tone="success"
-              onPress={() => {
-                mutation.reset()
-                setPending({ user, active: true })
-              }}
-            />
-            </>
-          )
+          return review
         }}
       />
 
-      <ConfirmDialog
-        open={pending !== null}
-        title={
-          pending?.active
-            ? t('admin.users.activateTitle', { name: target?.username ?? '' })
-            : t('admin.users.deactivateTitle', { name: target?.username ?? '' })
-        }
-        description={pending?.active ? t('admin.users.activateDescription') : t('admin.users.deactivateDescription')}
-        confirmLabel={pending?.active ? t('admin.users.activate') : t('admin.users.deactivate')}
-        tone={pending?.active ? 'primary' : 'danger'}
-        isPending={mutation.isPending}
-        error={mutation.error}
-        onClose={() => setPending(null)}
-        onConfirm={() => {
-          if (!pending) return
-          mutation.mutate(
-            { userId: pending.user.id, active: pending.active },
-            { onSuccess: () => setPending(null) },
-          )
-        }}
-      />
+      {/*
+        Desactivar exige motivo (el backend lo registra y se lo avisa a la
+        persona), así que usa el diálogo con motivo. Activar no: no hay nada
+        que justificar al devolver el acceso, y el backend tampoco lo pide.
+      */}
+      {pending?.active === false && (
+        <ConfirmWithReasonDialog
+          open
+          title={t('admin.users.deactivateTitle', { name: target?.username ?? '' })}
+          description={t('admin.users.deactivateDescription')}
+          confirmLabel={t('admin.users.deactivate')}
+          isPending={mutation.isPending}
+          error={mutation.error}
+          onClose={() => setPending(null)}
+          onConfirm={(reason) =>
+            mutation.mutate({ userId: pending.user.id, active: false, reason }, { onSuccess: () => setPending(null) })
+          }
+        />
+      )}
+
+      {pending?.active === true && (
+        <ConfirmDialog
+          open
+          title={t('admin.users.activateTitle', { name: target?.username ?? '' })}
+          description={t('admin.users.activateDescription')}
+          confirmLabel={t('admin.users.activate')}
+          tone="primary"
+          isPending={mutation.isPending}
+          error={mutation.error}
+          onClose={() => setPending(null)}
+          onConfirm={() =>
+            mutation.mutate({ userId: pending.user.id, active: true }, { onSuccess: () => setPending(null) })
+          }
+        />
+      )}
 
       <UserReviewDrawer userId={reviewUserId} currentUserId={currentUserId} onClose={() => setReviewUserId(null)} />
     </>
   )
 }
 
-export function ManageLink({ section }: { section: 'users' | 'sellerRequests' | 'communities' | 'categories' }) {
+/** Enlace a la pestaña "Gestionar" de una sección, desde su resumen. */
+export function ManageLink({ section }: { section: AdminSection }) {
   const { t } = useLanguage()
   return (
     <Link

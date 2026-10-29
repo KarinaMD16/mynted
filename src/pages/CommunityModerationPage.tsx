@@ -5,6 +5,8 @@ import { ArrowLeft, Flag, ScrollText, Settings, UserPlus, Users } from 'lucide-r
 import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { ModerationJoinRequestsSection } from '@/features/community/components/moderation/ModerationJoinRequestsSection'
+import { ModerationMembersSection } from '@/features/community/components/moderation/ModerationMembersSection'
+import { ModerationReportsSection } from '@/features/community/components/moderation/ModerationReportsSection'
 import { ModerationRulesSection } from '@/features/community/components/moderation/ModerationRulesSection'
 import { ModerationSettingsSection } from '@/features/community/components/moderation/ModerationSettingsSection'
 import {
@@ -13,6 +15,7 @@ import {
   useCommunityStats,
 } from '@/features/community/hooks/useCommunitiesQueries'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { useModerationStats } from '@/features/reports/hooks/useReports'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
@@ -21,9 +24,9 @@ import { cx } from '@/utils/cx'
 type ModerationTab = 'reports' | 'requests' | 'members' | 'rules' | 'settings'
 
 const TABS: { id: ModerationTab; labelKey: TranslationKey; icon: typeof Flag; available: boolean }[] = [
-  { id: 'reports', labelKey: 'moderation.tabs.reports', icon: Flag, available: false },
+  { id: 'reports', labelKey: 'moderation.tabs.reports', icon: Flag, available: true },
   { id: 'requests', labelKey: 'moderation.tabs.requests', icon: UserPlus, available: true },
-  { id: 'members', labelKey: 'moderation.tabs.members', icon: Users, available: false },
+  { id: 'members', labelKey: 'moderation.tabs.members', icon: Users, available: true },
   { id: 'rules', labelKey: 'moderation.tabs.rules', icon: ScrollText, available: true },
   { id: 'settings', labelKey: 'moderation.tabs.settings', icon: Settings, available: true },
 ]
@@ -32,8 +35,8 @@ export default function CommunityModerationPage() {
   const { t } = useLanguage()
   const { slug } = useParams({ from: '/communities/$slug/moderacion' })
   const { tab: initialTab } = useSearch({ from: '/communities/$slug/moderacion' })
-  const { isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
-  const [activeTab, setActiveTab] = useState<ModerationTab>(initialTab ?? 'rules')
+  const { data: currentUser, isLoggedIn, isLoading: isLoadingSession } = useCurrentUser()
+  const [activeTab, setActiveTab] = useState<ModerationTab>(initialTab ?? 'reports')
 
   const communityQuery = useCommunityDetailBySlug(slug, isLoggedIn)
 
@@ -47,8 +50,15 @@ export default function CommunityModerationPage() {
   const joinRequestsQuery = useCommunityJoinRequests(community?.id ?? 0, isLoggedIn)
   const pendingRequestCount = isLoggedIn ? (joinRequestsQuery.data?.length ?? 0) : 0
 
+  // Para la insignia de "Reportes"; la seccion vuelve a usar la misma query.
+  const moderationStatsQuery = useModerationStats(community?.id, isLoggedIn)
+  const pendingReportCount = isLoggedIn ? (moderationStatsQuery.data?.pendingReports ?? 0) : 0
+
   const isOwner = community?.membershipRole === 'owner'
-  const canModerate = isOwner || community?.membershipRole === 'moderator'
+  // El superadmin entra a cualquier comunidad: el backend ya lo deja pasar
+  // (CommunityRoleGuard), así que negarle la pantalla solo lo mandaría a usar
+  // la API a mano. No es dueño, así que los ajustes siguen cerrados.
+  const canModerate = isOwner || community?.membershipRole === 'moderator' || currentUser?.role === 'superadmin'
 
   return (
     <section className="min-h-svh bg-mynted-bg">
@@ -65,7 +75,7 @@ export default function CommunityModerationPage() {
         </Link>
 
         {!isLoadingSession && !isLoggedIn && (
-          <SignedOutState description={t('community.detail.signedOutDescription')} />
+          <SignedOutState description={t('moderation.signedOutDescription')} />
         )}
 
         {(isLoadingSession || (isLoggedIn && communityQuery.isPending)) && (
@@ -150,6 +160,15 @@ export default function CommunityModerationPage() {
                     >
                       <Icon className="size-4" aria-hidden="true" />
                       {t(tab.labelKey)}
+                      {tab.id === 'reports' && pendingReportCount > 0 && (
+                        <span
+                          className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-mynted-orange text-white'
+                          }`}
+                        >
+                          {pendingReportCount}
+                        </span>
+                      )}
                       {tab.id === 'requests' && pendingRequestCount > 0 && (
                         <span
                           className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -174,20 +193,19 @@ export default function CommunityModerationPage() {
               </nav>
 
               <div className="rounded-2xl border border-mynted-border bg-white p-5 sm:p-6">
+                {activeTab === 'reports' && <ModerationReportsSection community={community} />}
                 {activeTab === 'requests' && <ModerationJoinRequestsSection community={community} />}
                 {activeTab === 'rules' && <ModerationRulesSection community={community} />}
                 {activeTab === 'settings' && (
                   <ModerationSettingsSection community={community} isOwner={isOwner} />
                 )}
-                {(activeTab === 'reports' || activeTab === 'members') && (
-                  <div className="flex flex-col items-center gap-2 py-14 text-center">
-                    <h2 className="font-heading text-lg font-semibold text-mynted-ink">
-                      {t(activeTab === 'reports' ? 'moderation.tabs.reports' : 'moderation.tabs.members')}
-                    </h2>
-                    <p className="max-w-md text-sm text-mynted-gray">
-                      {t(activeTab === 'reports' ? 'moderation.reports.soon' : 'moderation.members.soon')}
-                    </p>
-                  </div>
+                {activeTab === 'members' && (
+                  <ModerationMembersSection
+                    community={community}
+                    // El rol en la comunidad manda: un superadmin que además es dueño actúa como dueño.
+                    viewerRole={isOwner ? 'owner' : community.membershipRole === 'moderator' ? 'moderator' : 'superadmin'}
+                    currentUserId={currentUser?.id}
+                  />
                 )}
               </div>
             </div>

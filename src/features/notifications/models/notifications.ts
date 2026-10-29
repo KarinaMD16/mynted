@@ -17,11 +17,20 @@ export const NOTIFICATION_TYPES = [
   'favorite_available_again',
   'purchase_completed',
   'sale_completed',
+  // Seguimiento del pedido (docs/FLUJO_COMPRAS_PAGOS.md del backend).
+  'order_shipped',
+  'order_delivered',
+  'order_cancelled',
+  'payment_refunded',
+  'payment_dispute_closed',
   'review_received',
   'badge_awarded',
   'community_join_requested',
   'community_join_accepted',
   'community_join_rejected',
+  'community_member_removed',
+  'community_moderator_added',
+  'community_moderator_removed',
   'seller_request_approved',
   'seller_request_rejected',
   'post_replied',
@@ -29,6 +38,23 @@ export const NOTIFICATION_TYPES = [
   'subscription_payment_confirmed',
   'subscription_expiring_soon',
   'subscription_expired',
+  'community_moderation_warning',
+  // Moderación (docs/frontend-moderation-reports-api.md del backend).
+  'moderation_warning',
+  'content_hidden',
+  'content_restored',
+  'product_deactivated',
+  'product_activated',
+  'product_deleted',
+  'seller_revoked',
+  'seller_restored',
+  'user_deactivated',
+  'user_reactivated',
+  'community_deactivated',
+  'community_activated',
+  'community_made_public',
+  'community_made_private',
+  'community_deleted',
 ] as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
@@ -39,6 +65,10 @@ export type FavoriteUnavailableReason = 'sold' | 'inactive' | 'hidden' | 'delete
 interface ProductRef {
   productId: number
   productTitle: string
+}
+
+interface OrderRef extends ProductRef {
+  transactionId: string
 }
 
 interface CommunityRef {
@@ -64,6 +94,18 @@ export interface NotificationDataByType {
   purchase_completed: ProductRef & { transactionId: string; amount: number; currency: string; sellerName: string }
   sale_completed: ProductRef & { transactionId: string; amount: number; currency: string; buyerUsername: string }
   review_received: ProductRef & { reviewId: number; rating: number; authorUsername: string }
+  /** Al comprador. No traen dirección ni número de guía: eso está en el recibo. */
+  order_shipped: OrderRef
+  /** Al vendedor. */
+  order_delivered: OrderRef
+  /** Al comprador: el vendedor canceló y se le reembolsó. */
+  order_cancelled: OrderRef
+  /**
+   * Resolución de un reclamo. Llega igual a las dos partes, sin decir quién es
+   * quién, así que el texto no puede asumirlo.
+   */
+  payment_refunded: OrderRef
+  payment_dispute_closed: OrderRef
   badge_awarded: {
     badgeCode: string
     badgeName: string
@@ -78,6 +120,10 @@ export interface NotificationDataByType {
   community_join_requested: CommunityRef & { requestId: number; requesterId: string; requesterUsername: string }
   community_join_accepted: CommunityRef & { requestId: number }
   community_join_rejected: CommunityRef & { requestId: number }
+  /** Expulsión: puede volver a unirse. `reason` lo escribió quien moderó. */
+  community_member_removed: CommunityRef & { reason: string }
+  community_moderator_added: CommunityRef
+  community_moderator_removed: CommunityRef
   seller_request_approved: { sellerId: number | string; displayName: string }
   seller_request_rejected: Record<string, never>
   post_replied: PostReplyData
@@ -102,6 +148,43 @@ export interface NotificationDataByType {
     cancelAtPeriodEnd: boolean
   }
   subscription_expired: { subscriptionId: string; period: SubscriptionPeriod; endsAt: string }
+  /**
+   * El superadmin resolvió un reporte contra la comunidad de quien la creó.
+   * Es genérica a propósito: no trae el reporte ni su motivo, ni el slug.
+   */
+  community_moderation_warning: { communityId: number; communityName: string }
+  /**
+   * Al resolver un reporte contra algo que publicó: advertencia (sin ocultar)
+   * u ocultado. No trae título ni slug, así que una publicación no se enlaza.
+   */
+  moderation_warning: ModeratedItemRef & { warned?: boolean }
+  /** `reason` es el motivo del reporte (spam, acoso...), no un texto libre. */
+  content_hidden: ModeratedItemRef & { reason?: string; warned?: boolean }
+  content_restored: { itemType: ModeratedItemType; itemId: number }
+  /** Acciones de administración sobre un producto; `reason` lo escribió quien moderó. */
+  product_deactivated: { productId: number; reason: string }
+  product_activated: { productId: number; reason: string }
+  product_deleted: { productId: number; reason: string }
+  seller_revoked: { reason: string }
+  seller_restored: Record<string, never>
+  /** También llega cuando la cuenta se elimina: el backend usa el mismo tipo. */
+  user_deactivated: { reason: string }
+  user_reactivated: Record<string, never>
+  /** Al equipo de la comunidad (dueño y moderadores). Sin slug: no se enlaza. */
+  community_deactivated: { communityId: number; communityName: string }
+  community_activated: { communityId: number; communityName: string }
+  community_made_public: { communityId: number; communityName: string }
+  community_made_private: { communityId: number; communityName: string }
+  community_deleted: { communityId: number; communityName: string; reason: string }
+}
+
+/** Lo que se puede moderar desde un reporte. */
+export type ModeratedItemType = 'post' | 'reply' | 'product' | 'conversation'
+
+interface ModeratedItemRef {
+  itemType: ModeratedItemType
+  itemId: number
+  communityId: number | null
 }
 
 /** Notificación tal como llega del backend (REST o socket). */

@@ -5,6 +5,7 @@ import { useForumActions } from '@/features/community/hooks/useForum'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
 import { ForumAuthorLine } from '@/features/community/components/ui/ForumAuthorLine'
 import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetricsBar'
+import { ReportMenu } from '@/features/reports/components/ReportMenu'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
 interface GlobalPostCardProps {
@@ -55,6 +56,7 @@ export function GlobalPostCard({ post, index }: GlobalPostCardProps) {
             </Link>
           )
         }
+        actions={<ReportMenu itemType="post" itemId={post.id} />}
       />
 
       {community ? (

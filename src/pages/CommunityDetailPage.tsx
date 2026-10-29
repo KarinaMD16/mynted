@@ -55,6 +55,7 @@ export default function CommunityDetailPage() {
           </Link>
 
           <div className="flex items-center gap-3">
+
             {(community?.membershipRole === 'owner' || community?.membershipRole === 'moderator') && (
               <Link
                 to="/communities/$slug/moderacion"
@@ -143,7 +144,14 @@ export default function CommunityDetailPage() {
 
                   {posts.length > 0
                     ? posts.map((post, index) => (
-                        <ForumPostCard key={post.id} post={post} communitySlug={community.slug} index={index} />
+                        <ForumPostCard
+                          key={post.id}
+                          post={post}
+                          communitySlug={community.slug}
+                          index={index}
+                          communityId={community.id}
+                          canModerate={community.membershipRole === 'owner' || community.membershipRole === 'moderator'}
+                        />
                       ))
                     : postsQuery.isSuccess && (
                         <ErrorState kind="empty" variant="compact" description={t('community.detail.noPosts')} />

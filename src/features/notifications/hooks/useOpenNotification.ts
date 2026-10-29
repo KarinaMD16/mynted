@@ -21,6 +21,8 @@ export function useGoToNotificationTarget() {
           return navigate({ to: '/communities/$slug', params: { slug: target.slug } })
         case 'communityRequests':
           return navigate({ to: '/communities/$slug/moderacion', params: { slug: target.slug }, search: { tab: 'requests' } })
+        case 'communityModeration':
+          return navigate({ to: '/communities/$slug/moderacion', params: { slug: target.slug } })
         case 'post':
           return navigate({
             to: '/communities/$slug/posts/$postId',
@@ -31,6 +33,8 @@ export function useGoToNotificationTarget() {
           return navigate({ to: '/settings', search: { tab: 'subscription' } })
         case 'proPlans':
           return navigate({ to: '/pro' })
+        case 'receipt':
+          return navigate({ to: '/compras/$transactionId', params: { transactionId: target.transactionId } })
       }
     },
     [navigate],

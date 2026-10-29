@@ -3,6 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { formatPrice } from '@/utils/price'
 import type { SaleItem } from '../models/payment'
 import { formatPaymentDateShort, formatRate } from '../utils/paymentFormat'
+import { OrderStatusPill } from './OrderTracking'
 
 /**
  * Historial de ventas con el detalle de la comisión de cada una: fecha,
@@ -17,13 +18,14 @@ export function SalesTable({ sales }: { sales: SaleItem[] }) {
   return (
     <>
       <div className="hidden overflow-x-auto rounded-2xl border border-mynted-border bg-white md:block">
-        <table className="w-full min-w-[820px] border-collapse text-sm">
+        <table className="w-full min-w-[920px] border-collapse text-sm">
           <caption className="sr-only">{t('sales.table.caption')}</caption>
           <thead>
             <tr className="border-b border-mynted-border">
               <HeaderCell>{t('sales.column.date')}</HeaderCell>
               <HeaderCell>{t('sales.column.product')}</HeaderCell>
               <HeaderCell>{t('sales.column.buyer')}</HeaderCell>
+              <HeaderCell>{t('sales.column.status')}</HeaderCell>
               <HeaderCell align="right">{t('sales.column.gross')}</HeaderCell>
               <HeaderCell>{t('sales.column.tier')}</HeaderCell>
               <HeaderCell>{t('sales.column.priceTier')}</HeaderCell>
@@ -83,11 +85,14 @@ function SaleRow({ sale }: { sale: SaleItem }) {
           {sale.buyer.username}
         </Link>
       </td>
+      <td className="px-3 py-2.5 whitespace-nowrap">
+        <OrderStatusPill paymentStatus={sale.paymentStatus} shippingStatus={sale.shippingStatus} />
+      </td>
       <td className="px-3 py-2.5 text-right tabular-nums text-mynted-ink">{money(sale.amount)}</td>
       <td className="px-3 py-2.5 text-mynted-gray">{sale.salesTierName}</td>
       <td className="px-3 py-2.5 text-mynted-gray">{sale.priceTierName}</td>
       <td className="px-3 py-2.5 text-right tabular-nums text-mynted-gray">{formatRate(sale.commissionRate, language)}</td>
-      <td className="px-3 py-2.5 text-right tabular-nums text-mynted-gray">−{money(sale.commissionAmount)}</td>
+      <td className="px-3 py-2.5 text-right whitespace-nowrap tabular-nums text-mynted-gray">−{money(sale.commissionAmount)}</td>
       <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-mynted-ink">{money(sale.sellerNet)}</td>
     </tr>
   )
@@ -111,7 +116,10 @@ function SaleCard({ sale }: { sale: SaleItem }) {
         <span className="shrink-0 text-xs text-mynted-gray">{formatPaymentDateShort(sale.completedAt, language)}</span>
       </div>
 
-      <p className="text-xs text-mynted-gray">{t('sales.card.buyer', { name: sale.buyer.username })}</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-mynted-gray">{t('sales.card.buyer', { name: sale.buyer.username })}</p>
+        <OrderStatusPill paymentStatus={sale.paymentStatus} shippingStatus={sale.shippingStatus} />
+      </div>
 
       <dl className="flex flex-col gap-1 border-t border-mynted-border pt-2 text-xs">
         <CardRow label={t('sales.column.gross')} value={money(sale.amount)} />

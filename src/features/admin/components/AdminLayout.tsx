@@ -1,19 +1,29 @@
 import type { ComponentType, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ExternalLink, FolderTree, LogOut, Percent, Store, Users, UsersRound } from 'lucide-react'
+import { ExternalLink, FolderTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, Store, Users, UsersRound } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { Logo } from '@/components/ui/Logo'
 import { GooseIcon } from '@/components/ui/GooseIcon'
 import { useAccountActions } from '@/components/layout/useAccountActions'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
-import { ADMIN_TABS, type AdminSection, type AdminTab } from '../models/admin'
+import { ADMIN_SECTIONS, ADMIN_TABS, type AdminSection, type AdminTab } from '../models/admin'
 import { Button } from '@/components/ui/Button'
 
 const SECTION_META: Record<
   AdminSection,
   { labelKey: TranslationKey; descriptionKey: TranslationKey; icon: ComponentType<{ className?: string }> }
 > = {
+  reports: {
+    labelKey: 'admin.sections.reports',
+    descriptionKey: 'admin.sections.reportsDescription',
+    icon: ShieldAlert,
+  },
+  sellers: {
+    labelKey: 'admin.sections.sellers',
+    descriptionKey: 'admin.sections.sellersDescription',
+    icon: Store,
+  },
   communities: {
     labelKey: 'admin.sections.communities',
     descriptionKey: 'admin.sections.communitiesDescription',
@@ -39,9 +49,19 @@ const SECTION_META: Record<
     descriptionKey: 'admin.sections.commissionsDescription',
     icon: Percent,
   },
+  disputes: {
+    labelKey: 'admin.sections.disputes',
+    descriptionKey: 'admin.sections.disputesDescription',
+    icon: Scale,
+  },
+  moderationLog: {
+    labelKey: 'admin.sections.moderationLog',
+    descriptionKey: 'admin.sections.moderationLogDescription',
+    icon: ScrollText,
+  },
 }
 
-const SECTION_ORDER: AdminSection[] = ['communities', 'categories', 'users', 'sellerRequests', 'commissions']
+const SECTION_ORDER: AdminSection[] = [...ADMIN_SECTIONS]
 
 const TAB_LABELS: Record<AdminTab, TranslationKey> = {
   overview: 'admin.tabs.overview',

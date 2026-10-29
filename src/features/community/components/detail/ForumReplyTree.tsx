@@ -8,6 +8,8 @@ import { useForumActions } from '@/features/community/hooks/useForum'
 import type { ForumReply } from '@/features/community/models/forumDTOs'
 import { ForumAuthorLine } from '@/features/community/components/ui/ForumAuthorLine'
 import { ForumMetricsBar } from '@/features/community/components/ui/ForumMetricsBar'
+import { HiddenContentNotice } from '@/features/reports/components/HiddenContentNotice'
+import { ReportMenu } from '@/features/reports/components/ReportMenu'
 import { errorClasses, inputClasses } from '@/features/community/types/DEFAULT_VALUES'
 import { formatRelativeTime } from '@/utils/relativeTime'
 
@@ -18,6 +20,10 @@ interface ForumReplyTreeProps {
   canReply: boolean
   /** Perfil de quien abrio la publicacion, para marcar "Autor" en sus respuestas. */
   authorProfileId?: number
+  /** Id de la comunidad; hace falta para restaurar lo que se oculto. */
+  communityId?: number
+  /** Si quien mira puede volver a mostrar el contenido oculto. */
+  canModerate?: boolean
 }
 
 /**
@@ -31,7 +37,14 @@ const MAX_DEPTH = 3
  * Respuestas de una publicacion. El backend las devuelve planas con
  * `parentReplyId`, asi que aca se arma el arbol y cada nivel se indenta.
  */
-export function ForumReplyTree({ postId, replies, canReply, authorProfileId }: ForumReplyTreeProps) {
+export function ForumReplyTree({
+  postId,
+  replies,
+  canReply,
+  authorProfileId,
+  communityId,
+  canModerate = false,
+}: ForumReplyTreeProps) {
   const { t } = useLanguage()
 
   const childrenByParent = new Map<number | null, ForumReply[]>()
@@ -59,6 +72,8 @@ export function ForumReplyTree({ postId, replies, canReply, authorProfileId }: F
           canReply={canReply}
           childrenByParent={childrenByParent}
           authorProfileId={authorProfileId}
+          communityId={communityId}
+          canModerate={canModerate}
         />
       ))}
     </ul>
@@ -74,9 +89,21 @@ interface ReplyNodeProps {
   canReply: boolean
   childrenByParent: Map<number | null, ForumReply[]>
   authorProfileId?: number
+  communityId?: number
+  canModerate: boolean
 }
 
-function ReplyNode({ postId, reply, index, depth, canReply, childrenByParent, authorProfileId }: ReplyNodeProps) {
+function ReplyNode({
+  postId,
+  reply,
+  index,
+  depth,
+  canReply,
+  childrenByParent,
+  authorProfileId,
+  communityId,
+  canModerate,
+}: ReplyNodeProps) {
   const { t, language } = useLanguage()
   const { voteOnReply, favoriteReply } = useForumActions()
   const [isReplying, setIsReplying] = useState(false)
@@ -100,7 +127,18 @@ function ReplyNode({ postId, reply, index, depth, canReply, childrenByParent, au
           relativeTime={formatRelativeTime(reply.postedAt, language)}
           index={index}
           isOriginalPoster={authorProfileId !== undefined && reply.communityProfileId === authorProfileId}
+          actions={<ReportMenu itemType="reply" itemId={reply.id} />}
         />
+
+        {reply.isHidden && (
+          <HiddenContentNotice
+            itemType="reply"
+            itemId={reply.id}
+            communityId={communityId}
+            canRestore={canModerate}
+            reason={reply.hiddenReason}
+          />
+        )}
 
         <p className="text-sm whitespace-pre-line text-mynted-ink">{reply.body}</p>
 
@@ -157,6 +195,8 @@ function ReplyNode({ postId, reply, index, depth, canReply, childrenByParent, au
               canReply={canReply}
               childrenByParent={childrenByParent}
               authorProfileId={authorProfileId}
+              communityId={communityId}
+              canModerate={canModerate}
             />
           ))}
         </ul>

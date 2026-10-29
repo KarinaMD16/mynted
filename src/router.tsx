@@ -366,7 +366,7 @@ const adminRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): AdminSearch => ({
     section: (ADMIN_SECTIONS as readonly unknown[]).includes(search.section)
       ? (search.section as AdminSection)
-      : 'communities',
+      : 'reports',
     tab: (ADMIN_TABS as readonly unknown[]).includes(search.tab) ? (search.tab as AdminTab) : 'overview',
   }),
 })
