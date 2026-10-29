@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router'
 import { getHttpStatus, isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
-import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
 import { HiddenContentNotice } from '@/features/reports/components/HiddenContentNotice'
 import { ReportMenu } from '@/features/reports/components/ReportMenu'
@@ -345,7 +344,6 @@ function Chip({ children }: { children: React.ReactNode }) {
 function Detail({
   product,
   contact,
-  purchase,
   fitsContainer,
   isOwnProduct,
   canModerateCommunity,
@@ -464,11 +462,6 @@ function Detail({
         )}
 
         <div className="flex flex-wrap items-start gap-3">
-          {purchase.canBuy && (
-            <Button type="button" size="lg" onClick={purchase.onBuy}>
-              {t('checkout.buy')}
-            </Button>
-          )}
           {contact.canContact && (
             <button
               type="button"
