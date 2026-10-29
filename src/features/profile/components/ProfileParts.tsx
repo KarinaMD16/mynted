@@ -32,15 +32,18 @@ export function CoverBanner() {
 export function AboutCard({
   user,
   language,
+  isOwn = true,
 }: {
   user: Pick<AuthUser, 'bio' | 'location' | 'createdAt' | 'seller'>
   language: AppLanguage
+  /** En el perfil de otra persona el aviso de "sin biografía" no le habla a quien mira. */
+  isOwn?: boolean
 }) {
   const { t } = useLanguage()
   return (
     <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
       <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('profile.about.title')}</h2>
-      <p className="mt-2 text-sm text-mynted-gray">{user.bio?.trim() ? user.bio : t('profile.about.noBio')}</p>
+      <p className="mt-2 text-sm text-mynted-gray">{user.bio?.trim() ? user.bio : t(isOwn ? 'profile.about.noBio' : 'profile.about.noBioOther')}</p>
 
       <div className="mt-4 flex flex-col gap-2.5 border-t border-mynted-border pt-4 text-sm text-mynted-gray">
         <span className="flex items-center gap-2">

@@ -119,7 +119,7 @@ function PublicProfile({ user, language }: { user: PublicUser; language: AppLang
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
         <div className="flex flex-col gap-6">
-          <AboutCard user={user} language={language} />
+          <AboutCard user={user} language={language} isOwn={false} />
           <BadgesCard query={badges} emptyKey="userProfile.badges.empty" />
           <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
             <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-mynted-ink">
@@ -242,7 +242,9 @@ function PublicProfileHeader({ user, language }: { user: PublicUser; language: A
                   {t('userProfile.sellerBadge')}
                 </span>
               )}
-              {seller.ratingAverage !== null ? (
+              {/* A un superadmin GET /users/:id le devuelve el usuario completo,
+                  cuyo `seller` no trae reseñas: puede faltar, no solo ser null. */}
+              {typeof seller.ratingAverage === 'number' ? (
                 <span className="flex items-center gap-2 text-sm text-mynted-gray">
                   <Rating value={seller.ratingAverage} size={14} />
                   {seller.ratingAverage.toFixed(1)} · {t('reviews.count', { count: seller.reviewsCount })}
