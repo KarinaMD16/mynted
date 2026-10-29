@@ -93,11 +93,16 @@ export function CheckoutSummary({
 
       <dl className="flex flex-col gap-2 border-t border-mynted-border pt-4 text-sm">
         <div className="flex items-center justify-between gap-3">
-          <dt className="text-mynted-gray">
-            {quantity > 1 ? t('checkout.summary.unitPriceTimes', { count: quantity }) : t('checkout.summary.price')}
-          </dt>
+          <dt className="text-mynted-gray">{quantity > 1 ? t('checkout.summary.unitPrice') : t('checkout.summary.price')}</dt>
           <dd className="font-medium text-mynted-ink">{unitPrice}</dd>
         </div>
+        {/* Varias unidades: la cuenta a la vista (precio unitario × cantidad = total de la cotización). */}
+        {quantity > 1 && (
+          <div className="flex items-center justify-between gap-3">
+            <dt className="text-mynted-gray">{t('checkout.summary.lineTotal', { price: unitPrice, count: quantity })}</dt>
+            <dd className={`font-medium text-mynted-ink transition-opacity ${isUpdating ? 'opacity-50' : ''}`}>{total}</dd>
+          </div>
+        )}
         <div className="flex items-baseline justify-between gap-3 border-t border-mynted-border pt-2">
           <dt className="font-semibold text-mynted-ink">{t('checkout.summary.total')}</dt>
           <dd className={`font-heading text-xl font-semibold text-mynted-ink transition-opacity ${isUpdating ? 'opacity-50' : ''}`}>

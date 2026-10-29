@@ -41,6 +41,8 @@ import type { AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
 import type { Interest } from '@/features/auth/models/interests'
 import { AboutCard, CoverBanner, HeaderStat, HeaderStatSkeleton } from '@/features/profile/components/ProfileParts'
+import { RatingSummary } from '@/components/ui/RatingSummary'
+import { ReputationCard } from '@/features/reputation/components/ReputationCard'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
 import { ProBadge } from '@/features/pro/components/ProBadge'
 import { SkinnedGoose } from '@/features/pro/components/SkinnedGoose'
@@ -104,6 +106,8 @@ export default function ProfilePage() {
                   izquierda, sin depender de qué tab esté activa. */}
               <div className={`${activeTab === 'info' ? 'flex' : 'hidden'} flex-col gap-6 lg:order-1 lg:flex`}>
                 <AboutCard user={user} language={language} />
+                {/* Reputación como vendedor (promedio, reparto por estrellas y ventas). */}
+                {user.seller && <ReputationCard userId={user.id} />}
                 <BadgesCard query={badgesQuery} catalogQuery={badgeCatalogQuery} emptyKey="profile.badges.empty" />
                 <InterestsCard interestsQuery={interestsQuery} />
               </div>
@@ -325,9 +329,13 @@ function ProfileStats({ user }: { user: AuthUser }) {
             icon={<Star className="size-4" />}
             label={t('profile.stats.rating')}
             value={
-              seller.ratingAverage !== null
-                ? `${seller.ratingAverage.toFixed(1)} (${number(seller.reviewsCount)})`
-                : t('profile.stats.noRating')
+              <RatingSummary
+                average={seller.ratingAverage}
+                count={seller.reviewsCount}
+                variant="compact"
+                size="lg"
+                emptyLabel={t('profile.stats.noRating')}
+              />
             }
           />
           {communitiesStat}

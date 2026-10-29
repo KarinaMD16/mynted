@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { BadgeCheck, CalendarDays, Clock, MapPin, Package, Settings2, ShoppingBag, UserRound } from 'lucide-react'
-import { Rating } from '@/components/ui/Rating'
+import { RatingSummary } from '@/components/ui/RatingSummary'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
 import { ProBadge } from '@/features/pro/components/ProBadge'
 import type { CosmeticAsset } from '@/features/pro/models/cosmetics'
@@ -64,14 +64,7 @@ export function StoreHeader({ store, isOwnStore }: { store: SellerStore; isOwnSt
                 {t('itemDetail.verifiedSeller')}
               </span>
             )}
-            {store.ratingAverage !== null ? (
-              <span className="flex items-center gap-2 text-sm text-mynted-gray">
-                <Rating value={store.ratingAverage} size={14} />
-                {store.ratingAverage.toFixed(1)} · {t('reviews.count', { count: store.reviewsCount })}
-              </span>
-            ) : (
-              <span className="text-sm text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
-            )}
+            <RatingSummary average={store.ratingAverage} count={store.reviewsCount} emptyLabel={t('itemDetail.sellerNoReviews')} />
             {store.location?.trim() && (
               <span className="flex items-center gap-1.5 text-sm text-mynted-gray">
                 <MapPin className="size-4" aria-hidden="true" />

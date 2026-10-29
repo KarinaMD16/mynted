@@ -6,7 +6,8 @@ import { Repeat, Tag, UsersRound } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { ProductPrice } from './ProductPrice'
-import type { ProductCondition, ProductListItem, ProductPage, ProductStatus } from '../models/product'
+import type { ProductCondition, ProductListItem, ProductPage } from '../models/product'
+import { getProductBadgeKey } from '../utils/stock'
 import { Button } from '@/components/ui/Button'
 
 const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
@@ -16,11 +17,6 @@ const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
   used_with_details: 'products.condition.usedWithDetails',
 }
 
-const STATUS_LABEL: Record<Exclude<ProductStatus, 'active'>, TranslationKey> = {
-  draft: 'products.status.draft',
-  sold: 'products.status.sold',
-  inactive: 'products.status.inactive',
-}
 
 /**
  * Grilla de productos con sus estados (cargando, error, vacío) y "Cargar
@@ -85,6 +81,7 @@ export function ProductGrid({
 
 function ProductListingCard({ product, showCommunity }: { product: ProductListItem; showCommunity: boolean }) {
   const { t } = useLanguage()
+  const badgeKey = getProductBadgeKey(product)
   const isExchange = product.type === 'exchange'
   const tags = product.productTags?.map((item) => item.tag) ?? []
 
@@ -105,9 +102,9 @@ function ProductListingCard({ product, showCommunity }: { product: ProductListIt
           {isExchange ? <Repeat className="size-3.5" aria-hidden="true" /> : <Tag className="size-3.5" aria-hidden="true" />}
           {t(isExchange ? 'products.type.exchange' : 'products.type.sale')}
         </span>
-        {product.status !== 'active' && (
+        {badgeKey && (
           <span className="absolute top-3 right-3 rounded-full bg-mynted-ink/85 px-2.5 py-1 text-xs font-semibold text-white">
-            {t(STATUS_LABEL[product.status])}
+            {t(badgeKey)}
           </span>
         )}
       </div>

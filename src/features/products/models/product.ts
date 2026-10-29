@@ -1,6 +1,17 @@
 import type { UserDisplaySummary } from '@/features/pro/models/cosmetics'
 import type { DisplayPriceFields } from '@/utils/price'
 
+/**
+ * Stock (sección 14 de la guía): `quantity` son las unidades que quedan y
+ * `isAvailable` es true solo si el producto está activo, visible, no borrado
+ * y con stock. Un agotado tiene `quantity: 0` y `status: 'sold'`. Opcionales
+ * porque algunas respuestas viejas en cache no los traen.
+ */
+export interface StockFields {
+  quantity?: number
+  isAvailable?: boolean
+}
+
 /** Espeja los enums de products/entities/product.entity.ts del backend. */
 export const PRODUCT_TYPES = ['sale', 'exchange'] as const
 export type ProductType = (typeof PRODUCT_TYPES)[number]
@@ -85,7 +96,7 @@ export interface ProductSeller extends UserDisplaySummary {
  * cambiar de estado). En un borrador pueden faltar campos, por eso son null.
  * Los campos `display*` solo vienen en GET /products/:id (no en crear/editar).
  */
-export interface ProductDetail extends DisplayPriceFields {
+export interface ProductDetail extends DisplayPriceFields, StockFields {
   /**
    * Si quien mira puede reseñarlo AHORA. Lo decide el backend con la misma
    * regla que valida POST /products/:id/reviews: hay sesión, lo compró (pago
@@ -110,8 +121,6 @@ export interface ProductDetail extends DisplayPriceFields {
   type: ProductType | null
   condition: ProductCondition | null
   shipsTo: string[] | null
-  /** Unidades disponibles (0 = agotado). */
-  quantity?: number
   isVisible: boolean
   /**
    * Ocultado por moderación. Lo ven solo su vendedor y el equipo de la
@@ -140,7 +149,7 @@ export interface ProductDetail extends DisplayPriceFields {
  * /products/:id/related, /search). El precio llega como número (el backend lo
  * transforma desde el decimal de Postgres).
  */
-export interface ProductListItem extends DisplayPriceFields {
+export interface ProductListItem extends DisplayPriceFields, StockFields {
   id: number
   title: string
   description: string
@@ -177,7 +186,7 @@ export interface RelatedProduct extends ProductListItem {
 }
 
 /** Tarjeta de producto de GET /products/shop (con todos sus tags y el vendedor). */
-export interface ShopProduct extends DisplayPriceFields {
+export interface ShopProduct extends DisplayPriceFields, StockFields {
   id: number
   title: string
   price: number
@@ -215,7 +224,7 @@ export type ShopTag = ProductTagRef
  * Tarjeta de GET /products/me (panel del vendedor). Un borrador puede no
  * tener todavía precio, moneda, portada, tipo ni estado de conservación.
  */
-export interface MyProductCard {
+export interface MyProductCard extends StockFields {
   id: number
   title: string
   price: number | null

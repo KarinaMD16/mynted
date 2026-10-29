@@ -86,6 +86,8 @@ export default function TagProductsPage() {
                       tags: product.productTags?.map((item) => item.tag) ?? [],
                       type: product.type,
                       isFeatured: product.isFeatured,
+                      quantity: product.quantity,
+                      isAvailable: product.isAvailable,
                     }}
                   />
                 </StaggerItem>

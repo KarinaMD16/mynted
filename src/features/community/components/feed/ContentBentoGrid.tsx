@@ -4,6 +4,7 @@ import { EAGER_ITEM_COUNT, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatRelativeTime } from '@/utils/relativeTime'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
+import { getProductBadgeKey } from '@/features/products/utils/stock'
 import type { TranslationKey } from '@/i18n/translations/es'
 import type { FeedPost, MyContentEntry, MyContentProduct } from '@/features/community/models/communityDTOs'
 import { AVATAR_COLORS } from '@/features/community/types/DEFAULT_VALUES'
@@ -181,14 +182,11 @@ const CONDITION_LABEL: Record<MyContentProduct['condition'], TranslationKey> = {
   used_with_details: 'products.condition.usedWithDetails',
 }
 
-const STATUS_LABEL: Record<Exclude<MyContentProduct['status'], 'active'>, TranslationKey> = {
-  sold: 'products.status.sold',
-  inactive: 'products.status.inactive',
-}
 
 /** Producto propio: siempre tiene foto, así que va a sangre con el título y el precio encima. */
 function BentoProductTile({ product, size }: { product: MyContentProduct; size: TileSize }) {
   const { t } = useLanguage()
+  const badgeKey = getProductBadgeKey(product)
   const isExchange = product.type === 'exchange'
 
   return (
@@ -216,9 +214,9 @@ function BentoProductTile({ product, size }: { product: MyContentProduct; size: 
           {isExchange ? <Repeat className="size-3.5" aria-hidden="true" /> : <Tag className="size-3.5" aria-hidden="true" />}
           {t(isExchange ? 'products.type.exchange' : 'products.type.sale')}
         </span>
-        {product.status !== 'active' && (
+        {badgeKey && (
           <span className="rounded-full bg-mynted-ink/85 px-2.5 py-1 text-xs font-semibold text-white">
-            {t(STATUS_LABEL[product.status])}
+            {t(badgeKey)}
           </span>
         )}
       </header>

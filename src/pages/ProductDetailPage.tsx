@@ -1,9 +1,10 @@
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router'
+import { Star } from 'lucide-react'
 import { getHttpStatus, isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
-import { Rating } from '@/components/ui/Rating'
+import { RatingSummary } from '@/components/ui/RatingSummary'
 import { HiddenContentNotice } from '@/features/reports/components/HiddenContentNotice'
 import { ReportMenu } from '@/features/reports/components/ReportMenu'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
@@ -17,10 +18,11 @@ import { FavoriteAlertsButton } from '@/features/favorites/components/FavoriteAl
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProductGallery } from '@/features/products/components/ProductGallery'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
+import { ProductStock } from '@/features/products/components/ProductStock'
 import { FeaturedTag } from '@/features/products/components/FeaturedControls'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
 import { ProBadge } from '@/features/pro/components/ProBadge'
-import { ProductReviews } from '@/features/products/components/ProductReviews'
+import { ProductReviews, REVIEW_FORM_ID } from '@/features/products/components/ProductReviews'
 import { useRecordProductViewMutation } from '@/features/products/hooks/useProductMutations'
 import { useProduct, useRecommendedProducts, useRelatedProducts } from '@/features/products/hooks/useProductQueries'
 import type {
@@ -53,7 +55,7 @@ const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
 const STATUS_NOTICE: Partial<Record<ProductStatus, TranslationKey>> = {
   draft: 'itemDetail.notice.draft',
   inactive: 'itemDetail.notice.inactive',
-  sold: 'itemDetail.notice.sold',
+  sold: 'itemDetail.notice.soldOut',
 }
 
 /** Estado del botón "Contactar vendedor", que vive en la página y se pasa al detalle. */
@@ -287,14 +289,13 @@ function SellerIdentity({ seller }: { seller: ProductDetail['seller'] }) {
           <span className="font-heading text-base font-semibold text-mynted-ink group-hover:underline">{seller.displayName}</span>
           {seller.isPro && <ProBadge size="xs" />}
         </span>
-        {seller.ratingAverage != null ? (
-          <span className="flex items-center gap-1.5 text-xs text-mynted-gray">
-            <Rating value={seller.ratingAverage} size={12} />
-            {seller.ratingAverage.toFixed(1)} ({seller.reviewsCount})
-          </span>
-        ) : (
-          <span className="text-xs text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
-        )}
+        {/* Reputación del vendedor: promedio de las reseñas de todos sus productos. */}
+        <RatingSummary
+          average={seller.ratingAverage}
+          count={seller.reviewsCount}
+          size="sm"
+          emptyLabel={t('itemDetail.sellerNoReviews')}
+        />
       </span>
     </>
   )
@@ -363,6 +364,15 @@ function Detail({
   const notice = STATUS_NOTICE[product.status]
   const shipsTo = product.shipsTo ?? []
 
+  function goToReviewForm() {
+    const form = document.getElementById(REVIEW_FORM_ID)
+    if (!form) return
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    form.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+    // Foco en la primera estrella para poder calificar con el teclado de una vez.
+    form.querySelector<HTMLButtonElement>('[role="radio"]')?.focus({ preventScroll: true })
+  }
+
   return (
     // Desde xl el ancho disponible cambia con el chat abierto/cerrado: galería y datos se ponen
     // en fila según el ancho del <main> (container query), no de la pantalla. El gap también
@@ -403,12 +413,9 @@ function Detail({
           <h1 className="min-w-0 flex-1 font-heading text-[30px] font-semibold text-mynted-ink">{product.title}</h1>
         </div>
 
-        {product.ratingAverage != null && (
-          <a href="#reviews" className="flex items-center gap-2 text-sm text-mynted-gray hover:text-mynted-ink">
-            <Rating value={product.ratingAverage} />
-            <span>
-              {product.ratingAverage.toFixed(1)} · {t('reviews.count', { count: product.reviewsCount })}
-            </span>
+        {product.ratingAverage != null && product.reviewsCount > 0 && (
+          <a href="#reviews" className="rounded-md outline-none hover:opacity-80 focus-visible:outline-2 focus-visible:outline-mynted-blue-mid">
+            <RatingSummary average={product.ratingAverage} count={product.reviewsCount} />
           </a>
         )}
 
@@ -423,16 +430,20 @@ function Detail({
           )}
         </div>
 
-        {product.price != null && product.currency && (
-          <ProductPrice
-            price={product.price}
-            finalPrice={product.finalPrice}
-            discountPercent={product.discountPercent}
-            currency={product.currency}
-            display={product}
-            className="font-heading text-[28px] font-semibold text-mynted-ink"
-          />
-        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {product.price != null && product.currency && (
+            <ProductPrice
+              price={product.price}
+              finalPrice={product.finalPrice}
+              discountPercent={product.discountPercent}
+              currency={product.currency}
+              display={product}
+              className="font-heading text-[28px] font-semibold text-mynted-ink"
+            />
+          )}
+          {/* Unidades disponibles (o "Agotado"): se compran de 1 hasta esta cantidad. */}
+          {product.status !== 'draft' && <ProductStock product={product} />}
+        </div>
 
         <div className="flex flex-wrap gap-2">
           {product.type && <Chip>{t(product.type === 'exchange' ? 'products.type.exchange' : 'products.type.sale')}</Chip>}
@@ -473,7 +484,22 @@ function Detail({
               {contact.isOpening ? t('chat.contact.opening') : t('itemDetail.contactSeller')}
             </button>
           )}
-          {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} isSold={product.status === 'sold'} variant="outline" />}
+          {/*
+            "Reseñar": solo si el backend dice que quien mira puede (`canReview`: lo
+            compró, no es suyo, no es intercambio y aún no lo reseñó). Lleva al
+            formulario de la sección de reseñas y enfoca la primera estrella.
+          */}
+          {product.canReview && !isOwnProduct && (
+            <button
+              type="button"
+              onClick={goToReviewForm}
+              className="flex h-12 cursor-pointer items-center gap-2 rounded-[10px] border border-mynted-border bg-white px-5 text-[15px] font-semibold text-mynted-ink outline-none transition-colors hover:border-amber-300 hover:bg-amber-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+            >
+              <Star className="size-[18px] fill-amber-400 text-amber-400" aria-hidden="true" />
+              {t('itemDetail.reviewCta')}
+            </button>
+          )}
+          {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} isSold={product.status === 'sold' || product.quantity === 0} variant="outline" />}
           {/* Avisos de precio / disponibilidad: solo si ya está en favoritos. */}
           {product.status !== 'draft' && <FavoriteAlertsButton productId={product.id} variant="outline" />}
           

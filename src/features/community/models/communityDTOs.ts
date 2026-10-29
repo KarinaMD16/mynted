@@ -1,4 +1,5 @@
 import type { DisplayPriceFields } from '@/utils/price'
+import type { StockFields } from '@/features/products/models/product'
 
 export interface CreateCommunityPayload {
   name: string
@@ -210,7 +211,7 @@ export interface MyForumPostsQuery extends FeedPageQuery {
  * Producto dentro de GET /posts/me, /favorites/me y /users/:id/posts
  * (buildProductCards en el backend).
  */
-export interface MyContentProduct extends DisplayPriceFields {
+export interface MyContentProduct extends DisplayPriceFields, StockFields {
   id: number
   title: string
   price: number | string
