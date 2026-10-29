@@ -5,6 +5,8 @@ import { getHttpStatus, isNotFoundError } from '@/api/apiError'
 import { ErrorState } from '@/components/errors/ErrorState'
 import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
+import { HiddenContentNotice } from '@/features/reports/components/HiddenContentNotice'
+import { ReportMenu } from '@/features/reports/components/ReportMenu'
 import { ScrollReveal, StaggerItem } from '@/components/ui/ScrollReveal'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ChatDock, ChatSheet } from '@/features/chat/components/ChatSheet'
@@ -92,6 +94,14 @@ export default function ProductDetailPage() {
   // el backend igual rechaza comprarse a uno mismo.
   const sellerUserId = product.data?.seller.userId
   const isOwnProduct = sellerUserId !== undefined && currentUser?.id === sellerUserId
+  /*
+   * Para restaurar un producto oculto hace falta rol de moderación en SU
+   * comunidad, y el detalle del producto solo trae el id de esa comunidad, no
+   * el rol de quien mira. Pedirlo sería una consulta más en cada producto, así
+   * que acá solo se ofrece al superadmin, que vale en todas. El equipo de la
+   * comunidad lo restaura desde su pestaña de reportes, que es donde ocultó.
+   */
+  const canModerateCommunity = currentUser?.role === 'superadmin'
   const isActive = product.data?.status === 'active'
   // La notificación de reseña nueva llega con #reviews: el producto carga después de navegar.
   useScrollToHash(Boolean(product.data))
@@ -199,7 +209,15 @@ export default function ProductDetailPage() {
           ) : product.data ? (
             <>
               <Breadcrumb title={product.data.title} />
-              <Detail key={product.data.id} product={product.data} contact={contact} purchase={purchase} fitsContainer={isDesktop} />
+              <Detail
+                key={product.data.id}
+                product={product.data}
+                contact={contact}
+                purchase={purchase}
+                fitsContainer={isDesktop}
+                isOwnProduct={isOwnProduct}
+                canModerateCommunity={canModerateCommunity}
+              />
               {/*
                 También en un producto vendido: es justo después de comprarlo
                 cuando se reseña, y esconderlas ahí borraba de la pantalla
@@ -209,7 +227,7 @@ export default function ProductDetailPage() {
               {product.data.status !== 'draft' && (
                 <ProductReviews
                   productId={product.data.id}
-                  canComment={product.data.canComment ?? false}
+                  canComment={product.data.canReview ?? false}
                   isOwnProduct={isOwnProduct}
                 />
               )}
@@ -321,11 +339,16 @@ function Detail({
   contact,
   purchase,
   fitsContainer,
+  isOwnProduct,
+  canModerateCommunity,
 }: {
   product: ProductDetail
   contact: ContactState
   purchase: PurchaseState
   fitsContainer: boolean
+  isOwnProduct: boolean
+  /** Dueño o moderador de la comunidad del producto (o superadmin). */
+  canModerateCommunity: boolean
 }) {
   const { t, language } = useLanguage()
   // La galería (si hay) viene ordenada; la portada va primero.
@@ -355,7 +378,21 @@ function Detail({
           </p>
         )}
 
-        <h1 className="font-heading text-[30px] font-semibold text-mynted-ink">{product.title}</h1>
+        {/* Si llegó hasta acá es porque puede verlo: su vendedor o el equipo
+            de la comunidad. Restaurar solo lo deja hacer el equipo. */}
+        {product.isHidden && (
+          <HiddenContentNotice
+            itemType="product"
+            itemId={product.id}
+            communityId={product.communityId}
+            canRestore={canModerateCommunity}
+            reason={product.hiddenReason}
+          />
+        )}
+
+        <div className="flex w-full items-start gap-2">
+          <h1 className="min-w-0 flex-1 font-heading text-[30px] font-semibold text-mynted-ink">{product.title}</h1>
+        </div>
 
         {product.ratingAverage != null && (
           <a href="#reviews" className="flex items-center gap-2 text-sm text-mynted-gray hover:text-mynted-ink">
@@ -435,6 +472,8 @@ function Detail({
           {product.status !== 'draft' && <ProductFavoriteButton productId={product.id} isSold={product.status === 'sold'} variant="outline" />}
           {/* Avisos de precio / disponibilidad: solo si ya está en favoritos. */}
           {product.status !== 'draft' && <FavoriteAlertsButton productId={product.id} variant="outline" />}
+          
+          <ReportMenu itemType="product" itemId={product.id} isOwnContent={isOwnProduct} className="mt-1.5" />
         </div>
         {contact.error && (
           <p role="alert" className="rounded-[10px] bg-[#fdecec] px-3.5 py-2 text-sm font-medium text-[#c62a2f]">

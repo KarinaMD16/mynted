@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, WifiOff, X } from 'lucide-react'
+import { UNSAFE_PortalProvider } from 'react-aria'
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { ReportMenu } from '@/features/reports/components/ReportMenu'
 import { cx } from '@/utils/cx'
 import { useIsChatConnected } from '../hooks/useChatConnection'
 import { useConversationMessages } from '../hooks/useChatQueries'
@@ -38,6 +40,7 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
   const { pending, sendText, sendImage, retry, discard } = useSendMessages(conversationId)
   const isConnected = useIsChatConnected()
   const [isTicketVisible, setIsTicketVisible] = useState(true)
+  const [panel, setPanel] = useState<HTMLElement | null>(null)
   const suggestions = [
     t('chat.suggestions.available'),
     t('chat.suggestions.box'),
@@ -94,8 +97,20 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
   }
 
   return (
-    <section className={shell} aria-label={context.otherParticipant.displayName}>
-      <ChatHeader participant={context.otherParticipant} isOnline={isOtherOnline} onBack={onBack} onClose={onClose} />
+    <section ref={setPanel} className={shell} aria-label={context.otherParticipant.displayName}>
+      {/* En la burbuja y en el detalle de producto el chat es un diálogo modal
+          (Radix): un menú montado en body quedaría detrás, sin recibir clics,
+          y tocarlo contaría como clic afuera. Por eso se monta dentro del panel. */}
+      <UNSAFE_PortalProvider getContainer={() => panel}>
+        <ChatHeader
+          participant={context.otherParticipant}
+          isOnline={isOtherOnline}
+          onBack={onBack}
+          onClose={onClose}
+          /* Una conversación nunca es "contenido propio": siempre hay otro. */
+          actions={<ReportMenu itemType="conversation" itemId={conversationId} placement="bottom end" />}
+        />
+      </UNSAFE_PortalProvider>
       {/*
         Mientras la ficha del producto (al principio del hilo) está a la vista, la tira fija
         sobra; aparece al bajar por la conversación, para no perder de qué se habla.

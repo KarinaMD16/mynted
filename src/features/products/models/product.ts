@@ -72,12 +72,6 @@ export interface ProductSeller {
   /** null si todavía no tiene reseñas. */
   ratingAverage: number | null
   reviewsCount: number
-  /**
-   * Si quien mira puede reseñarlo AHORA. Lo decide el backend con la misma
-   * regla que valida POST /products/:id/reviews: hay sesion, no es suyo, no es
-   * un intercambio, lo compro (compra completada) y todavia no lo reseño.
-   */
-  canComment?: boolean
 }
 
 /**
@@ -86,6 +80,16 @@ export interface ProductSeller {
  * Los campos `display*` solo vienen en GET /products/:id (no en crear/editar).
  */
 export interface ProductDetail extends DisplayPriceFields {
+  /**
+   * Si quien mira puede reseñarlo AHORA. Lo decide el backend con la misma
+   * regla que valida POST /products/:id/reviews: hay sesión, lo compró (pago
+   * completado), no es suyo, no es un intercambio y no lo reseñó todavía.
+   */
+  canReview?: boolean
+  /** Ya tiene una reseña propia de este producto. */
+  hasReviewed?: boolean
+  /** Id de su reseña, para el botón "editar tu reseña". */
+  reviewId?: number | null
   id: number
   title: string
   description: string | null
@@ -101,6 +105,13 @@ export interface ProductDetail extends DisplayPriceFields {
   condition: ProductCondition | null
   shipsTo: string[] | null
   isVisible: boolean
+  /**
+   * Ocultado por moderación. Lo ven solo su vendedor y el equipo de la
+   * comunidad; para el resto el producto ni aparece.
+   */
+  isHidden?: boolean
+  hiddenAt?: string | null
+  hiddenReason?: string | null
   /** null = producto sin comunidad. */
   communityId: number | null
   publishedAt: string | null

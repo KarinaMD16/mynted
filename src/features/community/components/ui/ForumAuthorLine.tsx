@@ -22,6 +22,8 @@ interface ForumAuthorLineProps {
   isOriginalPoster?: boolean
   /** Va junto a la hora; en el feed global es la comunidad de la publicacion. */
   meta?: ReactNode
+  /** Se alinea a la derecha de la linea; hoy es el menu de reportar. */
+  actions?: ReactNode
 }
 
 /** Avatar, nombre, hace cuanto y la etiqueta de rol. */
@@ -34,6 +36,7 @@ export function ForumAuthorLine({
   index,
   isOriginalPoster = false,
   meta,
+  actions,
 }: ForumAuthorLineProps) {
   const { t } = useLanguage()
   const [hasFailed, setHasFailed] = useState(false)
@@ -90,6 +93,9 @@ export function ForumAuthorLine({
           )}
         </span>
       </div>
+
+      {/* Sobre la capa del enlace que cubre la tarjeta, si no no se puede tocar. */}
+      {actions && <div className="relative z-10 ml-auto">{actions}</div>}
     </header>
   )
 }

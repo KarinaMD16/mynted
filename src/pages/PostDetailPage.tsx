@@ -174,6 +174,8 @@ export default function PostDetailPage() {
                     postId={post.id}
                     replies={replies}
                     authorProfileId={post.communityProfileId}
+                    communityId={community?.id}
+                    canModerate={community?.membershipRole === 'owner' || community?.membershipRole === 'moderator'}
                   />
                 )}
               </section>

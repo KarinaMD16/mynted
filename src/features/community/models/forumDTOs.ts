@@ -36,7 +36,17 @@ export interface ForumMetrics {
   isSaved: boolean
 }
 
-export interface ForumPost extends ForumMetrics {
+/**
+ * Ocultado por moderacion. El backend solo lo manda visible a su autor y al
+ * equipo de la comunidad; para el resto el contenido no aparece.
+ */
+export interface ForumHiddenFields {
+  isHidden?: boolean
+  hiddenAt?: string | null
+  hiddenReason?: string | null
+}
+
+export interface ForumPost extends ForumMetrics, ForumHiddenFields {
   id: number
   title: string
   body: string
@@ -48,7 +58,7 @@ export interface ForumPost extends ForumMetrics {
   replyCount: number
 }
 
-export interface ForumReply extends ForumMetrics {
+export interface ForumReply extends ForumMetrics, ForumHiddenFields {
   id: number
   body: string
   postedAt: string

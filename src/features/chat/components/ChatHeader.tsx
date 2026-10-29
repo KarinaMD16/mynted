@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft, X } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -16,6 +17,8 @@ interface ChatHeaderProps {
   onBack?: () => void
   /** Botón "cerrar" (panel del detalle de producto). */
   onClose?: () => void
+  /** Acciones a la derecha del nombre; hoy es el menú de reportar. */
+  actions?: ReactNode
 }
 
 /**
@@ -23,7 +26,7 @@ interface ChatHeaderProps {
  * llevan a su perfil (/users/$userId). No hay botón de llamada: el backend no
  * tiene llamadas.
  */
-export function ChatHeader({ participant, isOnline, onBack, onClose }: ChatHeaderProps) {
+export function ChatHeader({ participant, isOnline, onBack, onClose, actions }: ChatHeaderProps) {
   const { t } = useLanguage()
 
   return (
@@ -55,6 +58,8 @@ export function ChatHeader({ participant, isOnline, onBack, onClose }: ChatHeade
           </span>
         </span>
       </Link>
+
+      {actions}
 
       {onClose && (
         <button type="button" onClick={onClose} aria-label={t('chat.header.close')} className={cx(chatIconButtonClass, 'bg-mynted-bg')}>

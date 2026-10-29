@@ -15,6 +15,7 @@ import { useJoinCommunity, useLeaveCommunity } from '@/features/community/hooks/
 import type { CommunityDetail } from '@/features/community/models/communityDTOs'
 import { CommunityPattern } from '@/features/community/components/ui/CommunityPattern'
 import { Button } from '@/components/ui/Button'
+import { ReportMenu } from '@/features/reports/components/ReportMenu'
 
 type PreviewTarget = 'banner' | 'image'
 
@@ -119,6 +120,12 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
             ))}
           {membershipLabel}
         </Button>
+        {/* El backend acepta reportar una comunidad (ReportItemType
+              'community'); el dueño y los moderadores no la reportan, para
+              eso tienen el panel. */}
+        {community && community.membershipRole !== 'owner' && community.membershipRole !== 'moderator' && (
+            <ReportMenu itemType="community" itemId={community.id} />
+        )}
       </div>
 
       {hasPendingRequest && (
@@ -130,6 +137,8 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
           {getApiErrorMessage(error)}
         </p>
       )}
+
+   
 
       <ImagePreviewDialog
         src={preview === 'banner' ? community.bannerUrl : community.imageUrl}
