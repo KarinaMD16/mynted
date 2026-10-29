@@ -185,7 +185,7 @@ export function AdminDataTable<T>({
                         type="button"
                         onClick={() => toggleSort(column.id)}
                         aria-label={t('admin.table.sortBy', { column: column.header })}
-                        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid"
+                        className="flex w-full cursor-pointer items-center gap-3 rounded outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid"
                       >
                         {column.header}
                         <SortIcon state={isSorted ? sort.direction : null} />

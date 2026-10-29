@@ -133,3 +133,10 @@ export type AdminSection = (typeof ADMIN_SECTIONS)[number]
 
 export const ADMIN_TABS = ['overview', 'manage'] as const
 export type AdminTab = (typeof ADMIN_TABS)[number]
+
+/** Categoría de comunidades tal como la ve el panel: activas e inactivas. */
+export interface AdminCategory {
+  categoryId: number
+  name: string
+  isActive: boolean
+}

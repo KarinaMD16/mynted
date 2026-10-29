@@ -16,7 +16,10 @@ import {
   getAllUsers,
   getAllModerationLog,
   getModerationLog,
+  createCategory,
+  getInactiveCategories,
   getPendingSellerRequests,
+  setCategoryActive,
   getReviewedSellerRequests,
   getSellerRequest,
   updateSellerStatus,
@@ -26,6 +29,7 @@ import {
 export const adminKeys = {
   users: ['admin', 'users'] as const,
   communities: ['admin', 'communities'] as const,
+  inactiveCategories: ['admin', 'categories', 'inactive'] as const,
   sellerRequests: ['admin', 'seller-requests'] as const,
   pendingSellerRequests: ['admin', 'seller-requests', 'pending'] as const,
   reviewedSellerRequests: ['admin', 'seller-requests', 'reviewed'] as const,
@@ -258,4 +262,31 @@ export function useAllModerationLog(filters: ModerationLogFilters = {}) {
     queryFn: () => getAllModerationLog(filters),
     placeholderData: keepPreviousData,
   })
+}
+
+/** Las categorías desactivadas; las activas salen de useCategories (GET /categories, pública). */
+export function useInactiveCategories() {
+  return useQuery({ queryKey: adminKeys.inactiveCategories, queryFn: getInactiveCategories })
+}
+
+/** Al cambiar una categoría se recargan las dos listas: la pública y la de inactivas. */
+function useCategoryMutation<TVars, TData>(mutationFn: (vars: TVars) => Promise<TData>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['categories'] })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.inactiveCategories })
+    },
+  })
+}
+
+export function useCreateCategoryMutation() {
+  return useCategoryMutation((name: string) => createCategory(name))
+}
+
+export function useCategoryActiveMutation() {
+  return useCategoryMutation(({ categoryId, active }: { categoryId: number; active: boolean }) =>
+    setCategoryActive(categoryId, active),
+  )
 }

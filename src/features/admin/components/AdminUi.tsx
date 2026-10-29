@@ -1,6 +1,5 @@
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { useId, useState, type ComponentType, type ReactNode } from 'react'
-import { Info } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import {
   Dialog,
@@ -305,19 +304,6 @@ export function FilterDate({
 export function LoadErrorPanel({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useLanguage()
   return <QueryErrorState error={error} onRetry={onRetry} texts={{ error: { description: t('admin.table.loadError') } }} />
-}
-
-/** Aviso para funciones que el backend todavía no soporta (Comunidades, Categorías). */
-export function ReadOnlyNotice({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm" role="note">
-      <Info className="mt-0.5 size-4 shrink-0 text-amber-700" aria-hidden="true" />
-      <div>
-        <p className="font-semibold text-amber-900">{title}</p>
-        <p className="mt-0.5 text-amber-800">{description}</p>
-      </div>
-    </div>
-  )
 }
 
 export function ConfirmDialog({

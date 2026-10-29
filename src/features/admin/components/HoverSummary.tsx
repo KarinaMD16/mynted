@@ -184,29 +184,3 @@ export function CommunityHoverName({ community }: { community: AdminCommunity })
   )
 }
 
-
-/** Categoría con su tarjeta de datos; no hay nada que abrir, así que el clic no hace nada. */
-export function CategoryHoverName({
-  name,
-  categoryId,
-  communityCount,
-}: {
-  name: string
-  categoryId: number
-  communityCount: number
-}) {
-  const { t, language } = useLanguage()
-
-  return (
-    <AriaTooltipTrigger delay={OPEN_DELAY_MS} closeDelay={CLOSE_DELAY_MS}>
-      <AriaButton className={nameClass.replace('cursor-pointer', 'cursor-help')}>{name}</AriaButton>
-      <SummaryCard>
-        <p className="truncate font-heading text-base font-semibold text-mynted-ink">{name}</p>
-        <dl className="mt-3 flex flex-col gap-1.5">
-          <Row label={t('admin.categories.columns.id')}>#{categoryId}</Row>
-          <Row label={t('admin.categories.columns.communities')}>{communityCount.toLocaleString(language)}</Row>
-        </dl>
-      </SummaryCard>
-    </AriaTooltipTrigger>
-  )
-}

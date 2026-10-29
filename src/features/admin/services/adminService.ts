@@ -1,6 +1,6 @@
 import myntedAPI from '@/api/apiConfig'
 import type { PaginatedResponse } from '@/features/community/models/communityDTOs'
-import type { AdminCommunity, AdminStats, AdminUser, SellerDecision, SellerRequestDetail } from '../models/admin'
+import type { AdminCategory, AdminCommunity, AdminStats, AdminUser, SellerDecision, SellerRequestDetail } from '../models/admin'
 import type { ModerationLogPage } from '../models/moderationLog'
 
 /** GET /users — [Superadmin] todas las cuentas, más nuevas primero. */
@@ -194,4 +194,25 @@ export async function getAllModerationLog(filters: ModerationLogFilters = {}): P
     if (page >= data.pagination.totalPages) break
   }
   return all
+}
+
+/** GET /categories/inactive — [Superadmin] las desactivadas; GET /categories solo trae las activas. */
+export async function getInactiveCategories(): Promise<AdminCategory[]> {
+  const { data } = await myntedAPI.get<AdminCategory[]>('/categories/inactive')
+  return data
+}
+
+/** POST /categories — [Superadmin] responde 409 si ya hay una con ese nombre (sin distinguir mayúsculas). */
+export async function createCategory(name: string): Promise<AdminCategory> {
+  const { data } = await myntedAPI.post<AdminCategory>('/categories', { name })
+  return data
+}
+
+/**
+ * PATCH /categories/:id/activate | deactivate — [Superadmin]. Una desactivada
+ * ya no se puede elegir para comunidades ni tags; las que ya la tienen la
+ * conservan.
+ */
+export async function setCategoryActive(categoryId: number, active: boolean): Promise<void> {
+  await myntedAPI.patch(`/categories/${categoryId}/${active ? 'activate' : 'deactivate'}`)
 }
