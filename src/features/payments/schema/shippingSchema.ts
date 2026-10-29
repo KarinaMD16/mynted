@@ -69,7 +69,8 @@ export function makeShippingSchema(t: TranslateFn, allowedCountries: readonly st
     city: required(SHIPPING_LIMITS.city.max),
     line1: required(SHIPPING_LIMITS.line1.max),
     line2: optional(SHIPPING_LIMITS.line2.max),
-    postalCode: optional(SHIPPING_LIMITS.postalCode.max),
+    // El backend lo acepta vacío, pero sin él muchos envíos no llegan: se pide siempre.
+    postalCode: required(SHIPPING_LIMITS.postalCode.max),
     notes: optional(SHIPPING_LIMITS.notes.max),
   })
 }
@@ -97,7 +98,7 @@ export function toShippingPayload(values: ShippingFormValues): ShippingAddressPa
     city: values.city.trim(),
     line1: values.line1.trim(),
     line2: optional(values.line2),
-    postalCode: optional(values.postalCode),
+    postalCode: values.postalCode.trim(),
     notes: optional(values.notes),
   }
 }
