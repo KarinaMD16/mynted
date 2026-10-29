@@ -30,6 +30,22 @@ export const NOTIFICATION_TYPES = [
   'subscription_expiring_soon',
   'subscription_expired',
   'community_moderation_warning',
+  // Moderación (docs/frontend-moderation-reports-api.md del backend).
+  'moderation_warning',
+  'content_hidden',
+  'content_restored',
+  'product_deactivated',
+  'product_activated',
+  'product_deleted',
+  'seller_revoked',
+  'seller_restored',
+  'user_deactivated',
+  'user_reactivated',
+  'community_deactivated',
+  'community_activated',
+  'community_made_public',
+  'community_made_private',
+  'community_deleted',
 ] as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
@@ -108,6 +124,38 @@ export interface NotificationDataByType {
    * Es genérica a propósito: no trae el reporte ni su motivo, ni el slug.
    */
   community_moderation_warning: { communityId: number; communityName: string }
+  /**
+   * Al resolver un reporte contra algo que publicó: advertencia (sin ocultar)
+   * u ocultado. No trae título ni slug, así que una publicación no se enlaza.
+   */
+  moderation_warning: ModeratedItemRef & { warned?: boolean }
+  /** `reason` es el motivo del reporte (spam, acoso...), no un texto libre. */
+  content_hidden: ModeratedItemRef & { reason?: string; warned?: boolean }
+  content_restored: { itemType: ModeratedItemType; itemId: number }
+  /** Acciones de administración sobre un producto; `reason` lo escribió quien moderó. */
+  product_deactivated: { productId: number; reason: string }
+  product_activated: { productId: number; reason: string }
+  product_deleted: { productId: number; reason: string }
+  seller_revoked: { reason: string }
+  seller_restored: Record<string, never>
+  /** También llega cuando la cuenta se elimina: el backend usa el mismo tipo. */
+  user_deactivated: { reason: string }
+  user_reactivated: Record<string, never>
+  /** Al equipo de la comunidad (dueño y moderadores). Sin slug: no se enlaza. */
+  community_deactivated: { communityId: number; communityName: string }
+  community_activated: { communityId: number; communityName: string }
+  community_made_public: { communityId: number; communityName: string }
+  community_made_private: { communityId: number; communityName: string }
+  community_deleted: { communityId: number; communityName: string; reason: string }
+}
+
+/** Lo que se puede moderar desde un reporte. */
+export type ModeratedItemType = 'post' | 'reply' | 'product' | 'conversation'
+
+interface ModeratedItemRef {
+  itemType: ModeratedItemType
+  itemId: number
+  communityId: number | null
 }
 
 /** Notificación tal como llega del backend (REST o socket). */
