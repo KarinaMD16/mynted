@@ -1,4 +1,5 @@
 import type { PaginatedResponse } from '@/features/community/models/communityDTOs'
+import type { SubscriptionPeriod } from '@/features/pro/models/subscription'
 
 /**
  * Notificaciones dentro de la app (docs/GUIA_NOTIFICACIONES_FRONTEND.md del
@@ -25,6 +26,9 @@ export const NOTIFICATION_TYPES = [
   'seller_request_rejected',
   'post_replied',
   'reply_replied',
+  'subscription_payment_confirmed',
+  'subscription_expiring_soon',
+  'subscription_expired',
 ] as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
@@ -78,6 +82,26 @@ export interface NotificationDataByType {
   seller_request_rejected: Record<string, never>
   post_replied: PostReplyData
   reply_replied: PostReplyData & { parentReplyId: number }
+  /** Mynted Pro (sección 10 de la guía Pro). Montos en USD, fechas en ISO. */
+  subscription_payment_confirmed: {
+    paymentId: string
+    period: SubscriptionPeriod
+    amount: number
+    currency: string
+    startsAt: string
+    endsAt: string
+    /** true si ya era Pro y se extendió; false si es el primer pago o volvió tras vencer. */
+    renewal: boolean
+  }
+  subscription_expiring_soon: {
+    subscriptionId: string
+    period: SubscriptionPeriod
+    endsAt: string
+    daysRemaining: number
+    /** true si canceló: el texto no le pide renovar "para no perder" nada. */
+    cancelAtPeriodEnd: boolean
+  }
+  subscription_expired: { subscriptionId: string; period: SubscriptionPeriod; endsAt: string }
 }
 
 /** Notificación tal como llega del backend (REST o socket). */

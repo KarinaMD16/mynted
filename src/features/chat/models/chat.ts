@@ -1,4 +1,5 @@
 import type { PaginatedResponse } from '@/features/community/models/communityDTOs'
+import type { UserDisplaySummary } from '@/features/pro/models/cosmetics'
 import type { ProductStatus } from '@/features/products/models/product'
 import type { DisplayPriceFields } from '@/utils/price'
 
@@ -28,8 +29,11 @@ export interface ChatMessage {
   readAt: string | null
 }
 
-/** El otro participante de la conversación, siempre visto desde quien consulta. */
-export interface ChatParticipant {
+/**
+ * El otro participante de la conversación, siempre visto desde quien consulta.
+ * Trae su badge Pro y su marco de avatar (ver UserDisplaySummary).
+ */
+export interface ChatParticipant extends UserDisplaySummary {
   /** Id de usuario (uuid). Sirve para enlazar a /users/$userId y para la presencia. */
   id: string
   username: string

@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft, X } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { ProBadge } from '@/features/pro/components/ProBadge'
 import { cx } from '@/utils/cx'
 import type { ChatParticipant } from '../models/chat'
 import { ChatAvatar } from './ChatAvatar'
@@ -40,7 +41,7 @@ export function ChatHeader({ participant, isOnline, onBack, onClose }: ChatHeade
         params={{ userId: participant.id }}
         className="group flex min-w-0 flex-1 items-center gap-3 rounded-xl outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
       >
-        <ChatAvatar name={participant.displayName} photoUrl={participant.photoUrl} online={isOnline} />
+        <ChatAvatar name={participant.displayName} photoUrl={participant.photoUrl} online={isOnline} frame={participant.frame} />
 
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="flex min-w-0 items-center gap-1.5">
@@ -48,6 +49,7 @@ export function ChatHeader({ participant, isOnline, onBack, onClose }: ChatHeade
               {participant.displayName}
             </span>
             {participant.isVerified && <VerifiedMark />}
+            {participant.isPro && <ProBadge size="xs" />}
           </span>
           <span className="flex items-center gap-1.5 text-xs text-mynted-gray">
             <span className={cx('size-[7px] rounded-full', isOnline ? 'bg-[#22c55e]' : 'bg-mynted-gray-light')} aria-hidden="true" />

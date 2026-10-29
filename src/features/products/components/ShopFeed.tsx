@@ -96,7 +96,9 @@ function TagSection({ section }: { section: ShopSection }) {
       <ul className={SHOP_GRID_CLASS}>
         {section.products.map((product, index) => (
           <StaggerItem key={product.id} index={index}>
-            <ShopProductCard product={{ ...product, isVerified: product.seller.isVerified }} />
+            <ShopProductCard
+              product={{ ...product, isVerified: product.seller.isVerified, sellerIsPro: product.seller.isPro === true }}
+            />
           </StaggerItem>
         ))}
       </ul>

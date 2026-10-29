@@ -1,3 +1,4 @@
+import type { EffectiveCosmetics, UserDisplaySummary } from '@/features/pro/models/cosmetics'
 import type { ProductCondition, ProductType } from '@/features/products/models/product'
 
 /**
@@ -17,8 +18,11 @@ export interface ResponseTime {
   sampleSize: number
 }
 
-/** GET /sellers/:sellerId. `sellerId` es el id numérico de la tienda, no el User.id. */
-export interface SellerStore {
+/**
+ * GET /sellers/:sellerId. `sellerId` es el id numérico de la tienda, no el User.id.
+ * `isPro` y `frame` son del dueño de la tienda (ver UserDisplaySummary).
+ */
+export interface SellerStore extends UserDisplaySummary {
   sellerId: number
   /** User.id del vendedor: para su perfil (/users/:id). */
   userId: string
@@ -28,8 +32,14 @@ export interface SellerStore {
   location: string | null
   /** Foto de perfil del usuario. */
   photoUrl: string | null
-  /** Siempre null por ahora (pendiente en el backend). */
+  /**
+   * URL del banner efectivo del dueño (su banner propio si es Pro, o el
+   * `assetUrl` del banner del catálogo). null si el banner se dibuja por
+   * `code`: entonces se usa `cosmetics.banner`.
+   */
   bannerUrl: string | null
+  /** Cosméticos efectivos del dueño (banner, ganso y marco). */
+  cosmetics?: EffectiveCosmetics
   isVerified: boolean
   /** Promedio (1 decimal) de las reseñas de todos sus productos; null si no tiene. */
   ratingAverage: number | null
@@ -65,8 +75,8 @@ export interface StoreProductFilters {
   sort?: StoreSort
 }
 
-/** Resultado de GET /search?type=stores (y bloque `stores` del resumen). */
-export interface StoreSearchItem {
+/** Resultado de GET /search?type=stores (y bloque `stores` del resumen). `isPro`/`frame`: del dueño. */
+export interface StoreSearchItem extends UserDisplaySummary {
   sellerId: number
   userId: string
   displayName: string

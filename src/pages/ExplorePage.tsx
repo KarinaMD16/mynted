@@ -318,6 +318,8 @@ export default function ExplorePage() {
                             ...displayFieldsOf(product),
                             tags: product.productTags?.map((item) => item.tag) ?? [],
                             type: product.type,
+                            // Destacados de vendedores Pro: GET /products ya los manda primero.
+                            isFeatured: product.isFeatured,
                           }}
                         />
                       </StaggerItem>

@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   getCommunityProducts,
+  getFeaturedSummary,
   getMyProducts,
   getMyProductsDashboard,
   getMyProductsStats,
@@ -138,6 +139,15 @@ export function useMyProductsDashboard(filters: MyProductsFilters, enabled = tru
     initialPageParam: 1,
     getNextPageParam: (last: MyProductsPage) =>
       last.pagination.page < last.pagination.totalPages ? last.pagination.page + 1 : undefined,
+    enabled,
+  })
+}
+
+/** Cupos de destacados del vendedor ("2 de 3"). Cualquier mutación de productos los invalida. */
+export function useFeaturedSummary(enabled = true) {
+  return useQuery({
+    queryKey: productKeys.featuredSummary(),
+    queryFn: getFeaturedSummary,
     enabled,
   })
 }

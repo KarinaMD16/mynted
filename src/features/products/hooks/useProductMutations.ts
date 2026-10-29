@@ -5,8 +5,10 @@ import {
   createReview,
   deleteMyReview,
   deleteProduct,
+  featureProduct,
   publishProduct,
   recordProductView,
+  unfeatureProduct,
   updateMyReview,
   updateProduct,
   updateProductStatus,
@@ -26,6 +28,7 @@ export const productKeys = {
   explore: (filters: object) => [...productKeys.all, 'explore', filters] as const,
   mine: () => [...productKeys.all, 'mine'] as const,
   stats: () => [...productKeys.all, 'stats'] as const,
+  featuredSummary: () => [...productKeys.all, 'featured-summary'] as const,
   dashboard: (filters: object) => [...productKeys.all, 'dashboard', filters] as const,
   community: (communityId: number) => [...productKeys.all, 'community', communityId] as const,
 }
@@ -83,6 +86,22 @@ export function useDeleteProductMutation() {
   return useMutation({
     mutationFn: (productId: number) => deleteProduct(productId),
     onSuccess: invalidate,
+  })
+}
+
+/**
+ * Destacar / quitar el destacado de un producto propio. Cambia el orden de
+ * Explorar y de la tienda, el panel del vendedor y sus cupos, así que invalida
+ * todos los listados de productos (los cupos cuelgan de productKeys.all).
+ */
+export function useToggleFeaturedMutation() {
+  const invalidate = useInvalidateProducts()
+  return useMutation({
+    mutationFn: async ({ productId, featured }: { productId: number; featured: boolean }): Promise<void> => {
+      if (featured) await featureProduct(productId)
+      else await unfeatureProduct(productId)
+    },
+    onSettled: invalidate,
   })
 }
 

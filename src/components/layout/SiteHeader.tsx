@@ -7,6 +7,7 @@ import {
   Modal as AriaModal,
   ModalOverlay as AriaModalOverlay,
 } from 'react-aria-components'
+import { Sparkles } from 'lucide-react'
 import { GooseIcon } from '../ui/GooseIcon'
 import { SearchBar } from '../ui/SearchBar'
 import { Logo } from '../ui/Logo'
@@ -72,7 +73,8 @@ function MobileMenuTrigger({
   pathname: string
 }) {
   const { t } = useLanguage()
-  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, isLoggingOut } = useAccountActions()
+  const { logout, goToProfile, goToSettings, goToMyProducts, goToCreateProduct, goToAdmin, goToPro, isLoggingOut } =
+    useAccountActions()
   const role = useCurrentUser().data?.role
   const unreadMessages = useUnreadBadge()
   const isSuperAdmin = role === 'superadmin'
@@ -189,6 +191,14 @@ function MobileMenuTrigger({
                           onPress={() => {
                             state.close()
                             goToProfile()
+                          }}
+                        />
+                        <MenuItem
+                          icon={Sparkles}
+                          label={t('header.pro')}
+                          onPress={() => {
+                            state.close()
+                            goToPro()
                           }}
                         />
                         <MenuItem
