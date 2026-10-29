@@ -1,6 +1,6 @@
 import { useMemo, useState, type ComponentType, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { FileText, Flag, Package, ScrollText, Store, UserRound, UsersRound } from 'lucide-react'
+import { FileText, Flag, Package, Scale, ScrollText, Store, UserRound, UsersRound } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
@@ -60,6 +60,12 @@ const ACTION_LABEL: Record<string, TranslationKey> = {
   community_made_public: 'admin.log.action.communityPublic',
   community_made_private: 'admin.log.action.communityPrivate',
   community_soft_deleted: 'admin.log.action.communityDeleted',
+  community_member_removed: 'admin.log.action.memberRemoved',
+  community_member_banned: 'admin.log.action.memberBanned',
+  community_member_unbanned: 'admin.log.action.memberUnbanned',
+  community_ownership_transferred: 'admin.log.action.ownershipTransferred',
+  payment_dispute_refunded: 'admin.log.action.disputeRefunded',
+  payment_dispute_closed: 'admin.log.action.disputeClosed',
 }
 
 /** Verde lo que devuelve algo, rojo lo que lo quita, gris lo que solo cierra. */
@@ -82,13 +88,19 @@ const ACTION_TONE: Record<string, PillTone> = {
   community_made_public: 'blue',
   community_made_private: 'amber',
   community_soft_deleted: 'red',
+  community_member_removed: 'red',
+  community_member_banned: 'red',
+  community_member_unbanned: 'teal',
+  community_ownership_transferred: 'blue',
+  payment_dispute_refunded: 'violet',
+  payment_dispute_closed: 'gray',
 }
 
 /**
- * Las 18 acciones se agrupan en seis áreas, cada una con su ícono: es lo que
+ * Las 24 acciones se agrupan en siete áreas, cada una con su ícono: es lo que
  * permite recorrer el registro de un vistazo sin leer cada etiqueta.
  */
-type LogArea = 'content' | 'reports' | 'accounts' | 'sellers' | 'products' | 'communities' | 'other'
+type LogArea = 'content' | 'reports' | 'accounts' | 'sellers' | 'products' | 'communities' | 'payments' | 'other'
 
 const AREA_OF_PREFIX: [string, LogArea][] = [
   ['content_', 'content'],
@@ -98,10 +110,11 @@ const AREA_OF_PREFIX: [string, LogArea][] = [
   ['seller_', 'sellers'],
   ['product_', 'products'],
   ['community_', 'communities'],
+  ['payment_', 'payments'],
 ]
 
 /** Las áreas en el orden del filtro. */
-const LOG_AREAS: LogArea[] = ['content', 'reports', 'accounts', 'sellers', 'products', 'communities']
+const LOG_AREAS: LogArea[] = ['content', 'reports', 'accounts', 'sellers', 'products', 'communities', 'payments']
 
 function areaOf(action: string): LogArea {
   return AREA_OF_PREFIX.find(([prefix]) => action.startsWith(prefix))?.[1] ?? 'other'
@@ -114,6 +127,7 @@ const AREA_LABEL: Record<LogArea, TranslationKey> = {
   sellers: 'admin.log.area.sellers',
   products: 'admin.log.area.products',
   communities: 'admin.log.area.communities',
+  payments: 'admin.log.area.payments',
   other: 'admin.log.area.other',
 }
 
@@ -124,6 +138,7 @@ const AREA_ICON: Record<LogArea, ComponentType<{ className?: string }>> = {
   sellers: Store,
   products: Package,
   communities: UsersRound,
+  payments: Scale,
   other: ScrollText,
 }
 
@@ -147,6 +162,8 @@ const TARGET_LABEL: Record<string, TranslationKey> = {
   seller: 'admin.log.target.seller',
   community: 'reports.item.community',
   conversation: 'reports.item.conversation',
+  community_profile: 'admin.log.target.communityMember',
+  payment_dispute: 'admin.log.target.dispute',
 }
 
 /**

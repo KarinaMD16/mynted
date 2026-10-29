@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ExternalLink, FolderTree, LogOut, Percent, ScrollText, ShieldAlert, Store, Users, UsersRound } from 'lucide-react'
+import { ExternalLink, FolderTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, Store, Users, UsersRound } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { Logo } from '@/components/ui/Logo'
 import { GooseIcon } from '@/components/ui/GooseIcon'
@@ -48,6 +48,11 @@ const SECTION_META: Record<
     labelKey: 'admin.sections.commissions',
     descriptionKey: 'admin.sections.commissionsDescription',
     icon: Percent,
+  },
+  disputes: {
+    labelKey: 'admin.sections.disputes',
+    descriptionKey: 'admin.sections.disputesDescription',
+    icon: Scale,
   },
   moderationLog: {
     labelKey: 'admin.sections.moderationLog',

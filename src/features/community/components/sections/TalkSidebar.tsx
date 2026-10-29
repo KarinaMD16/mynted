@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
+import { getHttpStatus } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -153,7 +155,15 @@ function SuggestedCommunityRow({ community }: { community: CommunityListItem }) 
         shape="pill"
         isLoading={join.isPending}
         disabled={join.isPending || join.isSuccess}
-        onClick={() => (isLoggedIn ? join.mutate() : void navigate({ to: '/login' }))}
+        onClick={() =>
+          isLoggedIn
+            ? join.mutate(undefined, {
+                // Sin esto un rechazo pasa en silencio; el 403 es un bloqueo de la comunidad.
+                onError: (error) =>
+                  toast.error(t(getHttpStatus(error) === 403 ? 'community.detail.joinBanned' : 'community.detail.joinError')),
+              })
+            : void navigate({ to: '/login' })
+        }
         className="border-mynted-orange text-mynted-orange hover:bg-mynted-orange/10"
       >
         {label}

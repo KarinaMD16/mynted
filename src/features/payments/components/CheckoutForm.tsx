@@ -1,18 +1,26 @@
 import { useForm } from '@tanstack/react-form'
 import { ChevronDown, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import { TextField } from '@/components/ui/TextField'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { getFieldErrorMessage } from '@/utils/form'
-import { hintClass } from '@/features/products/components/productFormShared'
-import type { PaymentCardPayload } from '../models/payment'
+import { errorClass, hintClass, labelClass } from '@/features/products/components/productFormShared'
+import type { PaymentCardPayload, ShippingAddressPayload } from '../models/payment'
 import {
   EMPTY_CARD_FORM,
   toCardPayload,
   validateCardForm,
   type CardFormValues,
 } from '../schema/cardSchema'
+import {
+  EMPTY_SHIPPING_FORM,
+  SHIPPING_LIMITS,
+  shippingFieldErrors,
+  toShippingPayload,
+  type ShippingFormValues,
+} from '../schema/shippingSchema'
 import { TEST_CARDS, detectCardBrand, formatCardNumber, formatExpiry, type CardBrand } from '../utils/card'
 
 const BRAND_LABEL: Record<Exclude<CardBrand, 'unknown'>, string> = {
@@ -37,9 +45,23 @@ function fieldError(meta: { isTouched: boolean; errors: unknown[] }, attempted: 
   return meta.isTouched || attempted ? getFieldErrorMessage(meta.errors) : undefined
 }
 
+/** Países a los que se puede enviar y el que se elige de entrada. */
+export interface CheckoutShippingOptions {
+  countries: { value: string; label: string }[]
+  /** El país de quien compra si el vendedor envía ahí; si no, '' para que elija. */
+  defaultCountry: string
+}
+
+type CheckoutFormValues = CardFormValues & ShippingFormValues
+
 interface CheckoutFormProps {
-  /** Cobra la tarjeta. La pantalla decide qué hacer con el resultado. */
-  onPay: (card: PaymentCardPayload) => void
+  /**
+   * Cobra la tarjeta. La pantalla decide qué hacer con el resultado. La
+   * dirección llega solo si se pidió (`shipping`): el checkout de Pro no la usa.
+   */
+  onPay: (card: PaymentCardPayload, shippingAddress?: ShippingAddressPayload) => void
+  /** Pide la dirección de envío, con estos países. */
+  shipping?: CheckoutShippingOptions
   /** El cobro está en curso: el botón se bloquea para que no se envíe dos veces. */
   isPaying: boolean
   /**
@@ -63,18 +85,32 @@ interface CheckoutFormProps {
  * la tarjeta: vive en el estado del formulario mientras la pantalla está
  * abierta y se manda una sola vez.
  */
-export function CheckoutForm({ onPay, isPaying, disabled = false, submitLabel, children }: CheckoutFormProps) {
+export function CheckoutForm({ onPay, shipping, isPaying, disabled = false, submitLabel, children }: CheckoutFormProps) {
   const { t } = useLanguage()
+  const allowedCountries = shipping?.countries.map((country) => country.value) ?? []
+
+  // Tarjeta y dirección se validan juntas: un solo "Pagar" marca todo lo que falta.
+  const validate = (value: CheckoutFormValues) => {
+    const fields = {
+      ...(shipping ? shippingFieldErrors(t, value, allowedCountries) : {}),
+      ...(validateCardForm(t, value)?.fields ?? {}),
+    }
+    return Object.keys(fields).length > 0 ? { fields } : undefined
+  }
 
   const form = useForm({
-    defaultValues: EMPTY_CARD_FORM as CardFormValues,
+    defaultValues: {
+      ...EMPTY_CARD_FORM,
+      ...EMPTY_SHIPPING_FORM,
+      country: shipping?.defaultCountry ?? '',
+    } as CheckoutFormValues,
     validators: {
-      onChange: ({ value }) => validateCardForm(t, value),
-      onSubmit: ({ value }) => validateCardForm(t, value),
+      onChange: ({ value }) => validate(value),
+      onSubmit: ({ value }) => validate(value),
     },
     onSubmit: ({ value }) => {
       const card = toCardPayload(value)
-      if (card) onPay(card)
+      if (card) onPay(card, shipping ? toShippingPayload(value) : undefined)
     },
   })
 
@@ -87,6 +123,164 @@ export function CheckoutForm({ onPay, isPaying, disabled = false, submitLabel, c
       }}
       className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5 sm:p-6"
     >
+      {shipping && (
+        <form.Subscribe selector={(state) => state.submissionAttempts > 0}>
+          {(attempted) => (
+            <fieldset disabled={disabled} className="flex flex-col gap-5 border-b border-mynted-border pb-6">
+              <div className="flex flex-col gap-1">
+                <legend className="font-heading text-lg font-semibold text-mynted-ink">{t('checkout.shipping.title')}</legend>
+                <p className={hintClass}>{t('checkout.shipping.subtitle')}</p>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <form.Field name="fullName">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.fullName')}
+                      autoComplete="shipping name"
+                      maxLength={SHIPPING_LIMITS.fullName.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+                <form.Field name="phone">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.phone')}
+                      type="tel"
+                      autoComplete="shipping tel"
+                      maxLength={SHIPPING_LIMITS.phone.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+              </div>
+
+              {/* Solo los países a los que envía el vendedor: el backend rechaza el resto. */}
+              <form.Field name="country">
+                {(field) => {
+                  const error = fieldError(field.state.meta, attempted)
+                  return (
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="checkout-shipping-country" className={labelClass}>
+                        {t('checkout.shipping.country')}
+                      </label>
+                      <Select
+                        id="checkout-shipping-country"
+                        value={field.state.value}
+                        options={shipping.countries}
+                        placeholder={t('checkout.shipping.countryPlaceholder')}
+                        searchable={shipping.countries.length > 8}
+                        searchPlaceholder={t('select.searchPlaceholder')}
+                        emptyLabel={(query) => t('select.noOptions', { query })}
+                        disabled={disabled}
+                        invalid={Boolean(error)}
+                        onChange={(value) => field.handleChange(value)}
+                        onBlur={field.handleBlur}
+                      />
+                      {error && <span className={errorClass}>{error}</span>}
+                    </div>
+                  )
+                }}
+              </form.Field>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <form.Field name="province">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.province')}
+                      autoComplete="shipping address-level1"
+                      maxLength={SHIPPING_LIMITS.province.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+                <form.Field name="city">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.city')}
+                      autoComplete="shipping address-level2"
+                      maxLength={SHIPPING_LIMITS.city.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+              </div>
+
+                <form.Field name="line1">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.line1')}
+                      placeholder={t('checkout.shipping.line1Placeholder')}
+                      autoComplete="shipping address-line1"
+                      maxLength={SHIPPING_LIMITS.line1.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+
+              <div className="grid gap-5 sm:grid-cols-[1fr_160px]">
+                <form.Field name="line2">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.line2')}
+                      autoComplete="shipping address-line2"
+                      maxLength={SHIPPING_LIMITS.line2.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+                <form.Field name="postalCode">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.postalCode')}
+                      autoComplete="shipping postal-code"
+                      maxLength={SHIPPING_LIMITS.postalCode.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+              </div>
+
+                <form.Field name="notes">
+                  {(field) => (
+                    <TextField
+                      label={t('checkout.shipping.notes')}
+                      placeholder={t('checkout.shipping.notesPlaceholder')}
+                      maxLength={SHIPPING_LIMITS.notes.max}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      error={fieldError(field.state.meta, attempted)}
+                    />
+                  )}
+                </form.Field>
+            </fieldset>
+          )}
+        </form.Subscribe>
+      )}
+
       <div className="flex flex-col gap-1">
         <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('checkout.form.title')}</h2>
         <p className={hintClass}>{t('checkout.form.subtitle')}</p>

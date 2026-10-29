@@ -5,7 +5,7 @@
  * responder "quién hizo esto y cuándo" aunque el contenido ya no exista.
  */
 
-/** Las 18 acciones que el backend registra (`MODERATION_ACTIONS`). */
+/** Las 24 acciones que el backend registra (`MODERATION_ACTIONS`). */
 export const MODERATION_ACTIONS = [
   'content_hidden',
   'content_restored',
@@ -25,6 +25,12 @@ export const MODERATION_ACTIONS = [
   'community_made_public',
   'community_made_private',
   'community_soft_deleted',
+  'community_member_removed',
+  'community_member_banned',
+  'community_member_unbanned',
+  'community_ownership_transferred',
+  'payment_dispute_refunded',
+  'payment_dispute_closed',
 ] as const
 
 export type ModerationActionType = (typeof MODERATION_ACTIONS)[number]
@@ -39,6 +45,8 @@ export type ModerationTargetType =
   | 'seller'
   | 'community'
   | 'conversation'
+  | 'community_profile'
+  | 'payment_dispute'
 
 export interface ModerationActor {
   id: string

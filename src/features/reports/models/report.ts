@@ -1,3 +1,4 @@
+import type { PillTone } from '@/features/admin/components/AdminUi'
 import type { TranslationKey } from '@/i18n/translations/es'
 
 /**
@@ -150,3 +151,15 @@ export const REPORT_REASONS: readonly ReportReason[] = [
   'inappropriate_content',
   'other',
 ]
+
+export const REPORT_STATUS_LABEL: Record<ReportStatus, TranslationKey> = {
+  pending: 'reports.status.pending',
+  resolved: 'reports.status.resolved',
+  dismissed: 'reports.status.dismissed',
+}
+
+export const REPORT_STATUS_TONE: Record<ReportStatus, PillTone> = {
+  pending: 'amber',
+  resolved: 'teal',
+  dismissed: 'gray',
+}

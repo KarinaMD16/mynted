@@ -5,6 +5,7 @@ import { ArrowLeft, Flag, ScrollText, Settings, UserPlus, Users } from 'lucide-r
 import { ErrorState } from '@/components/errors/ErrorState'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { ModerationJoinRequestsSection } from '@/features/community/components/moderation/ModerationJoinRequestsSection'
+import { ModerationMembersSection } from '@/features/community/components/moderation/ModerationMembersSection'
 import { ModerationReportsSection } from '@/features/community/components/moderation/ModerationReportsSection'
 import { ModerationRulesSection } from '@/features/community/components/moderation/ModerationRulesSection'
 import { ModerationSettingsSection } from '@/features/community/components/moderation/ModerationSettingsSection'
@@ -25,7 +26,7 @@ type ModerationTab = 'reports' | 'requests' | 'members' | 'rules' | 'settings'
 const TABS: { id: ModerationTab; labelKey: TranslationKey; icon: typeof Flag; available: boolean }[] = [
   { id: 'reports', labelKey: 'moderation.tabs.reports', icon: Flag, available: true },
   { id: 'requests', labelKey: 'moderation.tabs.requests', icon: UserPlus, available: true },
-  { id: 'members', labelKey: 'moderation.tabs.members', icon: Users, available: false },
+  { id: 'members', labelKey: 'moderation.tabs.members', icon: Users, available: true },
   { id: 'rules', labelKey: 'moderation.tabs.rules', icon: ScrollText, available: true },
   { id: 'settings', labelKey: 'moderation.tabs.settings', icon: Settings, available: true },
 ]
@@ -199,10 +200,12 @@ export default function CommunityModerationPage() {
                   <ModerationSettingsSection community={community} isOwner={isOwner} />
                 )}
                 {activeTab === 'members' && (
-                  <div className="flex flex-col items-center gap-2 py-14 text-center">
-                    <h2 className="font-heading text-lg font-semibold text-mynted-ink">{t('moderation.tabs.members')}</h2>
-                    <p className="max-w-md text-sm text-mynted-gray">{t('moderation.members.soon')}</p>
-                  </div>
+                  <ModerationMembersSection
+                    community={community}
+                    // El rol en la comunidad manda: un superadmin que además es dueño actúa como dueño.
+                    viewerRole={isOwner ? 'owner' : community.membershipRole === 'moderator' ? 'moderator' : 'superadmin'}
+                    currentUserId={currentUser?.id}
+                  />
                 )}
               </div>
             </div>

@@ -1,6 +1,6 @@
 import type { PaginatedResponse } from '@/features/community/models/communityDTOs'
 import type { UserDisplaySummary } from '@/features/pro/models/cosmetics'
-import type { ProductStatus } from '@/features/products/models/product'
+import type { ProductStatus, ProductType } from '@/features/products/models/product'
 import type { DisplayPriceFields } from '@/utils/price'
 
 /**
@@ -62,6 +62,7 @@ export interface ChatProductSummary {
  */
 export interface ChatProductContext extends ChatProductSummary, DisplayPriceFields {
   status: ProductStatus
+  /** Un intercambio no se paga: el chat no ofrece comprarlo. */
   /** `false` si ya no está activo, está oculto o fue borrado. El chat sigue funcionando igual. */
   isAvailable: boolean
 }
@@ -101,6 +102,12 @@ export type InboxResponse = PaginatedResponse<InboxItem>
 /** Contexto que acompaña al historial: producto y otro participante. */
 export interface ChatConversationContext {
   id: number
+  /** Qué lado de la conversación es quien mira. */
+  viewerRole: 'buyer' | 'seller'
+  /** El vendedor ya escribió al menos una vez: recién ahí el comprador puede pagar. */
+  sellerHasReplied: boolean
+  /** 'sale' se paga; 'exchange' es intercambio y no se compra. */
+  productType: ProductType
   product: ChatProductContext
   otherParticipant: ChatParticipant
 }

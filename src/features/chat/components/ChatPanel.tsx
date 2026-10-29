@@ -10,6 +10,7 @@ import { useIsChatConnected } from '../hooks/useChatConnection'
 import { useConversationMessages } from '../hooks/useChatQueries'
 import { useConversationRoom } from '../hooks/useConversationRoom'
 import { useSendMessages } from '../hooks/useSendMessages'
+import { ChatBuyBar } from './ChatBuyBar'
 import { ChatComposer } from './ChatComposer'
 import { ChatHeader, chatIconButtonClass } from './ChatHeader'
 import { ChatProductCard } from './ChatProductCard'
@@ -50,6 +51,10 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
 
   const messages = useMemo(() => history.data?.pages.flatMap((page) => page.data) ?? [], [history.data])
   const context = history.data?.pages[0]?.conversation
+  // El historial lo dice al cargar; un mensaje del vendedor que llega en vivo lo habilita sin recargar.
+  const sellerHasReplied =
+    context?.sellerHasReplied === true ||
+    (context?.viewerRole === 'buyer' && messages.some((message) => message.senderId === context.otherParticipant.id))
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = history
   const loadOlder = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
@@ -143,6 +148,8 @@ export function ChatPanel({ conversationId, variant, onBack, onClose, className 
         start={<ChatProductTicket product={context.product} linkToProduct={variant === 'page'} />}
         onStartVisibilityChange={setIsTicketVisible}
       />
+
+      <ChatBuyBar context={context} sellerHasReplied={sellerHasReplied} onClose={onClose} />
 
       {/* En el panel del producto se enfoca la caja al abrir, salvo en pantallas táctiles (abriría el teclado encima del chat). */}
       <ChatComposer

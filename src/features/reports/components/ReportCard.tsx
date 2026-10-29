@@ -1,23 +1,15 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/Button'
-import { StatusPill, type PillTone } from '@/features/admin/components/AdminUi'
+import { StatusPill } from '@/features/admin/components/AdminUi'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { TranslationKey } from '@/i18n/translations/es'
 import { formatRelativeTime } from '@/utils/relativeTime'
-import { REPORT_ITEM_LABEL as ITEM_LABEL, REPORT_REASON_LABEL as REASON_LABEL } from '../models/report'
-import type { Report, ReportStatus } from '../models/report'
-
-const STATUS_LABEL: Record<ReportStatus, TranslationKey> = {
-  pending: 'reports.status.pending',
-  resolved: 'reports.status.resolved',
-  dismissed: 'reports.status.dismissed',
-}
-
-const STATUS_TONE: Record<ReportStatus, PillTone> = {
-  pending: 'amber',
-  resolved: 'teal',
-  dismissed: 'gray',
-}
+import {
+  REPORT_ITEM_LABEL as ITEM_LABEL,
+  REPORT_REASON_LABEL as REASON_LABEL,
+  REPORT_STATUS_LABEL,
+  REPORT_STATUS_TONE,
+} from '../models/report'
+import type { Report } from '../models/report'
 
 /**
  * Un reporte, con lo necesario para decidir sin abrirlo: qué se reportó, por
@@ -57,7 +49,7 @@ export function ReportCard({
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-4">
       <div className="flex flex-wrap items-center gap-2">
-        {showStatus && <StatusPill tone={STATUS_TONE[report.status]}>{t(STATUS_LABEL[report.status])}</StatusPill>}
+        {showStatus && <StatusPill tone={REPORT_STATUS_TONE[report.status]}>{t(REPORT_STATUS_LABEL[report.status])}</StatusPill>}
         <span className="rounded-full bg-mynted-bg px-2.5 py-1 text-xs font-medium text-mynted-ink">
           {t(ITEM_LABEL[report.itemType])}
         </span>
@@ -118,7 +110,7 @@ function ReportExcerptBlock({ report, communitySlug }: { report: Report; communi
  * enlazar: el backend manda el id de la respuesta, no el de la publicación que
  * la contiene, y sin eso no hay ruta. Un chat no tiene vista pública.
  */
-function TargetLink({ report, communitySlug }: { report: Report; communitySlug?: string }) {
+export function TargetLink({ report, communitySlug }: { report: Report; communitySlug?: string }) {
   const { t } = useLanguage()
   // El listado global trae la comunidad en el reporte; el de una comunidad la
   // pasa por prop, salvo que esa comunidad esté dada de baja.
@@ -165,7 +157,7 @@ function TargetLink({ report, communitySlug }: { report: Report; communitySlug?:
   return null
 }
 
-function CommunityLink({ community }: { community: Report['community'] }) {
+export function CommunityLink({ community }: { community: Report['community'] }) {
   const { t } = useLanguage()
 
   if (!community) return <span>{t('reports.noCommunity')}</span>

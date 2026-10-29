@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { TranslateFn } from '@/i18n/LanguageContext'
 import {
+  MAX_PRODUCT_QUANTITY,
   MAX_RELATED_PRODUCTS,
   PRODUCT_CONDITIONS,
   PRODUCT_TYPES,
@@ -22,6 +23,8 @@ export interface ProductFormValues {
   /** '' = sin descuento. */
   discountPercent: string
   isVisible: boolean
+  /** Unidades disponibles, como texto. */
+  quantity: string
   /** Países de envío (ISO 3166-1 alfa-2). */
   shipsTo: string[]
   relatedProductIds: number[]
@@ -32,6 +35,7 @@ export type ProductFormMode = 'publish' | 'draft'
 
 const PRICE_FORMAT = /^\d+(\.\d{1,2})?$/
 const DISCOUNT_FORMAT = /^\d{1,3}(\.\d{1,2})?$/
+const QUANTITY_FORMAT = /^\d+$/
 
 /**
  * Espeja CreateProductDto / UpdateProductDto del backend. Al publicar: título y
@@ -81,6 +85,14 @@ export function makeProductFormSchema(t: TranslateFn, mode: ProductFormMode) {
       .trim()
       .refine((value) => value === '' || (DISCOUNT_FORMAT.test(value) && Number(value) <= 100), t('validation.product.discountFormat')),
     isVisible: z.boolean(),
+    // Entero 1–9999 como el DTO; un 0 (agotar) se hace desde Mis productos.
+    quantity: z
+      .string()
+      .trim()
+      .refine(
+        (value) => QUANTITY_FORMAT.test(value) && Number(value) >= 1 && Number(value) <= MAX_PRODUCT_QUANTITY,
+        t('validation.product.quantityFormat', { max: MAX_PRODUCT_QUANTITY }),
+      ),
     shipsTo: z.array(z.string().length(2)),
     relatedProductIds: z.array(z.number().int().positive()).max(MAX_RELATED_PRODUCTS),
   })

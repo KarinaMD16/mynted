@@ -4,6 +4,7 @@ import { AdminLayout } from '@/features/admin/components/AdminLayout'
 import { useAdminUsers } from '@/features/admin/hooks/useAdminQueries'
 import { CategoriesSection } from '@/features/admin/sections/CategoriesSection'
 import { CommissionsSection } from '@/features/admin/sections/CommissionsSection'
+import { DisputesSection } from '@/features/admin/sections/DisputesSection'
 import { ModerationLogSection } from '@/features/admin/sections/ModerationLogSection'
 import { ReportsSection } from '@/features/admin/sections/ReportsSection'
 import { SellersSection } from '@/features/admin/sections/SellersSection'
@@ -64,6 +65,7 @@ export default function AdminPage() {
       {section === 'users' && <UsersSection tab={tab} currentUserId={user.id} />}
       {section === 'sellerRequests' && <SellerRequestsSection tab={tab} currentUserId={user.id} />}
       {section === 'commissions' && <CommissionsSection tab={tab} />}
+      {section === 'disputes' && <DisputesSection tab={tab} />}
       {section === 'moderationLog' && <ModerationLogSection tab={tab} />}
     </AdminLayout>
   )

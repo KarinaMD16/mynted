@@ -12,9 +12,13 @@ import {
   MessageSquareReply,
   PackageCheck,
   PackageX,
+  RotateCcw,
+  Truck,
   Receipt,
   ShieldAlert,
   ShieldCheck,
+  ShieldOff,
+  UserMinus,
   ShoppingBag,
   Sparkles,
   Star,
@@ -77,11 +81,15 @@ export type NotificationTarget =
   | { kind: 'store'; sellerId: number }
   | { kind: 'community'; slug: string }
   | { kind: 'communityRequests'; slug: string }
+  /** El panel de moderación de la comunidad, en su pestaña inicial. */
+  | { kind: 'communityModeration'; slug: string }
   | { kind: 'post'; slug: string; postId: number; replyId?: number }
   /** /settings?tab=subscription: estado de Mynted Pro e historial de pagos. */
   | { kind: 'subscription' }
   /** /pro: los planes, para renovar. */
   | { kind: 'proPlans' }
+  /** /compras/:id: el recibo con el seguimiento del pedido. */
+  | { kind: 'receipt'; transactionId: string }
 
 export interface NotificationContent {
   text: string
@@ -159,6 +167,36 @@ export function getNotificationContent(notification: AppNotification, t: Transla
         target: { kind: 'product', productId },
       }
     }
+    case 'order_shipped':
+      return {
+        text: t('notifications.orderShipped', { product: notification.data.productTitle }),
+        icon: Truck,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'order_delivered':
+      return {
+        text: t('notifications.orderDelivered', { product: notification.data.productTitle }),
+        icon: PackageCheck,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'order_cancelled':
+      return {
+        text: t('notifications.orderCancelled', { product: notification.data.productTitle }),
+        icon: PackageX,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'payment_refunded':
+      return {
+        text: t('notifications.paymentRefunded', { product: notification.data.productTitle }),
+        icon: RotateCcw,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
+    case 'payment_dispute_closed':
+      return {
+        text: t('notifications.paymentDisputeClosed', { product: notification.data.productTitle }),
+        icon: CircleCheck,
+        target: { kind: 'receipt', transactionId: notification.data.transactionId },
+      }
     case 'review_received': {
       const { productId, productTitle, rating, authorUsername } = notification.data
       return {
@@ -205,6 +243,31 @@ export function getNotificationContent(notification: AppNotification, t: Transla
         icon: CircleX,
         target: null,
       }
+    case 'community_member_removed': {
+      const { communityName, communitySlug, reason } = notification.data
+      return {
+        text: t('notifications.memberRemoved', { community: communityName, reason }),
+        icon: UserMinus,
+        // Sigue pudiendo verla y volver a unirse.
+        target: { kind: 'community', slug: communitySlug },
+      }
+    }
+    case 'community_moderator_added': {
+      const { communityName, communitySlug } = notification.data
+      return {
+        text: t('notifications.moderatorAdded', { community: communityName }),
+        icon: ShieldCheck,
+        target: { kind: 'communityModeration', slug: communitySlug },
+      }
+    }
+    case 'community_moderator_removed': {
+      const { communityName, communitySlug } = notification.data
+      return {
+        text: t('notifications.moderatorRemoved', { community: communityName }),
+        icon: ShieldOff,
+        target: { kind: 'community', slug: communitySlug },
+      }
+    }
     case 'seller_request_approved':
       return {
         text: t('notifications.sellerApproved', { store: notification.data.displayName }),

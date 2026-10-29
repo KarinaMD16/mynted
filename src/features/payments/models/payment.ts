@@ -10,6 +10,13 @@
 /** Espeja el enum TransactionStatus del backend. */
 export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'refunded'
 
+/**
+ * Estado del envío, aparte del pago (ShippingStatus del backend):
+ * pagado → enviado → entregado. `null` en compras anteriores al seguimiento
+ * de envíos: no se asume `paid` y no admiten las acciones nuevas.
+ */
+export type ShippingStatus = 'paid' | 'shipped' | 'delivered'
+
 /** Espeja PaymentFailureReason: por qué la pasarela rechazó el cobro. */
 export type PaymentFailureReason = 'card_declined' | 'insufficient_funds' | 'expired_card'
 
@@ -38,9 +45,31 @@ export interface PaymentCardPayload {
   cardHolderName: string
 }
 
+/**
+ * Dirección de envío (ShippingAddressDto). Se guarda como copia en la
+ * transacción: si después cambia el perfil, el pedido no cambia. Los
+ * opcionales van en null, no como texto vacío.
+ */
+export interface ShippingAddressPayload {
+  fullName: string
+  phone: string
+  /** ISO 3166-1 alfa-2. Tiene que estar en `shipsTo` del producto. */
+  country: string
+  province: string
+  city: string
+  line1: string
+  line2: string | null
+  postalCode: string | null
+  notes: string | null
+}
+
 export interface CheckoutPayload {
   productId: number
+  /** Unidades (1 por defecto). No puede superar el stock. */
+  quantity?: number
   card: PaymentCardPayload
+  /** Obligatoria para comprar un producto. */
+  shippingAddress: ShippingAddressPayload
 }
 
 /** Comisión que se le cobró al vendedor en esta transacción. */
@@ -110,6 +139,11 @@ export interface QuoteCommission {
 
 export interface PaymentQuote {
   productId: number
+  /** Unidades cotizadas; `amount` es `unitPrice × quantity`. */
+  quantity: number
+  unitPrice: number
+  /** Stock vigente: el tope del selector de cantidad. */
+  availableQuantity: number
   amount: number
   currency: string
   convertedAmount?: QuoteConvertedAmount
@@ -135,6 +169,9 @@ export interface PaymentProductSummary {
 
 export interface PurchaseItem {
   id: string
+  /** `completed` o `refunded` (cancelada o reembolsada): el listado no trae fallidas. */
+  paymentStatus: TransactionStatus
+  shippingStatus: ShippingStatus | null
   product: PaymentProductSummary
   seller: { sellerId: number; displayName: string }
   amount: number
@@ -153,6 +190,8 @@ export interface PurchasePage {
 
 export interface SaleItem {
   id: string
+  paymentStatus: TransactionStatus
+  shippingStatus: ShippingStatus | null
   completedAt: string | null
   product: PaymentProductSummary
   buyer: { id: string; username: string; photoUrl: string | null }
@@ -200,6 +239,18 @@ export interface PaymentPeriodFilters {
   to?: string
 }
 
+/** Reclamo de una compra, como lo ven comprador y vendedor en el recibo. */
+export interface ReceiptDispute {
+  id: string
+  status: 'open' | 'resolved_refund' | 'resolved_closed'
+  reason: string
+  resolution: string | null
+  /** La explicación de quien lo resolvió. */
+  resolutionNote: string | null
+  createdAt: string
+  resolvedAt: string | null
+}
+
 export interface PaymentReceipt {
   id: string
   status: TransactionStatus
@@ -217,6 +268,13 @@ export interface PaymentReceipt {
   cardHolderName?: string | null
   gatewayReference: string | null
   failureReason: PaymentFailureReason | null
+  /** Solo la ven comprador y vendedor; `null` en compras sin dirección guardada. */
+  shippingAddress: ShippingAddressPayload | null
+  shippingStatus: ShippingStatus | null
+  trackingNumber: string | null
+  carrier: string | null
+  shippedAt: string | null
+  deliveredAt: string | null
   commission?: {
     salesTierName: string
     priceTierName: string
@@ -224,6 +282,8 @@ export interface PaymentReceipt {
     commissionAmount: number
     sellerNet: number
   }
+  /** El reclamo de esta compra (uno por compra); null si no hay. */
+  dispute?: ReceiptDispute | null
 }
 
 // -----------------------------------------------------------------------------

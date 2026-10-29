@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Check, Plus } from 'lucide-react'
-import { getApiErrorMessage } from '@/api/apiError'
+import { getApiErrorMessage, getHttpStatus } from '@/api/apiError'
 import { ImagePreviewDialog } from '@/components/ui/ImagePreviewDialog'
 import {
   Dialog,
@@ -134,7 +134,10 @@ export function CommunityDetailHeader({ community }: { community: CommunityDetai
 
       {error && (
         <p className="mt-2 text-sm text-red-500" role="alert">
-          {getApiErrorMessage(error)}
+          {/* Un 403 al unirse es un bloqueo de la comunidad (ver POST /communities/:id/join). */}
+          {joinMutation.error && getHttpStatus(joinMutation.error) === 403
+            ? t('community.detail.joinBanned')
+            : getApiErrorMessage(error)}
         </p>
       )}
 

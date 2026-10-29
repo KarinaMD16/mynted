@@ -22,8 +22,8 @@ import type {
  * la comisión. Pide sesión. Se consulta al abrir el checkout para mostrar el
  * total antes de cobrar nada.
  */
-export async function getQuote(productId: number): Promise<PaymentQuote> {
-  const { data } = await myntedAPI.get<PaymentQuote>(`/payments/quote/${productId}`)
+export async function getQuote(productId: number, quantity = 1): Promise<PaymentQuote> {
+  const { data } = await myntedAPI.get<PaymentQuote>(`/payments/quote/${productId}`, { params: { quantity } })
   return data
 }
 
@@ -38,7 +38,8 @@ export async function getQuote(productId: number): Promise<PaymentQuote> {
  *
  * Respuestas que no son 200 y sí son parte del flujo normal:
  * - 402 con `{ transactionId, failureReason }` -> la tarjeta fue rechazada.
- * - 409 -> el producto ya no está disponible (alguien más lo compró).
+ * - 409 -> el producto ya no está disponible (alguien más lo compró), no
+ *   alcanza el stock o el vendedor no envía al país de la dirección.
  */
 export async function checkout(payload: CheckoutPayload, idempotencyKey: string): Promise<CheckoutResult> {
   const { data } = await myntedAPI.post<CheckoutResult>('/payments/checkout', payload, {
@@ -51,6 +52,32 @@ export async function checkout(payload: CheckoutPayload, idempotencyKey: string)
 export async function getReceipt(transactionId: string): Promise<PaymentReceipt> {
   const { data } = await myntedAPI.get<PaymentReceipt>(`/payments/${transactionId}`)
   return data
+}
+
+/** PATCH /payments/:id/ship — el vendedor lo marca como enviado (pago completed, envío paid). */
+export async function shipOrder(transactionId: string, body: { trackingNumber: string | null; carrier: string | null }) {
+  await myntedAPI.patch(`/payments/${transactionId}/ship`, body)
+}
+
+/** PATCH /payments/:id/deliver — quien compró confirma que lo recibió (envío shipped). */
+export async function confirmDelivery(transactionId: string) {
+  await myntedAPI.patch(`/payments/${transactionId}/deliver`)
+}
+
+/**
+ * POST /payments/:id/cancel — el vendedor cancela antes de enviar. Reembolsa
+ * (el pago pasa a refunded) y devuelve las unidades al stock.
+ */
+export async function cancelOrder(transactionId: string, reason: string | null) {
+  await myntedAPI.post(`/payments/${transactionId}/cancel`, reason ? { reason } : {})
+}
+
+/**
+ * POST /payments/:id/dispute — quien compró abre un reclamo, solo con el
+ * pedido entregado. Uno por compra: un segundo intento responde 409.
+ */
+export async function openDispute(transactionId: string, reason: string) {
+  await myntedAPI.post(`/payments/${transactionId}/dispute`, { reason })
 }
 
 /** GET /payments/me/purchases — compras completadas, paginadas. */

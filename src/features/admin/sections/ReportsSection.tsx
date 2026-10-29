@@ -1,19 +1,24 @@
-import { useRef, useState } from 'react'
-import { CheckCircle2, CircleSlash, ShieldAlert } from 'lucide-react'
-import { ErrorState } from '@/components/errors/ErrorState'
-import { ReportCard } from '@/features/reports/components/ReportCard'
+import { useMemo, useState } from 'react'
+import { Check, CheckCircle2, CircleSlash, ShieldAlert, X } from 'lucide-react'
+import { CommunityLink, TargetLink } from '@/features/reports/components/ReportCard'
 import { ResolveReportDialog } from '@/features/reports/components/ResolveReportDialog'
 import { useDismissReportMutation, useGlobalReports, useResolveReportMutation } from '@/features/reports/hooks/useReports'
-import { REPORT_ITEM_LABEL, REPORT_REASON_LABEL } from '@/features/reports/models/report'
+import {
+  REPORT_ITEM_LABEL,
+  REPORT_REASON_LABEL,
+  REPORT_STATUS_LABEL,
+  REPORT_STATUS_TONE,
+} from '@/features/reports/models/report'
 import type { Report, ReportItemType, ReportStatus, ResolveReportPayload } from '@/features/reports/models/report'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import { formatRelativeTime } from '@/utils/relativeTime'
-import { AdminPageFooter } from '../components/AdminPagination'
+import { AdminDataTable, type AdminColumn } from '../components/AdminDataTable'
 import { useAdminCommunities } from '../hooks/useAdminQueries'
 import {
   DistributionList,
   FilterSelect,
+  IconAction,
   LoadErrorPanel,
   Panel,
   StatCard,
@@ -23,9 +28,8 @@ import {
 import type { AdminTab } from '../models/admin'
 import { ManageLink } from './UsersSection'
 
-/** Cuántos reportes se piden por página. */
-/** Opciones de "Mostrar N entradas". Son tarjetas, no filas: menos que en las tablas. */
-const PAGE_SIZES = [10, 20, 50]
+/** Cuántos reportes trae la tabla: el máximo que el backend da por página. */
+const MANAGE_LIMIT = 100
 
 /** '' = sin filtrar, que es el valor que usan los selects. */
 const STATUS_OPTIONS: { value: ReportStatus | ''; labelKey: TranslationKey }[] = [
@@ -34,7 +38,6 @@ const STATUS_OPTIONS: { value: ReportStatus | ''; labelKey: TranslationKey }[] =
   { value: 'resolved', labelKey: 'reports.status.resolved' },
   { value: 'dismissed', labelKey: 'reports.status.dismissed' },
 ]
-
 
 const TYPE_OPTIONS: { value: ReportItemType | ''; labelKey: TranslationKey }[] = [
   { value: '', labelKey: 'admin.reports.filter.allTypes' },
@@ -157,28 +160,26 @@ function ReportsOverview() {
 }
 
 /**
- * El listado con sus filtros y las acciones de cada reporte.
+ * Tabla de reportes con sus filtros y las acciones de cada uno.
  *
  * Arranca filtrado por pendientes: lo resuelto ya no pide nada y, si se
- * mostrara todo mezclado, lo que falta atender quedaría enterrado.
+ * mostrara todo mezclado, lo que falta atender quedaría enterrado. Estado,
+ * tipo y comunidad los filtra el backend; la búsqueda, el orden y las páginas,
+ * la tabla (como en el resto del panel), sobre los más recientes que trae.
  */
 function ReportsManage() {
   const { t, language } = useLanguage()
   const [status, setStatus] = useState<ReportStatus | ''>('pending')
   const [itemType, setItemType] = useState<ReportItemType | ''>('')
   const [communityId, setCommunityId] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0])
-  const listTop = useRef<HTMLDivElement>(null)
 
-  const filters = {
-    page,
-    limit: pageSize,
+  const reports = useGlobalReports({
+    page: 1,
+    limit: MANAGE_LIMIT,
     ...(status && { status }),
     ...(itemType && { itemType }),
     ...(communityId && { communityId: Number(communityId) }),
-  }
-  const reports = useGlobalReports(filters)
+  })
   const communities = useAdminCommunities()
 
   const resolve = useResolveReportMutation()
@@ -187,108 +188,139 @@ function ReportsManage() {
   // saber qué acciones puede ofrecer.
   const [resolving, setResolving] = useState<Report | null>(null)
 
-  /** Cambiar un filtro vuelve a la primera página: la actual puede no existir. */
-  function changeFilter(apply: () => void) {
-    apply()
-    setPage(1)
-  }
-
   function handleResolve(payload: ResolveReportPayload) {
     if (resolving === null) return
     resolve.mutate({ reportId: resolving.id, payload }, { onSuccess: () => setResolving(null) })
   }
 
-  /** Al cambiar de página se vuelve al principio: si no, se queda abajo del todo. */
-  function changePage(next: number) {
-    setPage(next)
-    listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const isBusy = resolve.isPending || dismiss.isPending
+  const total = reports.data?.pagination.total ?? 0
 
-  const items = reports.data?.data ?? []
+  const columns = useMemo<AdminColumn<Report>[]>(
+    () => [
+      {
+        id: 'type',
+        header: t('admin.reports.columns.type'),
+        sortValue: (row) => t(REPORT_ITEM_LABEL[row.itemType]),
+        render: (row) => <StatusPill tone="gray">{t(REPORT_ITEM_LABEL[row.itemType])}</StatusPill>,
+      },
+      {
+        id: 'content',
+        header: t('admin.reports.columns.content'),
+        render: (row) => <ReportedContent report={row} />,
+      },
+      {
+        id: 'reason',
+        header: t('admin.reports.columns.reason'),
+        sortValue: (row) => t(REPORT_REASON_LABEL[row.reason]),
+        render: (row) => <span className="whitespace-nowrap">{t(REPORT_REASON_LABEL[row.reason])}</span>,
+      },
+      {
+        id: 'community',
+        header: t('admin.reports.columns.community'),
+        sortValue: (row) => row.community?.name ?? '',
+        render: (row) => (
+          <span className="whitespace-nowrap">
+            <CommunityLink community={row.community} />
+          </span>
+        ),
+      },
+      {
+        id: 'date',
+        header: t('admin.reports.columns.date'),
+        sortValue: (row) => row.createdAt,
+        render: (row) => <span className="whitespace-nowrap">{formatRelativeTime(row.createdAt, language)}</span>,
+      },
+      {
+        id: 'status',
+        header: t('admin.reports.columns.status'),
+        sortValue: (row) => row.status,
+        render: (row) => (
+          <StatusPill tone={REPORT_STATUS_TONE[row.status]}>{t(REPORT_STATUS_LABEL[row.status])}</StatusPill>
+        ),
+      },
+    ],
+    [t, language],
+  )
 
   return (
     <>
-      {/*
-        Los tres filtros son selects, como en las tablas del resto del panel
-        (misma barra que AdminDataTable). El de estado lleva el contador de
-        cada uno, que viene con cualquier página.
-      */}
-      <div ref={listTop} className="scroll-mt-20 rounded-2xl border border-mynted-border bg-white p-4 sm:p-5">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <FilterSelect
-            label={t('admin.table.show')}
-            value={String(pageSize)}
-            onChange={(value) => changeFilter(() => setPageSize(Number(value)))}
-            options={PAGE_SIZES.map((size) => ({ value: String(size), label: size.toLocaleString(language) }))}
-          />
-          <FilterSelect<ReportStatus | ''>
-            label={t('admin.sellers.columns.status')}
-            value={status}
-            onChange={(value) => changeFilter(() => setStatus(value))}
-            options={STATUS_OPTIONS.map(({ value, labelKey }) => {
-              return { value, label:  `${t(labelKey)} ` }
-            })}
-          />
-          <FilterSelect
-            label={t('admin.reports.filter.type')}
-            value={itemType}
-            onChange={(value) => changeFilter(() => setItemType(value))}
-            options={TYPE_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
-          />
-          {/*
-            El backend filtra por una comunidad concreta, pero no sabe pedir
-            "solo los que no son de ninguna": los reportes de productos y de
-            chats no pertenecen a ninguna comunidad y se marcan en la tarjeta.
-          */}
-          <FilterSelect
-            label={t('admin.reports.filter.community')}
-            value={communityId}
-            onChange={(value) => changeFilter(() => setCommunityId(value))}
-            options={[
-              { value: '', label: t('admin.reports.filter.allCommunities') },
-              ...(communities.data ?? []).map((community) => ({
-                value: String(community.id),
-                label: community.name,
-              })),
-            ]}
-          />
-        </div>
-      </div>
-
-      {reports.isError ? (
-        <LoadErrorPanel error={reports.error} onRetry={() => void reports.refetch()} />
-      ) : reports.isLoading ? (
-        <div className="flex flex-col gap-3" aria-busy="true">
-          {Array.from({ length: 3 }, (_, index) => (
-            <div key={index} className="h-40 animate-pulse rounded-2xl bg-white" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <ErrorState kind="empty" variant="compact" title={t('admin.reports.empty.title')} description={t('admin.reports.empty.body')} />
-      ) : (
-        <div className="flex flex-col gap-3">
-          {items.map((report) => (
-            <ReportCard
-              key={report.id}
-              report={report}
-              showStatus={status === ''}
-              isBusy={resolve.isPending || dismiss.isPending}
-              onResolve={() => setResolving(report)}
-              onDismiss={() => dismiss.mutate(report.id)}
-            />
-          ))}
-
-          {reports.data && (
-            <AdminPageFooter
-              page={page}
-              limit={pageSize}
-              total={reports.data.pagination.total}
-              totalPages={reports.data.pagination.totalPages}
-              onChange={changePage}
-            />
-          )}
-        </div>
+      {total > MANAGE_LIMIT && (
+        <p className="rounded-xl bg-white px-4 py-3 text-sm text-mynted-gray">
+          {t('admin.reports.limitNotice', {
+            shown: MANAGE_LIMIT.toLocaleString(language),
+            total: total.toLocaleString(language),
+          })}
+        </p>
       )}
+
+      <AdminDataTable
+        rows={reports.data?.data}
+        columns={columns}
+        getRowId={(row) => row.id}
+        getSearchText={(row) =>
+          [row.excerpt?.title, row.excerpt?.text, row.community?.name, t(REPORT_REASON_LABEL[row.reason])]
+            .filter(Boolean)
+            .join(' ')
+        }
+        searchPlaceholder={t('admin.reports.searchPlaceholder')}
+        isLoading={reports.isPending}
+        error={reports.error}
+        onRetry={() => void reports.refetch()}
+        initialSort={{ id: 'date', direction: 'desc' }}
+        toolbar={
+          <>
+            <FilterSelect<ReportStatus | ''>
+              label={t('admin.reports.columns.status')}
+              value={status}
+              onChange={setStatus}
+              options={STATUS_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
+            />
+            <FilterSelect
+              label={t('admin.reports.filter.type')}
+              value={itemType}
+              onChange={setItemType}
+              options={TYPE_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
+            />
+            {/*
+              El backend filtra por una comunidad concreta, pero no sabe pedir
+              "solo los que no son de ninguna": los reportes de productos y de
+              chats no pertenecen a ninguna comunidad y lo dice su columna.
+            */}
+            <FilterSelect
+              label={t('admin.reports.filter.community')}
+              value={communityId}
+              onChange={setCommunityId}
+              options={[
+                { value: '', label: t('admin.reports.filter.allCommunities') },
+                ...(communities.data ?? []).map((community) => ({
+                  value: String(community.id),
+                  label: community.name,
+                })),
+              ]}
+            />
+          </>
+        }
+        renderActions={(row) =>
+          row.status === 'pending' ? (
+            <>
+              <IconAction
+                icon={Check}
+                tone="success"
+                label={t('reports.action.resolve')}
+                onPress={() => setResolving(row)}
+                disabled={isBusy}
+              />
+              <IconAction
+                icon={X}
+                label={t('reports.action.dismiss')}
+                onPress={() => dismiss.mutate(row.id)}
+                disabled={isBusy}
+              />
+            </>
+          ) : null
+        }
+      />
 
       <ResolveReportDialog
         open={resolving !== null}
@@ -299,5 +331,22 @@ function ReportsManage() {
         onClose={() => setResolving(null)}
       />
     </>
+  )
+}
+
+/** Lo reportado en una línea, con el enlace para abrirlo cuando se puede. */
+function ReportedContent({ report }: { report: Report }) {
+  const { t } = useLanguage()
+  if (report.contentUnavailable || !report.excerpt) {
+    return <span className="text-mynted-gray-light italic">{t('reports.contentUnavailable')}</span>
+  }
+  const text = report.excerpt.title ?? report.excerpt.text
+  return (
+    <span className="flex max-w-[320px] flex-col gap-0.5">
+      <span className="line-clamp-2 text-mynted-ink [overflow-wrap:anywhere]" title={text ?? undefined}>
+        {text}
+      </span>
+      <TargetLink report={report} />
+    </span>
   )
 }

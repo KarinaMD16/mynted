@@ -23,6 +23,7 @@ import {
 import {
   MAX_GALLERY_IMAGES,
   MAX_IMAGE_BYTES,
+  MAX_PRODUCT_QUANTITY,
   PRODUCT_CONDITIONS,
   type ProductCondition,
   type ProductDetail,
@@ -163,6 +164,8 @@ export function ProductEditorForm({
         tagIds: product.productTags.map((item) => item.tag.tagId),
         discountPercent: discountOf(product.discountPercent) !== null ? String(Number(product.discountPercent)) : '',
         isVisible: product.isVisible,
+        // Un agotado (0) se edita desde 1 para reponer.
+        quantity: String(Math.max(product.quantity ?? 1, 1)),
         shipsTo: product.shipsTo ?? [],
         relatedProductIds: initialRelatedIds,
       }
@@ -176,6 +179,7 @@ export function ProductEditorForm({
         tagIds: [],
         discountPercent: '',
         isVisible: true,
+        quantity: '1',
         shipsTo: [],
         relatedProductIds: [],
       }
@@ -198,6 +202,7 @@ export function ProductEditorForm({
         : undefined
       const tagIds = value.tagIds.length > 0 ? value.tagIds : undefined
       const nextCommunityId = value.communityId === NO_COMMUNITY ? null : value.communityId
+      const quantity = Number(value.quantity)
 
       try {
         if (product) {
@@ -218,6 +223,8 @@ export function ProductEditorForm({
               discountPercent: discount !== undefined ? Number(discount) : 0,
               isVisible: value.isVisible,
               shipsTo: value.shipsTo,
+              // Solo si cambió: el backend no pisa el stock con una lectura vieja (una compra en medio).
+              quantity: quantity !== product.quantity ? quantity : undefined,
               relatedProductIds: value.relatedProductIds,
             },
           })
@@ -243,6 +250,7 @@ export function ProductEditorForm({
             discountPercent: discount !== undefined ? Number(discount) : undefined,
             isVisible: value.isVisible,
             shipsTo: value.shipsTo.length > 0 ? value.shipsTo : undefined,
+            quantity,
             relatedProductIds: value.relatedProductIds.length > 0 ? value.relatedProductIds : undefined,
             saveAsDraft: isDraft,
           },
@@ -530,16 +538,40 @@ export function ProductEditorForm({
               </form.Subscribe>
             </div>
 
-            <form.Field name="discountPercent">
-              {(field) => (
-                <DiscountField
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
-                />
-              )}
-            </form.Field>
+            {/* Descuento + unidades */}
+            <div className="grid gap-5 sm:grid-cols-2">
+              <form.Field name="discountPercent">
+                {(field) => (
+                  <DiscountField
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    onBlur={field.handleBlur}
+                    error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
+                  />
+                )}
+              </form.Field>
+
+              <form.Field name="quantity">
+                {(field) => (
+                  <div className="flex flex-col gap-1.5">
+                    <TextField
+                      label={t('products.create.quantityLabel')}
+                      placeholder="1"
+                      inputMode="numeric"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value.replace(/\D/g, ''))}
+                      onBlur={field.handleBlur}
+                      error={field.state.meta.isTouched ? getFieldErrorMessage(field.state.meta.errors) : undefined}
+                    />
+                    <span className={hintClass}>
+                      {product?.quantity === 0
+                        ? t('products.create.quantityRestockHint')
+                        : t('products.create.quantityHint', { max: MAX_PRODUCT_QUANTITY })}
+                    </span>
+                  </div>
+                )}
+              </form.Field>
+            </div>
 
             <form.Field name="condition">
               {(field) => {

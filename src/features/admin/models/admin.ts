@@ -127,6 +127,7 @@ export const ADMIN_SECTIONS = [
   'communities',
   'categories',
   'commissions',
+  'disputes',
   'moderationLog',
 ] as const
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]

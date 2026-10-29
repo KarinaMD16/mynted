@@ -4,8 +4,12 @@ import axios from 'axios'
 import { getHttpStatus } from '@/api/apiError'
 import { productKeys } from '@/features/products/hooks/useProductMutations'
 import {
+  cancelOrder,
   checkout,
+  confirmDelivery,
   createAdminCommissionTier,
+  openDispute,
+  shipOrder,
   deactivateAdminCommissionTier,
   updateAdminCommissionTier,
 } from '../services/paymentService'
@@ -27,17 +31,36 @@ export type CheckoutFailure =
   | { kind: 'declined'; reason: PaymentFailureReason | null; transactionId: string | null }
   /** 409: el producto ya no está a la venta (alguien se adelantó). */
   | { kind: 'soldOut' }
-  /** 400: el backend no aceptó los datos de la tarjeta. */
+  /** 409: el vendedor no envía al país de la dirección. Se puede cambiar el país. */
+  | { kind: 'shippingNotAllowed' }
+  /** 409: quedan menos unidades que las pedidas. Se puede bajar la cantidad. */
+  | { kind: 'notEnoughStock' }
+  /** 400: el backend no aceptó los datos de la tarjeta o de la dirección. */
   | { kind: 'invalidCard' }
   /** 404: el producto ya no existe. */
   | { kind: 'notFound' }
   /** 401: la sesión venció. */
   | { kind: 'unauthenticated' }
+  /** 403: el vendedor todavía no respondió en el chat de este producto. */
+  | { kind: 'chatRequired' }
   /** 503: la pasarela no respondió. No se cobró nada. */
   | { kind: 'gatewayDown' }
   | { kind: 'unknown' }
 
 /** Lee el cuerpo del 402, que trae la razón del rechazo y la transacción fallida. */
+/**
+ * El backend usa 409 para tres cosas distintas y solo las distingue por el
+ * mensaje (en español, a veces con las tildes rotas: por eso se compara sin
+ * ellas). Lo que no se reconoce se trata como "ya se vendió".
+ */
+function readConflict(error: unknown): CheckoutFailure {
+  const raw = axios.isAxiosError<{ message?: unknown }>(error) ? error.response?.data?.message : undefined
+  const message = (Array.isArray(raw) ? raw.join(' ') : String(raw ?? '')).toLowerCase()
+  if (message.includes('env')) return { kind: 'shippingNotAllowed' }
+  if (message.includes('stock')) return { kind: 'notEnoughStock' }
+  return { kind: 'soldOut' }
+}
+
 function readDeclinedBody(error: unknown): PaymentDeclinedBody | null {
   if (!axios.isAxiosError<PaymentDeclinedBody>(error)) return null
   const body = error.response?.data
@@ -48,9 +71,10 @@ function readDeclinedBody(error: unknown): PaymentDeclinedBody | null {
  * Traduce el error de POST /payments/checkout a algo que la pantalla pueda
  * mostrar (ver CheckoutPage).
  *
- * El 409 se trata siempre como "ya se vendió": el backend también lo usa para
- * los choques de idempotencia, pero cada intento del usuario estrena una clave
- * nueva (ver useCheckout), así que ese caso no puede darse desde acá.
+ * El 409 puede ser "ya se vendió", "no alcanza el stock" o "no envía a ese
+ * país" (ver readConflict). El backend también lo usa para los choques de
+ * idempotencia, pero cada intento del usuario estrena una clave nueva (ver
+ * useCheckout), así que ese caso no puede darse desde acá.
  */
 export function readCheckoutFailure(error: unknown): CheckoutFailure {
   switch (getHttpStatus(error)) {
@@ -59,11 +83,13 @@ export function readCheckoutFailure(error: unknown): CheckoutFailure {
       return { kind: 'declined', reason: body?.failureReason ?? null, transactionId: body?.transactionId ?? null }
     }
     case 409:
-      return { kind: 'soldOut' }
+      return readConflict(error)
     case 400:
       return { kind: 'invalidCard' }
     case 404:
       return { kind: 'notFound' }
+    case 403:
+      return { kind: 'chatRequired' }
     case 401:
       return { kind: 'unauthenticated' }
     case 503:
@@ -119,6 +145,48 @@ export function useCheckoutMutation() {
       void queryClient.invalidateQueries({ queryKey: paymentKeys.all })
     },
   })
+}
+
+// -----------------------------------------------------------------------------
+// Seguimiento del pedido
+// -----------------------------------------------------------------------------
+
+/**
+ * Las acciones sobre un pedido ya pagado. Cambian el recibo y los listados;
+ * cancelar además devuelve stock, así que también se recargan los productos.
+ */
+function useOrderMutation<TVars>(mutationFn: (vars: TVars) => Promise<void>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: paymentKeys.all })
+      void queryClient.invalidateQueries({ queryKey: productKeys.all })
+    },
+  })
+}
+
+export function useShipOrderMutation() {
+  return useOrderMutation(
+    ({ transactionId, trackingNumber, carrier }: { transactionId: string; trackingNumber: string | null; carrier: string | null }) =>
+      shipOrder(transactionId, { trackingNumber, carrier }),
+  )
+}
+
+export function useConfirmDeliveryMutation() {
+  return useOrderMutation((transactionId: string) => confirmDelivery(transactionId))
+}
+
+export function useCancelOrderMutation() {
+  return useOrderMutation(({ transactionId, reason }: { transactionId: string; reason: string | null }) =>
+    cancelOrder(transactionId, reason),
+  )
+}
+
+export function useOpenDisputeMutation() {
+  return useOrderMutation(({ transactionId, reason }: { transactionId: string; reason: string }) =>
+    openDispute(transactionId, reason),
+  )
 }
 
 // -----------------------------------------------------------------------------

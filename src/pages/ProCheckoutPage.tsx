@@ -1,3 +1,4 @@
+import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
 import { useState } from 'react'
 import { getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, CalendarRange, CircleCheck, Sparkles } from 'lucide-react'
@@ -89,7 +90,7 @@ export default function ProCheckoutPage() {
     <div className="min-h-svh bg-mynted-bg">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-[920px] flex-col gap-6 px-4 py-10 sm:px-6 sm:py-12">
+      <main className={cx(PAGE_CONTAINER, 'flex flex-col gap-6 py-10 sm:py-12')}>
         {!success && (
           <div className="flex flex-col items-start gap-2">
             <Link
@@ -114,12 +115,12 @@ export default function ProCheckoutPage() {
             texts={{ error: { description: t('pro.plans.loadError') } }}
           />
         ) : plans.isPending || isLoadingUser || !plan ? (
-          <div className="grid gap-6 md:grid-cols-[1fr_320px]" aria-busy="true">
+          <div className="grid gap-6 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_400px] lg:gap-8" aria-busy="true">
             <div className="h-[460px] animate-pulse rounded-2xl bg-white" />
             <div className="h-80 animate-pulse rounded-2xl bg-white" />
           </div>
         ) : (
-          <div className="grid items-start gap-6 md:grid-cols-[1fr_320px]">
+          <div className="grid items-start gap-6 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_400px] lg:gap-8">
             {/* En móvil el resumen va arriba: primero qué se paga, después la tarjeta. Desde md, a la derecha. */}
             <PlanSummary
               plans={plans.data.plans}

@@ -17,11 +17,20 @@ export const NOTIFICATION_TYPES = [
   'favorite_available_again',
   'purchase_completed',
   'sale_completed',
+  // Seguimiento del pedido (docs/FLUJO_COMPRAS_PAGOS.md del backend).
+  'order_shipped',
+  'order_delivered',
+  'order_cancelled',
+  'payment_refunded',
+  'payment_dispute_closed',
   'review_received',
   'badge_awarded',
   'community_join_requested',
   'community_join_accepted',
   'community_join_rejected',
+  'community_member_removed',
+  'community_moderator_added',
+  'community_moderator_removed',
   'seller_request_approved',
   'seller_request_rejected',
   'post_replied',
@@ -58,6 +67,10 @@ interface ProductRef {
   productTitle: string
 }
 
+interface OrderRef extends ProductRef {
+  transactionId: string
+}
+
 interface CommunityRef {
   communityId: number
   communityName: string
@@ -81,6 +94,18 @@ export interface NotificationDataByType {
   purchase_completed: ProductRef & { transactionId: string; amount: number; currency: string; sellerName: string }
   sale_completed: ProductRef & { transactionId: string; amount: number; currency: string; buyerUsername: string }
   review_received: ProductRef & { reviewId: number; rating: number; authorUsername: string }
+  /** Al comprador. No traen dirección ni número de guía: eso está en el recibo. */
+  order_shipped: OrderRef
+  /** Al vendedor. */
+  order_delivered: OrderRef
+  /** Al comprador: el vendedor canceló y se le reembolsó. */
+  order_cancelled: OrderRef
+  /**
+   * Resolución de un reclamo. Llega igual a las dos partes, sin decir quién es
+   * quién, así que el texto no puede asumirlo.
+   */
+  payment_refunded: OrderRef
+  payment_dispute_closed: OrderRef
   badge_awarded: {
     badgeCode: string
     badgeName: string
@@ -95,6 +120,10 @@ export interface NotificationDataByType {
   community_join_requested: CommunityRef & { requestId: number; requesterId: string; requesterUsername: string }
   community_join_accepted: CommunityRef & { requestId: number }
   community_join_rejected: CommunityRef & { requestId: number }
+  /** Expulsión: puede volver a unirse. `reason` lo escribió quien moderó. */
+  community_member_removed: CommunityRef & { reason: string }
+  community_moderator_added: CommunityRef
+  community_moderator_removed: CommunityRef
   seller_request_approved: { sellerId: number | string; displayName: string }
   seller_request_rejected: Record<string, never>
   post_replied: PostReplyData

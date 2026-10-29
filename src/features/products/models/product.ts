@@ -20,6 +20,9 @@ export type PublishedProductStatus = Exclude<ProductStatus, 'draft'>
 /** El backend exige exactamente esta cantidad de tags para publicar (ver CreateProductDto). */
 export const REQUIRED_PRODUCT_TAGS = 3
 /** Límites del FileFieldsInterceptor de POST products y POST communities/:id/products. */
+/** Tope de unidades por producto (MAX_PRODUCT_QUANTITY en create-product.dto.ts). */
+export const MAX_PRODUCT_QUANTITY = 9999
+
 export const MAX_GALLERY_IMAGES = 6
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 /** Máximo de productos relacionados que el vendedor puede elegir (MAX_RELATED_PRODUCTS en el backend). */
@@ -52,6 +55,8 @@ export interface CreateProductPayload {
   isVisible?: boolean
   /** Países a los que envía (ISO 3166-1 alfa-2). */
   shipsTo?: string[]
+  /** Unidades disponibles (1–MAX_PRODUCT_QUANTITY). El backend usa 1 si no viene. */
+  quantity?: number
   /** Productos propios y activos elegidos por el vendedor (máx. 6). */
   relatedProductIds?: number[]
   /** true = guardar como borrador. */
@@ -105,6 +110,8 @@ export interface ProductDetail extends DisplayPriceFields {
   type: ProductType | null
   condition: ProductCondition | null
   shipsTo: string[] | null
+  /** Unidades disponibles (0 = agotado). */
+  quantity?: number
   isVisible: boolean
   /**
    * Ocultado por moderación. Lo ven solo su vendedor y el equipo de la
@@ -296,6 +303,8 @@ export interface UpdateProductPayload {
   isVisible?: boolean
   /** Reemplaza los países de envío; [] los quita. */
   shipsTo?: string[]
+  /** Unidades disponibles; reponer desde 0 lo vuelve a poner a la venta. Sin él no cambia. */
+  quantity?: number
   /** Reemplaza los relacionados; [] los quita. */
   relatedProductIds?: number[]
 }
