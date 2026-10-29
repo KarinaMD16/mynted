@@ -1,8 +1,11 @@
+import type { ReactNode } from 'react'
 import { Calendar } from '@untitledui/icons'
 import { Clock, MapPin } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { AppLanguage } from '@/utils/locale'
 import type { AuthUser } from '@/features/auth/models/auth'
+import { ProfileBanner } from '@/features/pro/components/ProfileBanner'
+import type { EffectiveBanner } from '@/features/pro/models/cosmetics'
 import { formatResponseTime } from '@/features/stores/utils/responseTime'
 import { formatMemberSince } from '../utils/profileFormat'
 
@@ -11,17 +14,37 @@ import { formatMemberSince } from '../utils/profileFormat'
  * persona (/users/:userId): el mismo look, sin acciones de edición.
  */
 
-export function CoverBanner() {
+/**
+ * Banner de la cabecera: el cosmético EFECTIVO del usuario (banner propio si es
+ * Pro, uno del catálogo o el degradado por defecto). En el perfil se usa la
+ * imagen animada (`url`); ver ProfileBanner.
+ */
+export function CoverBanner({ banner, fallbackUrl }: { banner?: EffectiveBanner | null; fallbackUrl?: string | null }) {
+  return <ProfileBanner banner={banner} fallbackUrl={fallbackUrl} mode="animated" />
+}
+
+/**
+ * Una cifra de la franja inferior de la cabecera (perfil y tienda): ícono,
+ * etiqueta y valor. Va dentro de un <dl> con `gap-px` y fondo de borde, así
+ * las celdas quedan separadas por una línea fina.
+ */
+export function HeaderStat({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
   return (
-    <div
-      aria-hidden="true"
-      className="relative h-[110px] overflow-hidden rounded-2xl bg-gradient-to-br from-mynted-blue-mid to-mynted-orange sm:h-[140px]"
-    >
-      <div className="absolute -top-10 right-[8%] size-40 rounded-full bg-white/10" />
-      <div className="absolute -bottom-12 left-[6%] size-32 rounded-full bg-white/10" />
-      <div className="absolute top-1/3 left-[42%] size-16 rounded-full bg-white/10" />
+    <div className="flex flex-col items-center gap-1 bg-mynted-white px-3 pt-4 text-center">
+      <dt className="flex items-center gap-1.5 text-xs font-medium text-mynted-gray">
+        <span className="text-mynted-orange" aria-hidden="true">
+          {icon}
+        </span>
+        {label}
+      </dt>
+      <dd className="font-heading text-base font-semibold text-mynted-ink">{value}</dd>
     </div>
   )
+}
+
+/** Hueco del valor mientras carga, del alto del texto para que la franja no salte. */
+export function HeaderStatSkeleton() {
+  return <span className="inline-block h-5 w-10 animate-pulse rounded bg-mynted-bg align-middle" />
 }
 
 /**

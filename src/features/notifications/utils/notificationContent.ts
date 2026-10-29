@@ -1,6 +1,8 @@
 import {
   Award,
   Bell,
+  CalendarClock,
+  CalendarX,
   CircleCheck,
   CircleX,
   MessageSquareReply,
@@ -9,6 +11,7 @@ import {
   Receipt,
   ShieldAlert,
   ShoppingBag,
+  Sparkles,
   Star,
   Store,
   TrendingDown,
@@ -18,6 +21,8 @@ import {
 } from 'lucide-react'
 import { getBadgeTexts } from '@/features/badges/utils/badgeDisplay'
 import type { BadgeRarity } from '@/features/badges/models/badges'
+import { formatPaymentDate } from '@/features/payments/utils/paymentFormat'
+import { PERIOD_LABEL } from '@/features/pro/utils/subscriptionFormat'
 import type { TranslateFn } from '@/i18n/LanguageContext'
 import type { AppLanguage } from '@/utils/locale'
 import { formatPrice } from '@/utils/price'
@@ -35,6 +40,10 @@ export type NotificationTarget =
   | { kind: 'community'; slug: string }
   | { kind: 'communityRequests'; slug: string }
   | { kind: 'post'; slug: string; postId: number; replyId?: number }
+  /** /settings?tab=subscription: estado de Mynted Pro e historial de pagos. */
+  | { kind: 'subscription' }
+  /** /pro: los planes, para renovar. */
+  | { kind: 'proPlans' }
 
 export interface NotificationContent {
   text: string
@@ -185,5 +194,32 @@ export function getNotificationContent(notification: AppNotification, t: Transla
         target: { kind: 'post', slug: communitySlug, postId, replyId },
       }
     }
+    case 'subscription_payment_confirmed': {
+      const { period, endsAt, renewal } = notification.data
+      const date = formatPaymentDate(endsAt, language)
+      return {
+        text: renewal
+          ? t('notifications.subscriptionRenewed', { period: t(PERIOD_LABEL[period] ?? 'pro.period.monthly'), date })
+          : t('notifications.subscriptionPaymentConfirmed', { date }),
+        icon: Sparkles,
+        target: { kind: 'subscription' },
+      }
+    }
+    case 'subscription_expiring_soon': {
+      const { endsAt, cancelAtPeriodEnd } = notification.data
+      const date = formatPaymentDate(endsAt, language)
+      return {
+        // Si canceló, no se le dice "renueva para no perder tus beneficios".
+        text: t(cancelAtPeriodEnd ? 'notifications.subscriptionExpiringCancelled' : 'notifications.subscriptionExpiringSoon', { date }),
+        icon: CalendarClock,
+        target: { kind: 'proPlans' },
+      }
+    }
+    case 'subscription_expired':
+      return {
+        text: t('notifications.subscriptionExpired', { date: formatPaymentDate(notification.data.endsAt, language) }),
+        icon: CalendarX,
+        target: { kind: 'proPlans' },
+      }
   }
 }

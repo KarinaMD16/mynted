@@ -4,6 +4,7 @@ import { ErrorState } from '@/components/errors/ErrorState'
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
 import { Button } from '@/components/ui/Button'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { ProBadge } from '@/features/pro/components/ProBadge'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { cx } from '@/utils/cx'
 import { useInbox } from '../hooks/useChatQueries'
@@ -114,7 +115,11 @@ function InboxRow({
   )
   const content = (
     <>
-      <ChatAvatar name={item.otherParticipant.displayName} photoUrl={item.otherParticipant.photoUrl} />
+      <ChatAvatar
+        name={item.otherParticipant.displayName}
+        photoUrl={item.otherParticipant.photoUrl}
+        frame={item.otherParticipant.frame}
+      />
 
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-2">
@@ -123,6 +128,7 @@ function InboxRow({
               {item.otherParticipant.displayName}
             </span>
             {item.otherParticipant.isVerified && <VerifiedMark />}
+            {item.otherParticipant.isPro && <ProBadge size="xs" />}
           </span>
           <time
             dateTime={item.lastMessageAt}

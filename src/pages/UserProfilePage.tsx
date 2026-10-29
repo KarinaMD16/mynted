@@ -19,6 +19,9 @@ import { ProfileFeedFrame } from '@/features/community/components/profile/Profil
 import { useUserContent, useUserForumPosts, useUserProducts } from '@/features/community/hooks/useForumQueries'
 import type { MyContentEntry } from '@/features/community/models/communityDTOs'
 import { AboutCard, CoverBanner } from '@/features/profile/components/ProfileParts'
+import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
+import { ProBadge } from '@/features/pro/components/ProBadge'
+import { SkinnedGoose } from '@/features/pro/components/SkinnedGoose'
 import { formatMemberSince, getInitials } from '@/features/profile/utils/profileFormat'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { AppLanguage } from '@/utils/locale'
@@ -213,19 +216,30 @@ function PublicProfileHeader({ user, language }: { user: PublicUser; language: A
 
   return (
     <div>
-      <CoverBanner />
+      <CoverBanner banner={user.cosmetics?.banner} />
 
       <div className="relative -mt-10 rounded-2xl border border-mynted-border bg-mynted-white pt-16 pb-6 shadow-[0_16px_40px_-8px_rgba(13,13,20,0.08)] sm:pb-8">
-        <span className="absolute -top-14 left-1/2 z-20 flex size-28 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
-          {user.photoUrl ? (
-            <img src={user.photoUrl} alt={user.username} className="size-full object-cover" />
-          ) : (
-            getInitials(user.username)
-          )}
+        {/* El ganso con la skin de esta persona, como "sticker" del perfil. */}
+        <span className="absolute -top-7 left-4 z-10 flex size-14 items-center justify-center rounded-full border-4 border-mynted-white bg-white shadow-sm sm:left-6">
+          <SkinnedGoose skin={user.cosmetics?.gooseSkin} className="size-10" />
         </span>
 
+        {/* Marco efectivo: `frame` (o `cosmetics.frame`, que es el mismo). */}
+        <AvatarFrame frame={user.frame ?? user.cosmetics?.frame} size="lg" className="absolute -top-14 left-1/2 z-20 size-28 -translate-x-1/2">
+          <span className="flex size-full items-center justify-center overflow-hidden rounded-full border-4 border-mynted-white bg-mynted-orange font-heading text-3xl font-semibold text-white shadow-md">
+            {user.photoUrl ? (
+              <img src={user.photoUrl} alt={user.username} referrerPolicy="no-referrer" className="size-full object-cover" />
+            ) : (
+              getInitials(user.username)
+            )}
+          </span>
+        </AvatarFrame>
+
         <div className="flex flex-col items-center px-6 text-center">
-          <h1 className="font-heading text-2xl font-semibold text-mynted-ink">{user.username}</h1>
+          <h1 className="flex items-center gap-2 font-heading text-2xl font-semibold text-mynted-ink">
+            {user.username}
+            {user.isPro && <ProBadge size="md" />}
+          </h1>
           <p className="text-sm text-mynted-gray">@{user.username}</p>
 
           {seller && (

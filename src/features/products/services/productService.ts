@@ -2,6 +2,8 @@ import myntedAPI from '@/api/apiConfig'
 import type {
   CreateProductPayload,
   ExploreFilters,
+  FeaturedProductResponse,
+  FeaturedSummary,
   MyProductCard,
   MyProductsFilters,
   MyProductsPage,
@@ -207,6 +209,27 @@ export async function getMyProductsDashboard(
     params: { page, limit, productsLimit, ...filters },
   })
   return data
+}
+
+/** GET /products/me/featured/summary — cuántos destacados efectivos usa el vendedor y cuántos le quedan. */
+export async function getFeaturedSummary(): Promise<FeaturedSummary> {
+  const { data } = await myntedAPI.get<FeaturedSummary>('/products/me/featured/summary')
+  return data
+}
+
+/**
+ * PUT /products/:id/featured — destaca un producto propio (vendedor aprobado
+ * con Pro vigente; máx. 3 efectivos). Idempotente. 403 sin Pro o sin tienda
+ * aprobada; 404 si no existe o no es tuyo; 409 si no está activo o ya hay 3.
+ */
+export async function featureProduct(productId: number): Promise<FeaturedProductResponse> {
+  const { data } = await myntedAPI.put<FeaturedProductResponse>(`/products/${productId}/featured`)
+  return data
+}
+
+/** DELETE /products/:id/featured — quita el destacado. Idempotente y no exige Pro. */
+export async function unfeatureProduct(productId: number): Promise<void> {
+  await myntedAPI.delete(`/products/${productId}/featured`)
 }
 
 /** GET /products/me/stats — contadores de los productos del vendedor por estado (JWT + vendedor). */

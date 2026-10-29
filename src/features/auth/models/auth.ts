@@ -1,3 +1,4 @@
+import type { CosmeticAsset, EffectiveCosmetics } from '@/features/pro/models/cosmetics'
 import type { ResponseTime } from '@/features/stores/models/store'
 
 export const OAUTH_PROVIDERS = ['google', 'facebook'] as const
@@ -68,6 +69,10 @@ export interface AuthUser {
    * trae). Con `sellerId` se abre /sellers/:sellerId.
    */
   seller?: PublicSeller
+  /** Mynted Pro vigente ahora mismo (lo calcula el backend en cada respuesta). */
+  isPro?: boolean
+  /** Cosméticos EFECTIVOS (banner, ganso y marco): lo que se pinta (ver features/pro). */
+  cosmetics?: EffectiveCosmetics
 }
 
 /** Objeto `seller` del perfil público y de GET /users/me: solo vendedores aprobados. */
@@ -98,6 +103,12 @@ export interface PublicUser {
   createdAt: string
   /** Solo si es vendedor aprobado. */
   seller?: PublicSeller
+  /** Pro vigente: pinta el badge Pro. */
+  isPro?: boolean
+  /** Marco efectivo del avatar (igual a `cosmetics.frame`). */
+  frame?: CosmeticAsset
+  /** Cosméticos efectivos completos (perfil público y búsqueda de usuarios). */
+  cosmetics?: EffectiveCosmetics
 }
 
 export interface LogoutResponse {

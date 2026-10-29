@@ -85,6 +85,7 @@ export default function TagProductsPage() {
                       ...displayFieldsOf(product),
                       tags: product.productTags?.map((item) => item.tag) ?? [],
                       type: product.type,
+                      isFeatured: product.isFeatured,
                     }}
                   />
                 </StaggerItem>

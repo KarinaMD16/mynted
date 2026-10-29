@@ -1,9 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { useContactSeller } from '@/features/chat/hooks/useContactSeller'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
+import { ProBadge } from '@/features/pro/components/ProBadge'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { ProductStatus, ProductType } from '@/features/products/models/product'
+import { cx } from '@/utils/cx'
 import type { DisplayPriceFields } from '@/utils/price'
+import { FeaturedTag } from './FeaturedControls'
 import { ProductPrice } from './ProductPrice'
 
 export interface ShopProductCardData extends DisplayPriceFields {
@@ -22,6 +25,13 @@ export interface ShopProductCardData extends DisplayPriceFields {
   isVerified?: boolean
   /** Si el listado lo trae: un producto vendido no se puede agregar a favoritos. */
   status?: ProductStatus
+  /**
+   * Destacado de un vendedor Pro (solo GET /products y GET /sellers/:id/products):
+   * etiqueta "Destacado" sobre la foto y borde de acento.
+   */
+  isFeatured?: boolean
+  /** El vendedor tiene Pro vigente (solo GET /products/shop trae al vendedor). */
+  sellerIsPro?: boolean
 }
 
 /**
@@ -37,21 +47,28 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
   const { contact, isOpening } = useContactSeller()
   // Si el listado trae el estado y no está activo, no se puede abrir una conversación nueva (el backend da 400).
   const canContact = product.status === undefined || product.status === 'active'
+  const isFeatured = product.isFeatured === true && product.status !== 'sold'
 
   return (
-    <article className="relative flex h-full flex-col gap-1.5 overflow-hidden rounded-[14px] border border-mynted-border bg-white p-2 pb-2.5 shadow-[0_2px_8px_0_rgba(13,13,20,0.06)] sm:gap-2 sm:px-3 sm:pt-3 sm:pb-3.5">
+    <article
+      className={cx(
+        'relative flex h-full flex-col gap-1.5 overflow-hidden rounded-[14px] border bg-white p-2 pb-2.5 shadow-[0_2px_8px_0_rgba(13,13,20,0.06)] sm:gap-2 sm:px-3 sm:pt-3 sm:pb-3.5',
+        isFeatured ? 'border-mynted-orange/60' : 'border-mynted-border',
+      )}
+    >
       <Link
         to="/products/$productId"
         params={{ productId: String(product.id) }}
         className="group flex flex-col gap-1.5 outline-none sm:gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue"
       >
-        <div className="aspect-square w-full overflow-hidden rounded-[10px] bg-mynted-bg sm:aspect-auto sm:h-[170px]">
+        <div className="relative aspect-square w-full overflow-hidden rounded-[10px] bg-mynted-bg sm:aspect-auto sm:h-[170px]">
           <img
             src={product.imageUrl}
             alt={product.title}
             loading="lazy"
             className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
+          {isFeatured && <FeaturedTag className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2" />}
         </div>
         <h3 className="line-clamp-2 font-heading text-[13px] leading-snug font-semibold text-mynted-ink sm:text-sm">{product.title}</h3>
       </Link>
@@ -80,16 +97,19 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
         )
       )}
 
-      {(product.tags.length > 0 || product.isVerified) && (
+      {(product.tags.length > 0 || product.isVerified || product.sellerIsPro) && (
         <div className="hidden items-center justify-between gap-2 sm:flex">
           <p className="line-clamp-1 min-w-0 text-xs text-mynted-gray">
             {product.tags.map((tag) => `#${tag.name}`).join(' ')}
           </p>
-          {product.isVerified && (
-            <span className="shrink-0 rounded-full bg-[#e8faf2] px-[9px] py-1 text-[10px] font-semibold text-[#0d8c66]">
-              ✓ {t('product.verified')}
-            </span>
-          )}
+          <span className="flex shrink-0 items-center gap-1">
+            {product.sellerIsPro && <ProBadge size="xs" />}
+            {product.isVerified && (
+              <span className="shrink-0 rounded-full bg-[#e8faf2] px-[9px] py-1 text-[10px] font-semibold text-[#0d8c66]">
+                ✓ {t('product.verified')}
+              </span>
+            )}
+          </span>
         </div>
       )}
 

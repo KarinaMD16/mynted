@@ -36,6 +36,8 @@ export const KNOWN_BADGE_CODES = [
   'community_founding_member',
   'community_founder',
   'moderator',
+  // Derivado: aparece mientras la suscripción Mynted Pro esté vigente (no se guarda).
+  'pro',
 ] as const
 
 export type KnownBadgeCode = (typeof KNOWN_BADGE_CODES)[number]

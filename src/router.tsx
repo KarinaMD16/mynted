@@ -20,6 +20,8 @@ import LoginPage from './pages/LoginPage'
 import CookiesPolicyPage from './pages/CookiesPolicyPage'
 import MessagesPage from './pages/MessagesPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import ProCheckoutPage from './pages/ProCheckoutPage'
+import ProPage from './pages/ProPage'
 import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ConfirmEmailChangePage from './pages/ConfirmEmailChangePage'
@@ -38,6 +40,7 @@ import TagProductsPage from './pages/TagProductsPage'
 import UserProfilePage from './pages/UserProfilePage'
 import { isSettingsTab, type SettingsTab } from './features/settings/models/settings'
 import { SEARCH_MAX_LENGTH, SEARCH_TYPES, type SearchType } from './features/search/models/search'
+import { isSubscriptionPeriod, type SubscriptionPeriod } from './features/pro/models/subscription'
 
 /**
  * Configuración de rutas del frontend.
@@ -296,6 +299,23 @@ const profileRoute = createRoute({
  * Ajustes de la cuenta. La pestaña va en ?tab= (account | profile | privacy
  * | notifications); un valor desconocido cae en "account".
  */
+/** Mynted Pro: planes y estado de la suscripción. Público (sin sesión muestra los precios). */
+const proRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pro',
+  component: ProPage,
+})
+
+/** Pago (o renovación) de Pro. `?period=` elige el plan; uno raro cae en el recomendado (anual). */
+const proCheckoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pro/checkout',
+  component: ProCheckoutPage,
+  validateSearch: (search: Record<string, unknown>): { period?: SubscriptionPeriod } => ({
+    period: isSubscriptionPeriod(search.period) ? search.period : undefined,
+  }),
+})
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -390,6 +410,8 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   userProfileRoute,
   storeRoute,
+  proRoute,
+  proCheckoutRoute,
   settingsRoute,
   confirmEmailChangeRoute,
   privacyPolicyRoute,

@@ -1,3 +1,4 @@
+import type { UserDisplaySummary } from '@/features/pro/models/cosmetics'
 import type { DisplayPriceFields } from '@/utils/price'
 
 /** Espeja los enums de products/entities/product.entity.ts del backend. */
@@ -57,8 +58,8 @@ export interface CreateProductPayload {
   saveAsDraft?: boolean
 }
 
-/** Vendedor tal como viene en el detalle de un producto. */
-export interface ProductSeller {
+/** Vendedor tal como viene en el detalle de un producto (con su badge Pro y marco: ver UserDisplaySummary). */
+export interface ProductSeller extends UserDisplaySummary {
   sellerId: number
   /**
    * Id de USUARIO del dueño de la tienda, para enlazar a su perfil (/users/$userId).
@@ -123,6 +124,8 @@ export interface ProductDetail extends DisplayPriceFields {
   /** null si no hay reseñas. */
   ratingAverage: number | null
   reviewsCount: number
+  /** Destacado de un vendedor Pro que se eleva ahora (se pinta la etiqueta "Destacado"). */
+  isFeatured?: boolean
 }
 
 /**
@@ -149,6 +152,11 @@ export interface ProductListItem extends DisplayPriceFields {
   community?: { id: number; name: string; slug: string } | null
   productTags?: { tag: ProductTagRef }[]
   isSaved?: boolean
+  /**
+   * Solo en GET /products y GET /sellers/:id/products: destacado de un vendedor
+   * Pro que se eleva ahora. Esos listados ya los traen primero (hasta 1/4 de la página).
+   */
+  isFeatured?: boolean
 }
 
 export interface ProductPage {
@@ -174,7 +182,7 @@ export interface ShopProduct extends DisplayPriceFields {
   condition: ProductCondition
   isSaved: boolean
   tags: ProductTagRef[]
-  seller: { sellerId: number; displayName: string; photoUrl: string | null; isVerified: boolean }
+  seller: { sellerId: number; displayName: string; photoUrl: string | null; isVerified: boolean } & UserDisplaySummary
 }
 
 /** Una sección de la pantalla Shop: un tag con sus productos. */
@@ -216,6 +224,28 @@ export interface MyProductCard {
   tags: ProductTagRef[]
   /** null = producto sin comunidad. */
   community: { id: number; name: string } | null
+  /** Preferencia de destacado guardada (puede estar "en pausa"). */
+  featuredEnabled?: boolean
+  /** Se eleva ahora. `featuredEnabled && !isFeatured` = destacado en pausa. */
+  isFeatured?: boolean
+}
+
+/** Respuesta de PUT /products/:id/featured. */
+export interface FeaturedProductResponse {
+  productId: number
+  /** La preferencia. */
+  featuredEnabled: boolean
+  /** Si se eleva ahora (puede ser false, p. ej. en una comunidad privada). */
+  isFeatured: boolean
+  featuredAt: string
+}
+
+/** GET /products/me/featured/summary — cupos de destacados del vendedor. */
+export interface FeaturedSummary {
+  limit: number
+  /** Destacados EFECTIVOS ahora (los en pausa no cuentan). */
+  used: number
+  remaining: number
 }
 
 export interface MyProductsSection {
@@ -300,7 +330,7 @@ export interface ProductReview {
   comment: string | null
   createdAt: string
   updatedAt: string
-  author: { id: string; username: string; photoUrl: string | null }
+  author: { id: string; username: string; photoUrl: string | null } & UserDisplaySummary
   isMine: boolean
 }
 

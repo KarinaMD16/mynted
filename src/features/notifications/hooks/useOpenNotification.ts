@@ -27,6 +27,10 @@ export function useGoToNotificationTarget() {
             params: { slug: target.slug, postId: String(target.postId) },
             hash: target.replyId !== undefined ? `reply-${target.replyId}` : undefined,
           })
+        case 'subscription':
+          return navigate({ to: '/settings', search: { tab: 'subscription' } })
+        case 'proPlans':
+          return navigate({ to: '/pro' })
       }
     },
     [navigate],

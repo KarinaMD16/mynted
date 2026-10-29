@@ -7,6 +7,8 @@ import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
+import { ProBadge } from '@/features/pro/components/ProBadge'
 import { getInitials } from '@/features/profile/utils/profileFormat'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { cx } from '@/utils/cx'
@@ -163,16 +165,18 @@ function ReviewItem({ review, productId }: { review: ProductReview; productId: n
 
   return (
     <li className="flex gap-3 rounded-2xl border border-mynted-border bg-white p-4">
-      <span
-        aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-mynted-orange font-heading text-sm font-semibold text-white"
-      >
-        {review.author.photoUrl ? (
-          <img src={review.author.photoUrl} alt="" className="size-full object-cover" />
-        ) : (
-          getInitials(review.author.username)
-        )}
-      </span>
+      <AvatarFrame frame={review.author.frame} size="sm" className="size-10">
+        <span
+          aria-hidden="true"
+          className="flex size-full items-center justify-center overflow-hidden rounded-full bg-mynted-orange font-heading text-sm font-semibold text-white"
+        >
+          {review.author.photoUrl ? (
+            <img src={review.author.photoUrl} alt="" referrerPolicy="no-referrer" className="size-full object-cover" />
+          ) : (
+            getInitials(review.author.username)
+          )}
+        </span>
+      </AvatarFrame>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -183,6 +187,7 @@ function ReviewItem({ review, productId }: { review: ProductReview; productId: n
           >
             {review.author.username}
           </Link>
+          {review.author.isPro && <ProBadge size="xs" />}
           {review.isMine && (
             <span className="rounded-full bg-mynted-orange/10 px-2 py-0.5 text-[10px] font-semibold text-mynted-orange">
               {t('reviews.you')}
