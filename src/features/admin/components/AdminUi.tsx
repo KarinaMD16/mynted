@@ -1,5 +1,5 @@
 import { QueryErrorState } from '@/components/errors/QueryErrorState'
-import type { ComponentType, ReactNode } from 'react'
+import { useId, useState, type ComponentType, type ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import {
@@ -44,7 +44,9 @@ export function StatCard({
         <p className="font-heading text-2xl font-semibold text-mynted-ink">
           {typeof value === 'number' ? value.toLocaleString() : (value ?? '—')}
         </p>
-        <p className="truncate text-sm text-mynted-gray">{label}</p>
+        {/* Puede ocupar dos líneas: con cuatro tarjetas por fila, truncar
+            cortaba etiquetas como "Nuevos en los últimos 30 días". */}
+        <p className="text-sm leading-snug text-mynted-gray">{label}</p>
       </div>
     </div>
   )
@@ -263,6 +265,38 @@ export function FilterSelect<T extends string>({
   )
 }
 
+/**
+ * Una fecha (YYYY-MM-DD) con el mismo aspecto que `FilterSelect`, para que
+ * convivan en la misma barra de filtros. Vacío es "sin límite".
+ */
+export function FilterDate({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string
+  value: string
+  min?: string
+  max?: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="flex items-center gap-2 text-sm text-mynted-ink">
+      <span className="shrink-0">{label}</span>
+      <input
+        type="date"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-9 rounded-lg border border-mynted-border bg-white px-2.5 text-sm text-mynted-ink outline-none focus-visible:border-mynted-blue-mid"
+      />
+    </label>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Avisos y confirmaciones
 // ---------------------------------------------------------------------------
@@ -337,6 +371,136 @@ export function ConfirmDialog({
           </Button>
         </DialogFooter>
 
+        {Boolean(error) && (
+          <p className="mt-3 text-sm text-red-500" role="alert">
+            {getApiErrorMessage(error)}
+          </p>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+
+/** Lo que acepta el backend en `reason` (ver DeactivateUserDto y los demás). */
+const REASON_MAX_LENGTH = 500
+
+/**
+ * Confirmación de una acción destructiva que **exige un motivo**: desactivar o
+ * eliminar una cuenta, revocar un vendedor, dar de baja una comunidad o un
+ * producto.
+ *
+ * El motivo no es decorativo: el backend lo guarda como acción de moderación y
+ * se lo avisa a quien la sufre, así que todas estas acciones lo piden y lo
+ * rechazan vacío. Por eso vive en un solo componente y no copiado en cada
+ * pantalla.
+ *
+ * El texto se borra al cerrar: un motivo es de la acción que se estaba
+ * haciendo, no del diálogo, y arrastrarlo a la siguiente sería peligroso.
+ */
+export function ConfirmWithReasonDialog({
+  open,
+  title,
+  description,
+  confirmLabel,
+  tone = 'danger',
+  isPending,
+  error,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean
+  title: string
+  description: string
+  confirmLabel: string
+  tone?: 'danger' | 'primary'
+  isPending: boolean
+  error: unknown
+  onConfirm: (reason: string) => void
+  onClose: () => void
+}) {
+  const { t } = useLanguage()
+  const fieldId = useId()
+  const [reason, setReason] = useState('')
+  // Se muestra el aviso recién al intentar confirmar, no mientras se escribe.
+  const [attempted, setAttempted] = useState(false)
+
+  // Al abrir (o al cambiar de acción) el diálogo arranca limpio. Se ajusta
+  // durante el render y no en un efecto: con un efecto se vería un instante el
+  // motivo de la acción anterior.
+  const [openedFor, setOpenedFor] = useState(open)
+  if (open !== openedFor) {
+    setOpenedFor(open)
+    // Solo al abrir: limpiar también al cerrar mete un render de más en plena
+    // animación de salida y el diálogo se queda colgado en pantalla.
+    if (open) {
+      setReason('')
+      setAttempted(false)
+    }
+  }
+
+  const trimmed = reason.trim()
+  const isEmpty = trimmed === ''
+
+  function handleConfirm() {
+    setAttempted(true)
+    if (isEmpty) return
+    onConfirm(trimmed)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && !isPending && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl">{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={fieldId} className="text-[13px] font-medium text-mynted-ink">
+            {t('admin.reason.label')}
+          </label>
+          <textarea
+            id={fieldId}
+            rows={3}
+            value={reason}
+            maxLength={REASON_MAX_LENGTH}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder={t('admin.reason.placeholder')}
+            aria-invalid={attempted && isEmpty}
+            aria-describedby={attempted && isEmpty ? `${fieldId}-error` : undefined}
+            className={`w-full resize-y rounded-[10px] border bg-white px-3.5 py-2.5 text-sm text-mynted-ink outline-none transition-shadow placeholder:text-mynted-gray-light focus:ring-2 focus:ring-mynted-orange/20 ${
+              attempted && isEmpty ? 'border-red-400' : 'border-mynted-border focus:border-mynted-orange'
+            }`}
+          />
+          {attempted && isEmpty ? (
+            <span id={`${fieldId}-error`} className="text-xs text-red-500">
+              {t('admin.reason.required')}
+            </span>
+          ) : (
+            <span className="text-xs text-mynted-gray">
+              {t('admin.reason.hint', { count: REASON_MAX_LENGTH - reason.length })}
+            </span>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button type="button" onClick={onClose} disabled={isPending} variant="secondary" size="md">
+            {t('profile.edit.cancel')}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleConfirm}
+            variant={tone === 'danger' ? 'destructive' : 'primary'}
+            size="md"
+            isLoading={isPending}
+          >
+            {confirmLabel}
+          </Button>
+        </DialogFooter>
+
+        {/* El backend valida de nuevo (motivo vacío, acción no permitida):
+            su mensaje es más preciso que cualquier cosa que digamos acá. */}
         {Boolean(error) && (
           <p className="mt-3 text-sm text-red-500" role="alert">
             {getApiErrorMessage(error)}

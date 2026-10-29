@@ -4,6 +4,9 @@ import { AdminLayout } from '@/features/admin/components/AdminLayout'
 import { useAdminUsers } from '@/features/admin/hooks/useAdminQueries'
 import { CategoriesSection } from '@/features/admin/sections/CategoriesSection'
 import { CommissionsSection } from '@/features/admin/sections/CommissionsSection'
+import { ModerationLogSection } from '@/features/admin/sections/ModerationLogSection'
+import { ReportsSection } from '@/features/admin/sections/ReportsSection'
+import { SellersSection } from '@/features/admin/sections/SellersSection'
 import { CommunitiesSection } from '@/features/admin/sections/CommunitiesSection'
 import { SellerRequestsSection } from '@/features/admin/sections/SellerRequestsSection'
 import { UsersSection } from '@/features/admin/sections/UsersSection'
@@ -54,11 +57,14 @@ export default function AdminPage() {
 
   return (
     <AdminLayout section={section} tab={tab} userName={user.username} pendingSellerCount={pendingSellerCount}>
+      {section === 'reports' && <ReportsSection tab={tab} />}
+      {section === 'sellers' && <SellersSection tab={tab} currentUserId={user.id} />}
       {section === 'communities' && <CommunitiesSection tab={tab} />}
       {section === 'categories' && <CategoriesSection tab={tab} />}
       {section === 'users' && <UsersSection tab={tab} currentUserId={user.id} />}
       {section === 'sellerRequests' && <SellerRequestsSection tab={tab} currentUserId={user.id} />}
       {section === 'commissions' && <CommissionsSection tab={tab} />}
+      {section === 'moderationLog' && <ModerationLogSection tab={tab} />}
     </AdminLayout>
   )
 }

@@ -1,9 +1,21 @@
 import type { ReactNode } from "react";
 import type { CommunityListItem, ForumPost } from "../models/communityDTOs";
 
+export interface CreateCommunityOwnerOption {
+    id: string;
+    username: string;
+}
+
 export interface CreateCommunityFormProps {
     isOpen: boolean;
     onClose: () => void;
+    /**
+     * Cuentas que se pueden poner como duenas. Solo lo manda el panel de
+     * administracion: el backend acepta `ownerId` unicamente de un superadmin,
+     * y si no se elige ninguna la comunidad queda sin dueno. Sin esta prop el
+     * campo no existe y la comunidad queda a nombre de quien la crea.
+     */
+    ownerOptions?: CreateCommunityOwnerOption[];
   }
 
 export interface SelectedImage {

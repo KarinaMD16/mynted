@@ -8,10 +8,9 @@ import { ExternalLink, MousePointerClick } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import type { TranslationKey } from '@/i18n/translations/es'
 import type { UserRole } from '@/features/auth/models/auth'
-import type { CommunityListItem } from '@/features/community/models/communityDTOs'
 import { formatShortDate } from '@/utils/relativeTime'
 import { Avatar, StatusPill, type PillTone } from './AdminUi'
-import type { AdminUser } from '../models/admin'
+import type { AdminCommunity, AdminUser } from '../models/admin'
 
 /**
  * Nombres con tarjeta de resumen al pasar el mouse (o al llegar con Tab),
@@ -130,7 +129,7 @@ export function UserHoverName({ user, onOpen }: { user: AdminUser; onOpen: () =>
   )
 }
 
-export function CommunityHoverName({ community }: { community: CommunityListItem }) {
+export function CommunityHoverName({ community }: { community: AdminCommunity }) {
   const { t, language } = useLanguage()
 
   return (
@@ -152,11 +151,10 @@ export function CommunityHoverName({ community }: { community: CommunityListItem
           </>
         }
       >
-        {community.bannerUrl && (
-          <img src={community.bannerUrl} alt="" className="-mx-4 -mt-4 mb-3 h-20 w-[calc(100%+2rem)] max-w-none object-cover" />
-        )}
+        {/* El listado de administración no trae imágenes, así que la tarjeta
+            arranca con el nombre en vez de con el banner. */}
         <div className="flex items-center gap-3">
-          <Avatar src={community.imageUrl} name={community.name} square />
+          <Avatar src={null} name={community.name} square />
           <div className="min-w-0">
             <p className="truncate font-heading text-base font-semibold text-mynted-ink">{community.name}</p>
             <p className="truncate text-xs text-mynted-gray">@{community.slug}</p>
@@ -178,7 +176,7 @@ export function CommunityHoverName({ community }: { community: CommunityListItem
 
         <dl className="mt-3 flex flex-col gap-1.5">
           <Row label={t('admin.communities.columns.members')}>{community.memberCount.toLocaleString(language)}</Row>
-          <Row label={t('moderation.stats.recentPosts')}>{community.recentPostCount.toLocaleString(language)}</Row>
+          <Row label={t('admin.communities.columns.products')}>{community.productCount.toLocaleString(language)}</Row>
           <Row label={t('admin.communities.columns.created')}>{formatShortDate(community.createdAt, language)}</Row>
         </dl>
       </SummaryCard>

@@ -10,7 +10,7 @@ import { useCreateCommunity } from '@/features/community/hooks/useCommunitiesMut
 import { useCategories } from '@/features/community/hooks/useCommunitiesQueries';
 import { makeCreateCommunitySchema } from '@/features/community/schemas/createCommunitySchema';
 import type { CreateCommunityValues } from '@/features/community/schemas/createCommunitySchema';
-import type { CreateCommunityFormProps, SelectedImage } from '@/features/community/types/CommunityTypes';
+import type { CreateCommunityFormProps, CreateCommunityOwnerOption, SelectedImage } from '@/features/community/types/CommunityTypes';
 import { BANNER_CROP, DEFAULT_RULE_KEYS, IMAGE_CROP, hintClasses, labelClasses, inputClasses, errorClasses } from '@/features/community/types/DEFAULT_VALUES';
 import {
   Dialog,
@@ -36,25 +36,34 @@ const slugify = (value: string) =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-export const CreateCommunityForm = ({ isOpen, onClose }: CreateCommunityFormProps) => {
+export const CreateCommunityForm = ({ isOpen, onClose, ownerOptions }: CreateCommunityFormProps) => {
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
             <DialogContent className="max-w-5xl">
-                <CreateCommunityDialogBody onClose={onClose} />
+                <CreateCommunityDialogBody onClose={onClose} ownerOptions={ownerOptions} />
             </DialogContent>
         </Dialog>
     );
 }
 
-const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
+const CreateCommunityDialogBody = ({
+    onClose,
+    ownerOptions,
+}: {
+    onClose: () => void;
+    ownerOptions?: CreateCommunityOwnerOption[];
+}) => {
     const { t } = useLanguage();
     const bannerInputId = useId();
     const imageInputId = useId();
     const privacyLabelId = useId();
+    const ownerSelectId = useId();
 
     const [banner, setBanner] = useState<SelectedImage | null>(null);
     const [image, setImage] = useState<SelectedImage | null>(null);
     const slugEditedRef = useRef(false);
+    // '' = sin dueno, que el backend acepta cuando quien crea es superadmin.
+    const [ownerId, setOwnerId] = useState('');
     // Cual de las dos imagenes se esta viendo en grande (null = visor cerrado)
     const [preview, setPreview] = useState<'banner' | 'image' | null>(null);
     // Semilla del patron de la vista previa. La comunidad todavia no tiene id,
@@ -89,6 +98,9 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
             formData.append('categoryId', String(value.categoryId));
             formData.append('tagIds', JSON.stringify(value.tagIds));
             formData.append('rules', JSON.stringify(value.rules.map((rule) => rule.trim())));
+            // El backend rechaza `ownerId` de quien no es superadmin, asi que solo
+            // viaja cuando se eligio uno de la lista que manda el panel.
+            if (ownerId) formData.append('ownerId', ownerId);
             if (image) formData.append('image', image.file);
             if (banner) formData.append('banner', banner.file);
 
@@ -354,6 +366,28 @@ const CreateCommunityDialogBody = ({ onClose }: { onClose: () => void }) => {
                                 }}
                             </form.Field>
 
+
+                            {ownerOptions && (
+                                <div className="flex flex-col gap-1.5">
+                                    <label className={labelClasses} htmlFor={ownerSelectId}>
+                                        {t('communities.create.ownerLabel')}
+                                    </label>
+                                    <select
+                                        id={ownerSelectId}
+                                        value={ownerId}
+                                        onChange={(event) => setOwnerId(event.target.value)}
+                                        className={inputClasses(false)}
+                                    >
+                                        <option value="">{t('communities.create.ownerNone')}</option>
+                                        {ownerOptions.map((option) => (
+                                            <option key={option.id} value={option.id}>
+                                                {option.username}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className={hintClasses}>{t('communities.create.ownerHint')}</p>
+                                </div>
+                            )}
 
                             <form.Field name="categoryId">
                                 {(field) => {

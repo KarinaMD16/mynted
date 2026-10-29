@@ -4,7 +4,6 @@ import { Building2, Check, Eye, EyeOff, LoaderCircle, MapPin, Wallet, X } from '
 import { getApiErrorMessage } from '@/api/apiError'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { useLastDefined } from '@/hooks/useLastDefined'
 import { formatShortDate } from '@/utils/relativeTime'
 import { Avatar, StatusPill } from './AdminUi'
 import { useSellerDecisionMutation, useSellerRequest } from '../hooks/useAdminQueries'
@@ -17,16 +16,33 @@ import { Button } from '@/components/ui/Button'
  * acá se aprueba o se rechaza con PATCH /users/:id/seller-status; al
  * terminar, la fila de la tabla y el contador de la barra lateral se
  * actualizan solos (ver useSellerDecisionMutation).
+ *
+ * Con `reviewed` muestra una solicitud ya decidida, tal como llegó, solo para
+ * consultarla: con su estado y sin aprobar ni rechazar.
  */
-export function SellerRequestDialog({ userId, onClose }: { userId: string | null; onClose: () => void }) {
+export function SellerRequestDialog({
+  userId,
+  reviewed,
+  onClose,
+}: {
+  userId: string | null
+  reviewed?: SellerRequestDetail
+  onClose: () => void
+}) {
   const { t } = useLanguage()
   // Durante la animación de cierre userId ya es null: se siguen mostrando los datos de la última solicitud.
-  const shownUserId = useLastDefined(userId)
-  const requestQuery = useSellerRequest(shownUserId)
+  const [shown, setShown] = useState({ userId, reviewed })
+  if (userId !== null && (userId !== shown.userId || reviewed !== shown.reviewed)) setShown({ userId, reviewed })
+  const shownReviewed = shown.reviewed
+  const fetched = useSellerRequest(shownReviewed ? null : shown.userId)
+  const request = shownReviewed ?? fetched.data
+  // Sin consulta (una revisada ya viene armada), `fetched` queda en pending: no cuenta.
+  const isLoading = !shownReviewed && fetched.isPending
+  const loadError = shownReviewed ? null : fetched.error
   const decision = useSellerDecisionMutation()
   const [pendingDecision, setPendingDecision] = useState<SellerDecision | null>(null)
 
-  const isNotPending = axios.isAxiosError(requestQuery.error) && requestQuery.error.response?.status === 404
+  const isNotPending = axios.isAxiosError(loadError) && loadError.response?.status === 404
 
   function decide(status: SellerDecision) {
     if (!userId) return
@@ -49,11 +65,16 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
     <Dialog open={userId !== null} onOpenChange={(open) => !open && !decision.isPending && close()}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-xl">{t('admin.sellerRequest.title')}</DialogTitle>
-          <DialogDescription>{t('admin.sellerRequest.subtitle')}</DialogDescription>
+          <DialogTitle className="flex flex-wrap items-center gap-2 text-xl">
+            {t('admin.sellerRequest.title')}
+            {shownReviewed && <ReviewedPill status={shownReviewed.user.sellerRequestStatus} />}
+          </DialogTitle>
+          <DialogDescription>
+            {t(shownReviewed ? 'admin.sellerRequest.subtitleReviewed' : 'admin.sellerRequest.subtitle')}
+          </DialogDescription>
         </DialogHeader>
 
-        {requestQuery.isPending && (
+        {isLoading && (
           <div className="mt-6 flex flex-col gap-3" aria-busy="true">
             <div className="h-24 animate-pulse rounded-xl bg-mynted-bg" />
             <div className="h-16 animate-pulse rounded-xl bg-mynted-bg" />
@@ -61,17 +82,17 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
           </div>
         )}
 
-        {requestQuery.isError && (
+        {loadError && (
           <div className="mt-6 rounded-xl border border-mynted-border px-4 py-6 text-center" role="alert">
             <p className="text-sm font-semibold text-mynted-ink">
               {isNotPending ? t('admin.sellerRequest.notPending') : t('admin.table.loadError')}
             </p>
             {!isNotPending && (
               <>
-                <p className="mt-1 text-sm text-mynted-gray">{getApiErrorMessage(requestQuery.error)}</p>
+                <p className="mt-1 text-sm text-mynted-gray">{getApiErrorMessage(loadError)}</p>
                 <Button
                   type="button"
-                  onClick={() => void requestQuery.refetch()}
+                  onClick={() => void fetched.refetch()}
                   variant="secondary"
                   size="sm"
                   className="mt-4"
@@ -83,9 +104,17 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
           </div>
         )}
 
-        {requestQuery.data && <RequestDetails request={requestQuery.data} />}
+        {request && <RequestDetails request={request} />}
 
-        {requestQuery.data && (
+        {shownReviewed && (
+          <div className="mt-6 flex justify-end">
+            <Button type="button" onClick={close} variant="secondary" size="md">
+              {t('profile.edit.close')}
+            </Button>
+          </div>
+        )}
+
+        {!shownReviewed && fetched.data && (
           <div className="mt-6 flex flex-col gap-3">
             {decision.isError && (
               <p className="text-sm text-red-500" role="alert">
@@ -136,6 +165,13 @@ export function SellerRequestDialog({ userId, onClose }: { userId: string | null
       </DialogContent>
     </Dialog>
   )
+}
+
+function ReviewedPill({ status }: { status: SellerRequestDetail['user']['sellerRequestStatus'] }) {
+  const { t } = useLanguage()
+  if (status === 'approved') return <StatusPill tone="teal">{t('admin.sellers.status.approved')}</StatusPill>
+  if (status === 'rejected') return <StatusPill tone="red">{t('admin.sellers.status.rejected')}</StatusPill>
+  return null
 }
 
 function RequestDetails({ request }: { request: SellerRequestDetail }) {

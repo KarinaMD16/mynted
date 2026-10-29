@@ -1,8 +1,9 @@
 import { useId, useMemo, useState, type ReactNode } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsUpDown, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { Button } from '@/components/ui/Button'
+import { AdminPagination } from './AdminPagination'
 
 export interface AdminColumn<T> {
   id: string
@@ -19,6 +20,8 @@ interface AdminDataTableProps<T> {
   getRowId: (row: T) => string | number
   /** Texto en el que busca el campo de búsqueda (nombre, correo, etc.). */
   getSearchText: (row: T) => string
+  /** Texto de ayuda del buscador; por defecto habla de nombre y correo. */
+  searchPlaceholder?: string
   /** Acciones de la fila (columna "Acción" a la derecha). */
   renderActions?: (row: T) => ReactNode
   /** Filtros extra junto a "Mostrar N entradas" (selects de rol, estado...). */
@@ -34,6 +37,14 @@ interface AdminDataTableProps<T> {
 const PAGE_SIZES = [8, 16, 32, 64]
 
 /**
+ * La columna "Acción" queda fija a la derecha: en tablas anchas (Comunidades)
+ * el scroll horizontal la dejaba fuera de vista. Lleva fondo opaco (los
+ * mismos tonos que la fila, mezclados con blanco) para tapar lo que pasa por
+ * debajo, y una sombra a la izquierda que marca el borde.
+ */
+const STICKY_ACTIONS = 'sticky right-0 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]'
+
+/**
  * Tabla del tab "Gestionar", con el formato del mockup de referencia:
  * "Mostrar N entradas" + búsqueda arriba, columnas ordenables, acciones como
  * íconos a la derecha y paginación numerada abajo. Todo el filtrado, orden y
@@ -45,6 +56,7 @@ export function AdminDataTable<T>({
   columns,
   getRowId,
   getSearchText,
+  searchPlaceholder,
   renderActions,
   toolbar,
   primaryAction,
@@ -146,7 +158,7 @@ export function AdminDataTable<T>({
                 setSearch(event.target.value)
                 setPage(1)
               }}
-              placeholder={t('admin.table.searchPlaceholder')}
+              placeholder={searchPlaceholder ?? t('admin.table.searchPlaceholder')}
               className="h-9 w-full rounded-lg border border-mynted-border bg-white pr-3 pl-9 text-sm text-mynted-ink outline-none placeholder:text-mynted-gray-light focus-visible:border-mynted-blue-mid"
             />
           </div>
@@ -185,7 +197,7 @@ export function AdminDataTable<T>({
                 )
               })}
               {hasActions && (
-                <th scope="col" className="w-px px-4 py-3 text-right text-sm font-medium whitespace-nowrap text-mynted-ink">
+                <th scope="col" className={`w-px px-4 py-3 text-right text-sm font-medium whitespace-nowrap text-mynted-ink ${STICKY_ACTIONS} bg-[color-mix(in_srgb,var(--color-mynted-bg)_60%,white)]`}>
                   {t('admin.table.actions')}
                 </th>
               )}
@@ -231,14 +243,18 @@ export function AdminDataTable<T>({
             {!isLoading &&
               !error &&
               pageRows.map((row) => (
-                <tr key={getRowId(row)} className="border-t border-mynted-border transition-colors hover:bg-mynted-bg/40">
+                <tr key={getRowId(row)} className="group border-t border-mynted-border transition-colors hover:bg-mynted-bg/40">
                   {columns.map((column) => (
                     <td key={column.id} className={`px-4 py-3.5 text-sm text-mynted-gray ${column.className ?? ''}`}>
                       {column.render(row)}
                     </td>
                   ))}
                   {hasActions && (
-                    <td className="px-4 py-3.5">
+                    // nowrap: con w-px y sin él, un botón con texto se salía
+                    // de la celda hacia la izquierda y tapaba la columna previa.
+                    <td
+                      className={`px-4 py-3.5 whitespace-nowrap ${STICKY_ACTIONS} bg-white transition-colors group-hover:bg-[color-mix(in_srgb,var(--color-mynted-bg)_40%,white)]`}
+                    >
                       <div className="flex items-center justify-end gap-1">{renderActions!(row)}</div>
                     </td>
                   )}
@@ -257,7 +273,7 @@ export function AdminDataTable<T>({
             total: filtered.length.toLocaleString(language),
           })}
         </p>
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <AdminPagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </div>
   )
@@ -268,80 +284,4 @@ function SortIcon({ state }: { state: 'asc' | 'desc' | null }) {
   if (state === 'asc') return <ChevronUp className={`${className} text-mynted-ink`} aria-hidden="true" />
   if (state === 'desc') return <ChevronDown className={`${className} text-mynted-ink`} aria-hidden="true" />
   return <ChevronsUpDown className={`${className} text-mynted-gray-light`} aria-hidden="true" />
-}
-
-/** Números visibles: 1 2 3 … N, centrados alrededor de la página actual. */
-function getPageItems(page: number, totalPages: number): (number | 'gap')[] {
-  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1)
-  const pages = new Set([1, totalPages, page - 1, page, page + 1])
-  if (page <= 3) [2, 3].forEach((n) => pages.add(n))
-  if (page >= totalPages - 2) [totalPages - 1, totalPages - 2].forEach((n) => pages.add(n))
-  const sorted = [...pages].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b)
-  const items: (number | 'gap')[] = []
-  sorted.forEach((n, index) => {
-    if (index > 0 && n - sorted[index - 1] > 1) items.push('gap')
-    items.push(n)
-  })
-  return items
-}
-
-function Pagination({
-  page,
-  totalPages,
-  onChange,
-}: {
-  page: number
-  totalPages: number
-  onChange: (page: number) => void
-}) {
-  const { t, language } = useLanguage()
-  const buttonBase =
-    'flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors outline-none focus-visible:outline-2 focus-visible:outline-mynted-blue-mid'
-
-  return (
-    <nav aria-label={t('admin.table.paginationLabel')} className="flex items-center gap-1.5">
-      <button
-        type="button"
-        onClick={() => onChange(page - 1)}
-        disabled={page <= 1}
-        aria-label={t('admin.table.previousPage')}
-        className={`${buttonBase} cursor-pointer bg-mynted-bg text-mynted-ink hover:bg-mynted-border disabled:cursor-not-allowed disabled:opacity-40`}
-      >
-        <ChevronLeft className="size-4" aria-hidden="true" />
-      </button>
-
-      {getPageItems(page, totalPages).map((item, index) =>
-        item === 'gap' ? (
-          <span key={`gap-${index}`} className={`${buttonBase} text-mynted-gray`} aria-hidden="true">
-            …
-          </span>
-        ) : (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onChange(item)}
-            aria-label={t('admin.table.pageN', { page: item })}
-            aria-current={item === page ? 'page' : undefined}
-            className={`${buttonBase} cursor-pointer ${
-              item === page
-                ? 'bg-mynted-blue-mid text-white'
-                : 'border border-mynted-border bg-white text-mynted-ink hover:bg-mynted-bg'
-            }`}
-          >
-            {item.toLocaleString(language)}
-          </button>
-        ),
-      )}
-
-      <button
-        type="button"
-        onClick={() => onChange(page + 1)}
-        disabled={page >= totalPages}
-        aria-label={t('admin.table.nextPage')}
-        className={`${buttonBase} cursor-pointer border border-mynted-border bg-white text-mynted-ink hover:bg-mynted-bg disabled:cursor-not-allowed disabled:opacity-40`}
-      >
-        <ChevronRight className="size-4" aria-hidden="true" />
-      </button>
-    </nav>
-  )
 }

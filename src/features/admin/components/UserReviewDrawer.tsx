@@ -1,15 +1,23 @@
 import { useState, type ReactNode } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { Ban, Check, Copy, FileText, MapPin, RotateCcw, X } from 'lucide-react'
+import { Ban, Check, Copy, FileText, MapPin, RotateCcw, Store as StoreIcon, Trash2, X } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { useLastDefined } from '@/hooks/useLastDefined'
 import type { TranslationKey } from '@/i18n/translations/es'
 import type { SellerRequestStatus, UserRole } from '@/features/auth/models/auth'
 import { formatShortDate } from '@/utils/relativeTime'
 import { INTL_LOCALES, type AppLanguage } from '@/utils/locale'
-import { Avatar, ConfirmDialog, StatusPill, type PillTone } from './AdminUi'
+import { Avatar, ConfirmDialog, ConfirmWithReasonDialog, IconAction, StatusPill, type PillTone } from './AdminUi'
 import { SellerRequestDialog } from './SellerRequestDialog'
-import { useAdminUsers, useSetUserActiveMutation } from '../hooks/useAdminQueries'
+import {
+  useAdminUser,
+  useAdminUsers,
+  useDeleteProductMutation,
+  useDeleteUserMutation,
+  useProductModerationMutation,
+  useSellerDecisionMutation,
+  useSetUserActiveMutation,
+} from '../hooks/useAdminQueries'
 import type { AdminUser } from '../models/admin'
 import { Button } from '@/components/ui/Button'
 
@@ -24,14 +32,23 @@ const SELLER_LABEL: Record<Exclude<SellerRequestStatus, 'none'>, TranslationKey>
   pending: 'admin.sellers.status.pending',
   approved: 'admin.sellers.status.approved',
   rejected: 'admin.sellers.status.rejected',
+  revoked: 'admin.sellers.status.revoked',
 }
 const SELLER_TONE: Record<Exclude<SellerRequestStatus, 'none'>, PillTone> = {
   pending: 'amber',
   approved: 'teal',
   rejected: 'red',
+  revoked: 'red',
 }
 
-type PendingAction = { kind: 'active'; active: boolean }
+type PendingAction =
+  | { kind: 'active'; active: boolean }
+  | { kind: 'delete' }
+  /** `active` es a qué estado se lo quiere llevar. */
+  | { kind: 'product'; productId: number; title: string; active: boolean }
+  | { kind: 'productDelete'; productId: number; title: string }
+  /** `grant` es si se le devuelve el rol de vendedor o se le quita. */
+  | { kind: 'sellerRole'; grant: boolean; productCount: number }
 
 /**
  * Panel lateral de moderación para revisar una cuenta desde el panel de
@@ -98,7 +115,14 @@ function ReviewBody({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
   const [pending, setPending] = useState<PendingAction | null>(null)
   const [isRequestOpen, setIsRequestOpen] = useState(false)
   const activeMutation = useSetUserActiveMutation()
+  const deleteMutation = useDeleteUserMutation()
+  const productMutation = useProductModerationMutation()
+  const productDeleteMutation = useDeleteProductMutation()
+  const sellerMutation = useSellerDecisionMutation()
   const sellerStatus = user.sellerRequestStatus
+  /* Revocar solo da de baja lo que está publicado: los vendidos y los ya
+     desactivados no se tocan, así que el aviso no debe contarlos. */
+  const activeProductCount = (user.seller?.products ?? []).filter((product) => product.status === 'active').length
 
   const date = (iso: string | null | undefined) => (iso ? formatShortDate(iso, language) : t('admin.review.notSet'))
 
@@ -187,13 +211,15 @@ function ReviewBody({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
           ) : (
             <div className="flex flex-wrap items-center gap-3 text-sm text-mynted-gray">
               <StatusPill tone={SELLER_TONE[sellerStatus]}>{t(SELLER_LABEL[sellerStatus])}</StatusPill>
-              {t('admin.review.requestedOn', { date: date(user.sellerRequestedAt) })}
+              {/* Una tienda creada a mano no tiene fecha de solicitud: sin
+                  ella la frase quedaba "Solicitada el Sin definir". */}
+              {user.sellerRequestedAt && t('admin.review.requestedOn', { date: date(user.sellerRequestedAt) })}
             </div>
           )}
         </ReviewSection>
 
-        <ReviewSection title={t('admin.review.activity')}>
-          <p className="rounded-xl bg-mynted-bg px-4 py-3 text-sm text-mynted-gray">{t('admin.review.activityUnavailable')}</p>
+        <ReviewSection title={t('admin.review.activity')} hint={t('admin.review.activityHint')}>
+          <UserProducts userId={user.id} onModerate={(action) => setPending(action)} />
         </ReviewSection>
       </div>
 
@@ -234,10 +260,62 @@ function ReviewBody({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
               }}
             />
           )}
+          {/* Quitar el rol desactiva de una vez todos sus productos, así que
+              el diálogo avisa cuántos son antes de confirmar.
+
+              Se condiciona al estado 'approved' y no al rol porque el backend
+              solo revoca a quien pasó por una solicitud aprobada: a una cuenta
+              con tienda creada a mano (estado 'none') responde 400, así que
+              mostrarle el botón sería ofrecer algo que nunca funciona. */}
+          {sellerStatus === 'approved' && (
+            <ActionButton
+              icon={StoreIcon}
+              label={t('admin.sellers.revoke')}
+              variant="danger"
+              onPress={() => {
+                sellerMutation.reset()
+                setPending({ kind: 'sellerRole', grant: false, productCount: activeProductCount })
+              }}
+            />
+          )}
+          {sellerStatus === 'revoked' && (
+            <ActionButton
+              icon={StoreIcon}
+              label={t('admin.sellers.restore')}
+              variant="outline"
+              onPress={() => {
+                sellerMutation.reset()
+                setPending({ kind: 'sellerRole', grant: true, productCount: activeProductCount })
+              }}
+            />
+          )}
+          {/* Eliminar es borrado lógico: la cuenta desaparece del panel pero
+              se conservan sus compras, ventas y reseñas, que involucran a
+              otras personas. No se puede eliminar la cuenta propia. */}
+          <ActionButton
+            icon={Trash2}
+            label={t('admin.users.delete')}
+            variant="danger"
+            disabled={isSelf}
+            title={isSelf ? t('admin.users.cannotDeleteSelf') : undefined}
+            onPress={() => {
+              deleteMutation.reset()
+              setPending({ kind: 'delete' })
+            }}
+          />
         </div>
       </div>
 
-      <ReviewConfirm user={user} pending={pending} activeMutation={activeMutation} onClose={() => setPending(null)} />
+      <ReviewConfirm
+        user={user}
+        pending={pending}
+        activeMutation={activeMutation}
+        deleteMutation={deleteMutation}
+        productMutation={productMutation}
+        productDeleteMutation={productDeleteMutation}
+        sellerMutation={sellerMutation}
+        onClose={() => setPending(null)}
+      />
       <SellerRequestDialog userId={isRequestOpen ? user.id : null} onClose={() => setIsRequestOpen(false)} />
     </>
   )
@@ -247,29 +325,238 @@ function ReviewConfirm({
   user,
   pending,
   activeMutation,
+  deleteMutation,
+  productMutation,
+  productDeleteMutation,
+  sellerMutation,
   onClose,
 }: {
   user: AdminUser
   pending: PendingAction | null
   activeMutation: ReturnType<typeof useSetUserActiveMutation>
+  deleteMutation: ReturnType<typeof useDeleteUserMutation>
+  productMutation: ReturnType<typeof useProductModerationMutation>
+  productDeleteMutation: ReturnType<typeof useDeleteProductMutation>
+  sellerMutation: ReturnType<typeof useSellerDecisionMutation>
   onClose: () => void
 }) {
   const { t } = useLanguage()
   const name = user.username
 
-  const activate = pending?.kind === 'active' && pending.active
+  /**
+   * Todas estas acciones exigen motivo menos reactivar una cuenta: el backend
+   * no lo pide ahí, y no tiene sentido justificar devolverle el acceso a
+   * alguien. Esa sigue con la confirmación simple.
+   */
+  if (pending?.kind === 'active' && pending.active) {
+    return (
+      <ConfirmDialog
+        open
+        title={t('admin.users.activateTitle', { name })}
+        description={t('admin.users.activateDescription')}
+        confirmLabel={t('admin.users.activate')}
+        tone="primary"
+        isPending={activeMutation.isPending}
+        error={activeMutation.error}
+        onClose={onClose}
+        onConfirm={() => activeMutation.mutate({ userId: user.id, active: true }, { onSuccess: onClose })}
+      />
+    )
+  }
+
+  if (pending?.kind === 'active') {
+    return (
+      <ConfirmWithReasonDialog
+        open
+        title={t('admin.users.deactivateTitle', { name })}
+        description={t('admin.users.deactivateDescription')}
+        confirmLabel={t('admin.users.deactivate')}
+        isPending={activeMutation.isPending}
+        error={activeMutation.error}
+        onClose={onClose}
+        onConfirm={(reason) => activeMutation.mutate({ userId: user.id, active: false, reason }, { onSuccess: onClose })}
+      />
+    )
+  }
+
+  if (pending?.kind === 'delete') {
+    return (
+      <ConfirmWithReasonDialog
+        open
+        title={t('admin.users.deleteTitle', { name })}
+        description={t('admin.users.deleteDescription')}
+        confirmLabel={t('admin.users.delete')}
+        isPending={deleteMutation.isPending}
+        error={deleteMutation.error}
+        onClose={onClose}
+        onConfirm={(reason) => deleteMutation.mutate({ userId: user.id, reason }, { onSuccess: onClose })}
+      />
+    )
+  }
+
+  if (pending?.kind === 'product') {
+    const { productId, title, active } = pending
+    return (
+      <ConfirmWithReasonDialog
+        open
+        title={t(active ? 'admin.users.productActivateTitle' : 'admin.users.productDeactivateTitle', { title })}
+        description={t(active ? 'admin.users.productActivateDescription' : 'admin.users.productDeactivateDescription')}
+        confirmLabel={t(active ? 'admin.users.productActivate' : 'admin.users.productDeactivate')}
+        tone={active ? 'primary' : 'danger'}
+        isPending={productMutation.isPending}
+        error={productMutation.error}
+        onClose={onClose}
+        onConfirm={(reason) =>
+          productMutation.mutate({ productId, active, reason, userId: user.id }, { onSuccess: onClose })
+        }
+      />
+    )
+  }
+
+  if (pending?.kind === 'productDelete') {
+    const { productId, title } = pending
+    return (
+      <ConfirmWithReasonDialog
+        open
+        title={t('admin.users.productDeleteTitle', { title })}
+        description={t('admin.users.productDeleteDescription')}
+        confirmLabel={t('admin.users.productDelete')}
+        isPending={productDeleteMutation.isPending}
+        error={productDeleteMutation.error}
+        onClose={onClose}
+        onConfirm={(reason) =>
+          productDeleteMutation.mutate({ productId, reason, userId: user.id }, { onSuccess: onClose })
+        }
+      />
+    )
+  }
+
+  if (pending?.kind === 'sellerRole') {
+    const { grant, productCount } = pending
+    /* Devolver el rol no pide motivo: el backend guarda la acción con
+       reason: null, así que escribirlo sería tirarlo a la basura. */
+    if (grant) {
+      return (
+        <ConfirmDialog
+          open
+          title={t('admin.sellers.restoreTitle', { name })}
+          description={t('admin.sellers.restoreDescription')}
+          confirmLabel={t('admin.sellers.restore')}
+          tone="primary"
+          isPending={sellerMutation.isPending}
+          error={sellerMutation.error}
+          onClose={onClose}
+          onConfirm={() => sellerMutation.mutate({ userId: user.id, status: 'approved' }, { onSuccess: onClose })}
+        />
+      )
+    }
+    return (
+      <ConfirmWithReasonDialog
+        open
+        title={t('admin.sellers.revokeTitle', { name })}
+        description={
+          productCount > 0
+            ? t('admin.sellers.revokeDescription', { count: productCount })
+            : t('admin.sellers.revokeDescriptionNone')
+        }
+        confirmLabel={t('admin.sellers.revoke')}
+        isPending={sellerMutation.isPending}
+        error={sellerMutation.error}
+        onClose={onClose}
+        onConfirm={(reason) =>
+          sellerMutation.mutate({ userId: user.id, status: 'revoked', reason }, { onSuccess: onClose })
+        }
+      />
+    )
+  }
+
+  return null
+}
+
+/**
+ * Los productos de la tienda, con la baja administrativa a mano.
+ *
+ * Las publicaciones del foro no están: el backend solo las expone en su
+ * versión pública (`GET /users/:id/posts`), así que las ocultas —justo las que
+ * habría que poder restaurar— no se ven, y no hay endpoint para ocultar una.
+ */
+function UserProducts({
+  userId,
+  onModerate,
+}: {
+  userId: string
+  onModerate: (action: PendingAction) => void
+}) {
+  const { t } = useLanguage()
+  const detail = useAdminUser(userId)
+  const seller = detail.data?.seller
+  const products = seller?.products ?? []
+
+  if (detail.isLoading) {
+    return <div className="h-20 animate-pulse rounded-xl bg-mynted-bg" aria-busy="true" />
+  }
+
+  if (!seller) {
+    return <p className="rounded-xl bg-mynted-bg px-4 py-3 text-sm text-mynted-gray">{t('admin.review.notASeller')}</p>
+  }
+
   return (
-    <ConfirmDialog
-      open={pending?.kind === 'active'}
-      title={activate ? t('admin.users.activateTitle', { name }) : t('admin.users.deactivateTitle', { name })}
-      description={activate ? t('admin.users.activateDescription') : t('admin.users.deactivateDescription')}
-      confirmLabel={activate ? t('admin.users.activate') : t('admin.users.deactivate')}
-      tone={activate ? 'primary' : 'danger'}
-      isPending={activeMutation.isPending}
-      error={activeMutation.error}
-      onClose={onClose}
-      onConfirm={() => activeMutation.mutate({ userId: user.id, active: activate }, { onSuccess: onClose })}
-    />
+    <div className="flex flex-col gap-3">
+      <p className="text-sm text-mynted-gray">
+        {t('admin.review.sellerSummary', {
+          products: seller.productCount,
+          sales: seller.salesCount,
+          reports: seller.reportsReceivedCount,
+        })}
+      </p>
+
+      {products.length === 0 ? (
+        <p className="rounded-xl bg-mynted-bg px-4 py-3 text-sm text-mynted-gray">{t('admin.review.noProducts')}</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {products.map((product) => (
+            <li
+              key={product.id}
+              className="flex items-center justify-between gap-3 rounded-xl border border-mynted-border px-3.5 py-2.5"
+            >
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-medium text-mynted-ink">{product.title}</span>
+                <span className="text-xs text-mynted-gray">
+                  {product.isDeactivated
+                    ? t('admin.review.productDeactivated')
+                    : product.isHidden
+                      ? t('admin.review.productHidden')
+                      : t('admin.review.productVisible')}
+                </span>
+              </span>
+              <span className="flex shrink-0 gap-1.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={product.isDeactivated ? 'secondary' : 'destructive-secondary'}
+                  onClick={() =>
+                    onModerate({
+                      kind: 'product',
+                      productId: product.id,
+                      title: product.title,
+                      active: product.isDeactivated,
+                    })
+                  }
+                >
+                  {t(product.isDeactivated ? 'admin.users.productActivate' : 'admin.users.productDeactivate')}
+                </Button>
+                <IconAction
+                  icon={Trash2}
+                  label={t('admin.users.productDelete')}
+                  tone="danger"
+                  onPress={() => onModerate({ kind: 'productDelete', productId: product.id, title: product.title })}
+                />
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
