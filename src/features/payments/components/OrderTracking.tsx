@@ -323,15 +323,19 @@ function ShipDialog({ open, transactionId, onClose }: { open: boolean; transacti
   const ship = useShipOrderMutation()
   const [trackingNumber, setTrackingNumber] = useState('')
   const [carrier, setCarrier] = useState('')
+  const [attempted, setAttempted] = useState(false)
   const [openedFor, setOpenedFor] = useState(open)
   if (open !== openedFor) {
     setOpenedFor(open)
     if (open) {
       setTrackingNumber('')
       setCarrier('')
+      setAttempted(false)
       ship.reset()
     }
   }
+  // El backend lo deja vacío, pero sin guía quien compró no puede seguir el paquete.
+  const missingTracking = trackingNumber.trim() === ''
 
   return (
     <ActionDialog
@@ -342,12 +346,14 @@ function ShipDialog({ open, transactionId, onClose }: { open: boolean; transacti
       isPending={ship.isPending}
       errorKey={ship.isError ? actionErrorKey(ship.error) : null}
       onClose={onClose}
-      onConfirm={() =>
+      onConfirm={() => {
+        setAttempted(true)
+        if (missingTracking) return
         ship.mutate(
-          { transactionId, trackingNumber: trackingNumber.trim() || null, carrier: carrier.trim() || null },
+          { transactionId, trackingNumber: trackingNumber.trim(), carrier: carrier.trim() || null },
           { onSuccess: onClose },
         )
-      }
+      }}
     >
       <Field label={t('order.ship.carrier')}>
         {(id) => (
@@ -361,14 +367,18 @@ function ShipDialog({ open, transactionId, onClose }: { open: boolean; transacti
           />
         )}
       </Field>
-      <Field label={t('order.ship.trackingNumber')}>
+      <Field
+        label={t('order.ship.trackingNumber')}
+        error={attempted && missingTracking ? t('order.ship.trackingRequired') : undefined}
+      >
         {(id) => (
           <input
             id={id}
             value={trackingNumber}
             maxLength={TRACKING_MAX}
             onChange={(event) => setTrackingNumber(event.target.value)}
-            className={inputClass}
+            aria-invalid={attempted && missingTracking}
+            className={cx(inputClass, attempted && missingTracking && 'border-red-400')}
           />
         )}
       </Field>

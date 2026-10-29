@@ -150,21 +150,20 @@ export function getNotificationContent(notification: AppNotification, t: Transla
       }
     }
     case 'purchase_completed': {
-      const { productId, productTitle, amount, currency, sellerName } = notification.data
+      const { transactionId, productTitle, amount, currency, sellerName } = notification.data
       return {
         text: t('notifications.purchaseCompleted', { product: productTitle, seller: sellerName, amount: price(amount, currency) }),
         icon: ShoppingBag,
-        // Todavía no hay pantalla de recibo (GET /payments/:transactionId): se abre el producto.
-        target: { kind: 'product', productId },
+        target: { kind: 'receipt', transactionId },
       }
     }
     case 'sale_completed': {
-      const { productId, productTitle, amount, currency, buyerUsername } = notification.data
+      const { transactionId, productTitle, amount, currency, buyerUsername } = notification.data
       return {
         text: t('notifications.saleCompleted', { product: productTitle, buyer: buyerUsername, amount: price(amount, currency) }),
         icon: Receipt,
-        // Sin recibo ni historial de ventas en el frontend todavía: se abre el producto.
-        target: { kind: 'product', productId },
+        // La venta: el recibo es el mismo para las dos partes y al vendedor le muestra la dirección y "Marcar enviado".
+        target: { kind: 'receipt', transactionId },
       }
     }
     case 'order_shipped':
