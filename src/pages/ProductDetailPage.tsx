@@ -41,6 +41,7 @@ import { cx } from '@/utils/cx'
 import { readRecentProductIds, rememberRecentProduct } from '@/utils/recentProducts'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { PAGE_CONTAINER } from '@/components/layout/pageContainer'
+import { Button } from '@/components/ui/Button'
 
 const CONDITION_LABEL: Record<ProductCondition, TranslationKey> = {
   new: 'products.condition.new',
@@ -344,6 +345,7 @@ function Chip({ children }: { children: React.ReactNode }) {
 function Detail({
   product,
   contact,
+  purchase,
   fitsContainer,
   isOwnProduct,
   canModerateCommunity,
@@ -462,6 +464,11 @@ function Detail({
         )}
 
         <div className="flex flex-wrap items-start gap-3">
+          {purchase.canBuy && (
+            <Button type="button" size="lg" onClick={purchase.onBuy}>
+              {t('checkout.buy')}
+            </Button>
+          )}
           {contact.canContact && (
             <button
               type="button"

@@ -160,7 +160,16 @@ function BentoTile({ post, size, index }: { post: FeedPost; size: TileSize; inde
 function AuthorAvatar({ post, index }: { post: FeedPost; index: number }) {
   const name = post.author?.displayName ?? '?'
   if (post.author?.photoUrl) {
-    return <img src={post.author.photoUrl} alt="" loading="lazy" className="size-8 shrink-0 rounded-full object-cover" />
+    return (
+      <img
+        src={post.author.photoUrl}
+        alt=""
+        loading="lazy"
+        // Ver ForumAuthorLine: sin esto las fotos de Google dan 429.
+        referrerPolicy="no-referrer"
+        className="size-8 shrink-0 rounded-full object-cover"
+      />
+    )
   }
   return (
     <span

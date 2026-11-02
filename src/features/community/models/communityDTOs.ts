@@ -67,14 +67,23 @@ export interface CommunityRuleItem {
   description: string
 }
 
-export interface ForumPostAuthor {
+/**
+ * Autor tal como viene DENTRO del detalle de la comunidad: ahi el backend no
+ * manda la foto (ver `findCommunityDetail`). El del foro, que si la trae, es
+ * `ForumAuthor` en forumDTOs.
+ */
+export interface CommunityDetailPostAuthor {
   communityProfileId: number
   displayName: string
   role: string
 }
 
-/** Post del foro que viene dentro del detalle de la comunidad. */
-export interface ForumPost {
+/**
+ * Post recortado que acompana al detalle de la comunidad: solo lo basico y los
+ * contadores. No es el mismo que el `ForumPost` de forumDTOs, que es el que
+ * devuelven los endpoints del foro y trae etiquetas, imagenes y respuestas.
+ */
+export interface CommunityDetailPost {
   id: number
   title: string
   body: string
@@ -82,7 +91,7 @@ export interface ForumPost {
   upVotes: number
   downVotes: number
   timesSaved: number
-  author: ForumPostAuthor | null
+  author: CommunityDetailPostAuthor | null
 }
 
 export interface CommunityDetail {
@@ -108,7 +117,7 @@ export interface CommunityDetail {
    * uno se une directo y no se crean solicitudes.
    */
   joinRequestStatus: 'pending' | 'accepted' | 'rejected' | null
-  forumPosts: ForumPost[]
+  forumPosts: CommunityDetailPost[]
 }
 
 export interface RecommendedCommunityListItem extends CommunityListItem {
@@ -151,7 +160,7 @@ export interface CommunityJoinRequest {
 
 export type PostVote = 'UP' | 'DOWN'
 
-export interface FeedPostAuthor extends ForumPostAuthor {
+export interface FeedPostAuthor extends CommunityDetailPostAuthor {
   photoUrl: string | null
 }
 
