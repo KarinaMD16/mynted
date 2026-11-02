@@ -23,7 +23,14 @@ export function FavoritePostCard({ post }: { post: FeedPost }) {
       )}
       <header className="pointer-events-none flex items-center gap-2.5">
         {post.author?.photoUrl ? (
-          <img src={post.author.photoUrl} alt="" loading="lazy" className="size-8 shrink-0 rounded-full object-cover" />
+          <img
+            src={post.author.photoUrl}
+            alt=""
+            loading="lazy"
+            // Ver ForumAuthorLine: sin esto las fotos de Google dan 429.
+            referrerPolicy="no-referrer"
+            className="size-8 shrink-0 rounded-full object-cover"
+          />
         ) : (
           <span
             aria-hidden="true"

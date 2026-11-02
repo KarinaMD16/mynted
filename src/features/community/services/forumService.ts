@@ -2,7 +2,6 @@ import myntedAPI from '@/api/apiConfig'
 import type {
   FeedPageQuery,
   FeedPost,
-  ForumPost,
   MyContentEntry,
   MyContentProduct,
   MyForumPostsQuery,
@@ -13,6 +12,7 @@ import type {
   ExplorePostsPage,
   FeedSort,
   ForumFavoriteResult,
+  ForumPost,
   ForumPostsPage,
   ForumPostsQuery,
   ForumReply,

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { CommunityListItem, ForumPost } from "../models/communityDTOs";
+import type { CommunityListItem } from "../models/communityDTOs";
 
 export interface CreateCommunityOwnerOption {
     id: string;
@@ -40,11 +40,6 @@ export interface TagPickerProps {
     selected: number[];
     onChange: (tagIds: number[]) => void;
     error?: string;
-}
-
-export interface ForumPostCardProps {
-  post: ForumPost
-  index: number
 }
 
 export interface MyCommunityCardProps {
