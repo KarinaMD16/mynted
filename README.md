@@ -1,70 +1,82 @@
-# MYNTED
+# Mynted · Frontend
 
-**MYNTED** es una plataforma para coleccionistas de nicho. Conecta personas que siguen una misma franquicia (anime, cómics, juguetes, cartas, videojuegos, etc.) para que puedan intercambiar y vender objetos de colección, conversar en foros dedicados y organizar encuentros o actividades cerca de ellos, todo dentro de comunidades verificadas y exclusivas por franquicia.
+Aplicación web de **Mynted**: marketplace y foro para coleccionistas de nicho, con comunidades por franquicia, chat 1 a 1 con vendedores, compras con pasarela simulada, insignias y Mynted Pro. Proyecto final del curso EIF-409 Aplicaciones Informáticas Globales (UNA, II ciclo 2026).
 
-## El problema
+Backend: <https://github.com/KarinaMD16/mynted-backend>
 
-Conseguir figuras u objetos de colección de nicho suele ser difícil: el mercado es reducido, disperso y muchas veces poco confiable. Además, encontrar gente con quien hablar de esos mismos gustos —y que entienda los estándares de calidad que le importan a un coleccionista— no es sencillo en redes sociales generalistas.
+## Qué incluye
 
-## La solución
+- Comunidades públicas y privadas, foro con respuestas anidadas, votos y favoritos
+- Marketplace con filtros, reseñas y reputación del vendedor
+- Chat en tiempo real y notificaciones
+- Checkout con pasarela simulada, seguimiento del pedido y reclamos
+- Mynted Pro, insignias, panel de moderación y panel de administración
+- Interfaz en 6 idiomas (español, inglés, alemán, francés, portugués y coreano) y precios en 16 monedas
 
-Un sistema de registro para coleccionistas donde cada usuario puede seguir o unirse a comunidades dedicadas a una franquicia específica. Dentro de cada comunidad es posible:
+## Tecnologías
 
-- Publicar objetos para venderlos o intercambiarlos (marketplace).
-- Participar en un foro de conversación propio de esa franquicia.
-- Proponer o descubrir eventos y actividades cerca del usuario.
-- Contactar directamente a un vendedor mediante chat 1 a 1 vinculado al producto.
+React 19 · Vite · TypeScript · TanStack Router y Query · Tailwind CSS · React Aria Components · Zod · Socket.IO (cliente)
 
-## Modelo de negocio
+## Requisitos
 
-- Comisión por venta realizada dentro del marketplace.
-- Publicidad de vendedores para posicionamiento dentro de la app.
+- Node.js 20 o superior y npm
+- El [backend](https://github.com/KarinaMD16/mynted-backend) corriendo en `http://localhost:3000`
 
-## Módulos principales
-
-| Módulo | Descripción |
-|---|---|
-| **Gestión de usuarios** | Registro, login (incluye social login), perfiles por comunidad, activación de rol vendedor, moderadores por comunidad. |
-| **Comunidades** | Creación y administración de comunidades por franquicia, membresía, reglas, moderación, recomendaciones. |
-| **Marketplace** | Publicación de productos (venta/intercambio), búsqueda y filtros, favoritos, chat con vendedor, reportes, transacciones simuladas. |
-| **Foro** | Publicaciones e hilos por comunidad, comentarios anidados, votos, notificaciones, moderación. |
-
-Reglas de negocio clave: un usuario puede tener varios perfiles (uno por comunidad); los roles de vendedor y moderador se otorgan a nivel de perfil, no de forma global; cada producto requiere exactamente 3 tags y cada comunidad entre 1 y 3 tags más una categoría.
-
-## Stack técnico
-
-> Completa esta sección con las tecnologías definitivas del proyecto.
-
-- **Frontend:** React
-- **Backend:** NestJS
-- **Base de datos:** PostgreSQL
-
-## Estructura del repositorio
-
-```
-mynted/
-├── src/            # código fuente de la app React
-├── public/
-├── package.json
-└── README.md
-```
-
-## Cómo correr el proyecto
+## Instalación y ejecución
 
 ```bash
-# Instalar dependencias
+# 1. Instalar dependencias
 npm install
 
-# Levantar el ambiente de desarrollo
-npm start        # Create React App
-# o
-npm run dev       # Vite
+# 2. Configurar las variables de entorno
+cp .env.example .env        # en Windows: copy .env.example .env
+
+# 3. Levantar el servidor de desarrollo
+npm run dev
 ```
 
-## Roadmap
+La app queda en **http://localhost:5173**. Ese puerto debe mantenerse, porque el backend solo permite CORS desde esa dirección.
 
-El desarrollo está organizado en sprints semanales (Semana 6 a Semana 16) siguiendo el backlog en Jira, cubriendo primero el backend y frontend de Gestión de Usuarios, luego Comunidades, y finalmente Marketplace y Foro en paralelo. Ver el backlog completo del proyecto para el detalle historia por historia.
+### Variables de entorno
+
+| Variable | Descripción |
+|---|---|
+| `VITE_API_URL` | URL del backend. Por defecto `http://localhost:3000` |
+| `VITE_GOOGLE_CLIENT_ID` | Opcional. Debe ser el mismo `GOOGLE_CLIENT_ID` del backend. Vacío desactiva el botón de Google |
+| `VITE_FACEBOOK_APP_ID` | Opcional. Debe ser el mismo `FACEBOOK_APP_ID` del backend. Vacío desactiva el botón de Facebook |
+
+## Probar la aplicación
+
+1. Levanta primero el backend y carga los datos de ejemplo (ver el README del backend, sección *Datos de ejemplo*).
+2. Abre <http://localhost:5173>.
+3. Inicia sesión con un usuario sembrado, por ejemplo `twilightbuns` (vendedor) o `lunadreamer`, con contraseña `Test1234`; o crea una cuenta nueva.
+4. Pago simulado: usa la tarjeta `4242 4242 4242 4242` (cualquier vencimiento futuro y CVV).
+
+El recorrido completo, con capturas de cada rol, está en el **Manual de usuario**: [`manual/Manual-de-usuario-Mynted.pdf`](manual/Manual-de-usuario-Mynted.pdf).
+
+## Scripts
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo con recarga |
+| `npm run build` | Compila TypeScript y genera la versión de producción en `dist/` |
+| `npm run preview` | Sirve la versión compilada localmente |
+| `npm run lint` | Revisa el código con ESLint |
+
+## Estructura
+
+```
+src/
+  features/     Módulos por área: auth, community, products, chat, payments,
+                notifications, profile, settings, admin, pro, badges, search...
+  components/   Componentes reutilizables y layout
+  i18n/         Traducciones (es, en, de, fr, pt, ko)
+  api/          Cliente HTTP
+  router.tsx    Rutas de la aplicación
+manual/         Manual de usuario (PDF y scripts con los que se generó)
+docs/           Notas técnicas del frontend
+```
 
 ## Autoría
 
-Proyecto desarrollado por Karina Moreno, Elein Rodriguez, Orlando Baltodano, Axel Badilla — 2026.
+Karina Moreno, Elein Rodríguez, Orlando Baltodano y Axel Badilla, 2026.
