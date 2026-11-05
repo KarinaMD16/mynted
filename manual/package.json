@@ -1,0 +1,12 @@
+{
+  "name": "mynted-manual",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capturas": "node scripts/capturas.mjs",
+    "pdf": "node scripts/pdf.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1"
+  }
+}

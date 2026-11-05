@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Manual de usuario · Mynted</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root { --orange: #ff8a4c; --blue: #2f5bff; --ink: #1d1d1f; --gray: #5f6368; --line: #e6e2dc; --bg: #faf8f5; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #ccc; }
+  img { image-rendering: auto; }
+  body { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.45; }
+  .page { width: 210mm; height: 297mm; padding: 16mm 18mm 18mm; margin: 0 auto 6mm; background: #fff; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+  @media print { html, body { background: #fff; } .page { margin: 0; } }
+  footer { position: absolute; left: 18mm; right: 18mm; bottom: 9mm; display: flex; justify-content: space-between; font-size: 8.5pt; color: var(--gray); border-top: 1px solid var(--line); padding-top: 2.5mm; }
+  b { font-weight: 650; }
+  .eyebrow { margin: 0; font-size: 9pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange); }
+  .page-title { font-size: 22pt; margin: 0 0 6mm; }
+  h3 { font-size: 13pt; margin: 7mm 0 3mm; }
+  .lead { margin: 0 0 3.5mm; font-size: 11pt; }
+
+  /* portada */
+  .cover { padding: 0; display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--bg); }
+  .cover-band { position: absolute; inset: 0 0 auto 0; height: 70mm; background: linear-gradient(120deg, var(--blue), #6b8bff); }
+  .cover-logo { position: relative; width: 70mm; margin-top: 40mm; padding: 6mm 9mm; background: #fff; border-radius: 8mm; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .cover .eyebrow { margin-top: 10mm; }
+  .cover h1 { font-size: 38pt; margin: 3mm 0 1mm; }
+  .cover-sub { font-size: 14pt; color: var(--gray); margin: 0 0 10mm; }
+  .cover-shot { width: 150mm; border-radius: 4mm; border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.12); }
+  .cover-authors { margin: 12mm 20mm 1mm; font-size: 10.5pt; }
+  .cover-date { margin: 0; color: var(--gray); font-size: 10pt; }
+
+  /* intro */
+  .roles { width: 100%; border-collapse: collapse; }
+  .roles th, .roles td { text-align: left; vertical-align: top; padding: 2.5mm 3mm; border-bottom: 1px solid var(--line); }
+  .roles th { width: 38mm; color: var(--blue); }
+  .note { margin-top: 6mm; padding: 4mm 5mm; border-radius: 3mm; background: #fff4df; border: 1px solid #f6d38f; }
+  .howto { padding-left: 5mm; margin: 0; } .howto li { margin-bottom: 2mm; }
+
+  /* índice */
+  .toc { list-style: none; padding: 0; margin: 0; font-size: 12pt; }
+  .toc a { display: flex; align-items: baseline; gap: 2mm; color: inherit; text-decoration: none; padding: 2.4mm 0; }
+  .toc em { font-style: normal; color: var(--orange); font-weight: 700; display: inline-block; width: 8mm; }
+  .toc i { flex: 1; border-bottom: 1.5px dotted #bbb; transform: translateY(-1mm); }
+  .toc b { min-width: 8mm; text-align: right; }
+
+  /* secciones */
+  .sec-head { border-left: 4px solid var(--orange); padding: 1mm 0 1mm 5mm; margin-bottom: 6mm; }
+  .sec-head h2 { font-size: 21pt; margin: 1mm 0 2mm; }
+  .who { margin: 0 0 2mm; display: inline-block; background: #eef2ff; color: #2338a8; border-radius: 99px; padding: 1mm 4mm; font-size: 9.5pt; }
+  .sec-intro { margin: 0; color: var(--gray); font-size: 11pt; }
+  .running { margin: 0 0 5mm; font-size: 9.5pt; font-weight: 700; color: var(--gray); }
+  .running span { font-weight: 400; }
+  .step { margin-bottom: 7mm; break-inside: avoid; }
+  .step-text { display: flex; gap: 3mm; align-items: flex-start; margin-bottom: 2.5mm; }
+  .step-text p { margin: 0; font-size: 10.5pt; }
+  .badge { flex: none; width: 7mm; height: 7mm; border-radius: 50%; background: var(--orange); color: #fff; font-weight: 700; font-size: 9.5pt; display: grid; place-items: center; }
+  .step img { display: block; width: 160mm; margin-left: 10mm; border: 1px solid var(--line); border-radius: 2mm; }
+
+  /* faq */
+  .faq { margin: 0; }
+  .faq dt { font-weight: 700; font-size: 11pt; margin-top: 5mm; color: var(--blue); }
+  .faq dd { margin: 1.5mm 0 0; }
+</style></head>
+<body>
+<section class="page cover">
+      <div class="cover-band"></div>
+      <img class="cover-logo" src="assets/logo-mynted.png" alt="Mynted">
+      <p class="eyebrow">Aplicaciones Globales · II ciclo 2026</p>
+      <h1>Manual de usuario</h1>
+      <p class="cover-sub">Mynted · marketplace y foro para coleccionistas</p>
+      <img class="cover-shot" src=".auth/jpg/01-05-landing.jpg" alt="Página de presentación de Mynted">
+      <p class="cover-authors">Karina Moreno, Elein Rodríguez, Orlando Baltodano, Axel Badilla</p>
+      <p class="cover-date">Noviembre de 2026</p>
+    </section>
+<section class="page" id="intro">
+      <h2 class="page-title">Antes de empezar</h2>
+      <p class="lead">Mynted es un sitio web para coleccionistas. En él puedes comprar, vender e intercambiar objetos de colección, conversar en foros organizados por comunidades (por ejemplo, una franquicia o un tipo de colección) y hablar directamente con quien vende.</p><p class="lead">Este manual explica, paso a paso y con imágenes, cómo usar cada parte de Mynted. Cada imagen es una captura real de la aplicación. Cuando ves un <b>recuadro rojo</b>, ese es el botón o la zona que tienes que usar en ese paso.</p><p class="lead">Solo necesitas un navegador web (Chrome, Edge, Firefox o Safari) y conexión a internet. No hace falta instalar nada.</p>
+      <h3>Tipos de cuenta</h3>
+      <table class="roles"><tr><th>Coleccionista</th><td>Cualquier persona con cuenta. Puede explorar, guardar favoritos, unirse a comunidades, publicar en los foros, chatear con vendedores y comprar.</td></tr><tr><th>Vendedor</th><td>Coleccionista cuya solicitud de vendedor fue aprobada. Además puede publicar productos, ver sus ventas y gestionar los envíos.</td></tr><tr><th>Moderador</th><td>Persona encargada de cuidar una comunidad concreta: revisa reportes, acepta solicitudes de ingreso y administra miembros y reglas.</td></tr><tr><th>Superadministrador</th><td>Equipo de Mynted. Administra toda la plataforma desde el panel de administración.</td></tr></table>
+      <div class="note">Los pagos de Mynted son <b>simulados</b>: no se cobra dinero real. Para probar se usan las tarjetas de prueba que muestra la propia pantalla de pago.</div>
+      <h3>Cómo leer cada sección</h3>
+      <ul class="howto">
+        <li>Cada sección corresponde a una tarea (por ejemplo, «Comprar» o «Publicar un producto») e indica <b>quién</b> puede hacerla.</li>
+        <li>Los pasos están numerados y van en orden. Debajo de cada paso está la captura de esa pantalla.</li>
+        <li>El <b>recuadro rojo</b> marca el botón o la zona que se usa en ese paso.</li>
+      </ul>
+      <footer><span>Mynted · Manual de usuario</span><span>2 / 81</span></footer>
+    </section>
+<section class="page">
+      <h2 class="page-title">Índice</h2>
+      <ol class="toc">
+        <li><a href="#intro"><span>Antes de empezar</span><i></i><b>2</b></a></li>
+        <li><a href="#s1"><span><em>1.</em> Primeros pasos</span><i></i><b>4</b></a></li><li><a href="#s2"><span><em>2.</em> Crear una cuenta</span><i></i><b>7</b></a></li><li><a href="#s3"><span><em>3.</em> Iniciar y cerrar sesión</span><i></i><b>11</b></a></li><li><a href="#s4"><span><em>4.</em> Moverte por Mynted</span><i></i><b>14</b></a></li><li><a href="#s5"><span><em>5.</em> Tu perfil</span><i></i><b>18</b></a></li><li><a href="#s6"><span><em>6.</em> Comunidades</span><i></i><b>22</b></a></li><li><a href="#s7"><span><em>7.</em> El foro (Talk)</span><i></i><b>27</b></a></li><li><a href="#s8"><span><em>8.</em> Buscar productos (Marketplace)</span><i></i><b>32</b></a></li><li><a href="#s9"><span><em>9.</em> Vender: publicar un producto</span><i></i><b>36</b></a></li><li><a href="#s10"><span><em>10.</em> Chat con el vendedor</span><i></i><b>41</b></a></li><li><a href="#s11"><span><em>11.</em> Comprar con la pasarela de pago simulada</span><i></i><b>45</b></a></li><li><a href="#s12"><span><em>12.</em> Seguimiento del pedido</span><i></i><b>49</b></a></li><li><a href="#s13"><span><em>13.</em> Reseñas de productos</span><i></i><b>54</b></a></li><li><a href="#s14"><span><em>14.</em> Reportes y moderación de comunidades</span><i></i><b>56</b></a></li><li><a href="#s15"><span><em>15.</em> Panel de administración</span><i></i><b>62</b></a></li><li><a href="#s16"><span><em>16.</em> Mynted Pro</span><i></i><b>70</b></a></li><li><a href="#s17"><span><em>17.</em> Configuración, idioma y moneda</span><i></i><b>75</b></a></li>
+        <li><a href="#faq"><span>Preguntas frecuentes</span><i></i><b>80</b></a></li>
+      </ol>
+      <footer><span>Mynted · Manual de usuario</span><span>3 / 81</span></footer>
+    </section>
+<section class="page"><header class="sec-head" id="s1">
+          <p class="eyebrow">Sección 1</p>
+          <h2>Primeros pasos</h2>
+          <p class="who"><b>Quién:</b> Cualquier visitante, con o sin cuenta</p>
+          <p class="sec-intro">Al entrar por primera vez, Mynted te pide elegir qué cookies aceptas. Después ya puedes recorrer la página de inicio.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>La primera vez que abres Mynted aparece el aviso de cookies. Pulsa <b>Aceptar todas</b> o, si prefieres elegir, <b>Gestionar cookies</b>.</p></div>
+          <img src=".auth/jpg/01-01-aviso-cookies.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>4 / 81</span></footer></section>
+<section class="page"><p class="running">1. Primeros pasos <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>En «Gestionar cookies» ves dos tipos: las <b>Necesarias</b> (siempre activas) y las de <b>Marketing</b> (opcionales). Elige y pulsa <b>Guardar preferencias</b>.</p></div>
+          <img src=".auth/jpg/01-02-gestionar-cookies.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Esta es la página de inicio. Arriba está la barra principal: Inicio, Explorar, Comunidades, Favoritos y Mensajes, el buscador, el idioma y el botón <b>Iniciar sesión</b>.</p></div>
+          <img src=".auth/jpg/01-03-inicio-sin-sesion.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>5 / 81</span></footer></section>
+<section class="page"><p class="running">1. Primeros pasos <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Más abajo verás los productos destacados de la tienda, agrupados por etiqueta (por ejemplo #Coleccionismo o #Pokémon). Pulsa «Ver todo» para ver todos los de esa etiqueta.</p></div>
+          <img src=".auth/jpg/01-04-inicio-destacados.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>En la dirección <b>/mynted</b> hay una página de presentación de Mynted, pensada para compartir. Desde ahí puedes ir a los productos destacados o crear una cuenta gratis.</p></div>
+          <img src=".auth/jpg/01-05-landing.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>6 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s2">
+          <p class="eyebrow">Sección 2</p>
+          <h2>Crear una cuenta</h2>
+          <p class="who"><b>Quién:</b> Personas que todavía no tienen cuenta</p>
+          <p class="sec-intro">Crear una cuenta tiene tres pasos: tus datos, tus intereses y algunas comunidades para empezar.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Pulsa <b>Iniciar sesión</b> en la barra superior. En la tarjeta que aparece, pulsa <b>¿No tienes una cuenta? Crea una</b>.</p></div>
+          <img src=".auth/jpg/02-01-pantalla-login.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>7 / 81</span></footer></section>
+<section class="page"><p class="running">2. Crear una cuenta <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Escribe tu correo, un nombre de usuario (de 3 a 20 caracteres: letras, números o guion bajo) y una contraseña de al menos 8 caracteres con mayúscula, minúscula y un número o símbolo. Pulsa <b>Registrarse</b>.</p></div>
+          <img src=".auth/jpg/02-02-formulario-registro.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p><b>Paso 2 de 3:</b> elige tus intereses. Mynted los usa para recomendarte comunidades y productos.</p></div>
+          <img src=".auth/jpg/02-03-paso-intereses.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>8 / 81</span></footer></section>
+<section class="page"><p class="running">2. Crear una cuenta <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Marca al menos <b>3 intereses</b>, acepta la Política de Privacidad y pulsa <b>Continuar</b>. También puedes pulsar «Omitir por ahora».</p></div>
+          <img src=".auth/jpg/02-04-intereses-elegidos.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p><b>Paso 3 de 3:</b> Mynted te sugiere comunidades según tus intereses.</p></div>
+          <img src=".auth/jpg/02-05-paso-comunidades.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>9 / 81</span></footer></section>
+<section class="page"><p class="running">2. Crear una cuenta <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Toca las comunidades a las que quieres unirte (se marcan en amarillo) y pulsa <b>Continuar</b>.</p></div>
+          <img src=".auth/jpg/02-06-comunidades-elegidas.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>¡Listo! Ya tienes sesión iniciada: arriba a la derecha aparece tu nombre de usuario.</p></div>
+          <img src=".auth/jpg/02-07-inicio-con-sesion.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>10 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s3">
+          <p class="eyebrow">Sección 3</p>
+          <h2>Iniciar y cerrar sesión</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">Puedes entrar con tu nombre de usuario o con tu correo. Si olvidaste la contraseña, Mynted te envía un enlace para crear una nueva.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Escribe tu usuario o correo y tu contraseña, y pulsa <b>Iniciar sesión</b>.</p></div>
+          <img src=".auth/jpg/03-01-login-completo.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>11 / 81</span></footer></section>
+<section class="page"><p class="running">3. Iniciar y cerrar sesión <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Si algún dato está mal, aparece un aviso en rojo. Revisa lo que escribiste e inténtalo de nuevo.</p></div>
+          <img src=".auth/jpg/03-02-login-error.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Si no recuerdas la contraseña, pulsa <b>¿Olvidaste tu contraseña?</b>, escribe tu correo y pulsa <b>Enviar enlace de recuperación</b>.</p></div>
+          <img src=".auth/jpg/03-03-olvide-contrasena.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>12 / 81</span></footer></section>
+<section class="page"><p class="running">3. Iniciar y cerrar sesión <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Revisa tu correo: si existe una cuenta con esa dirección, recibirás un enlace para elegir una contraseña nueva. El enlace vence en 1 hora.</p></div>
+          <img src=".auth/jpg/03-04-revisa-tu-correo.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Para salir, pulsa tu nombre de usuario (arriba a la derecha) y elige <b>Cerrar sesión</b>.</p></div>
+          <img src=".auth/jpg/03-05-menu-cuenta.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>13 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s4">
+          <p class="eyebrow">Sección 4</p>
+          <h2>Moverte por Mynted</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">La barra superior está siempre visible y te lleva a todas las secciones.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Usa los botones de la barra: <b>Inicio</b>, <b>Explorar</b> (tienda y foro), <b>Comunidades</b>, <b>Favoritos</b> y <b>Mensajes</b>.</p></div>
+          <img src=".auth/jpg/04-01-barra-superior.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>14 / 81</span></footer></section>
+<section class="page"><p class="running">4. Moverte por Mynted <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>La <b>campana</b> muestra tus notificaciones: compras, ventas, respuestas en el foro, insignias y más. Puedes filtrar las no leídas o marcarlas todas como leídas.</p></div>
+          <img src=".auth/jpg/04-02-notificaciones.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Tu nombre de usuario abre el menú de la cuenta: <b>Mi perfil</b>, <b>Mynted Pro</b>, <b>Configuración</b> y <b>Cerrar sesión</b> (los vendedores también ven sus productos).</p></div>
+          <img src=".auth/jpg/04-03-menu-cuenta.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>15 / 81</span></footer></section>
+<section class="page"><p class="running">4. Moverte por Mynted <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Escribe en el <b>buscador</b>. Mientras escribes aparecen sugerencias; pulsa una para abrirla.</p></div>
+          <img src=".auth/jpg/04-04-busqueda-sugerencias.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Pulsa <b>Enter</b> para ver todos los resultados. Las pestañas separan Productos, Tiendas, Comunidades, Personas y Publicaciones.</p></div>
+          <img src=".auth/jpg/04-05-busqueda-resultados.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>16 / 81</span></footer></section>
+<section class="page"><p class="running">4. Moverte por Mynted <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>El botón azul redondo (abajo a la derecha) abre tus conversaciones recientes desde cualquier pantalla.</p></div>
+          <img src=".auth/jpg/04-06-boton-mensajes.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>17 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s5">
+          <p class="eyebrow">Sección 5</p>
+          <h2>Tu perfil</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">Tu perfil muestra tu actividad, tus insignias y tus intereses. También puedes ver el perfil y la tienda de otras personas.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Entra con tu nombre de usuario → <b>Mi perfil</b>. Arriba ves tu resumen; las pestañas muestran tus Publicaciones, Hilos, Compras y Favoritos.</p></div>
+          <img src=".auth/jpg/05-01-mi-perfil.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>18 / 81</span></footer></section>
+<section class="page"><p class="running">5. Tu perfil <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>En <b>Insignias</b> ves las que ganaste y las que te faltan (en gris). Toca una para saber cómo se consigue.</p></div>
+          <img src=".auth/jpg/05-02-insignias.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>La pestaña <b>Compras</b> muestra todo lo que compraste, con su estado.</p></div>
+          <img src=".auth/jpg/05-03-pestana-compras.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>19 / 81</span></footer></section>
+<section class="page"><p class="running">5. Tu perfil <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p><b>Editar perfil</b> te lleva a Configuración → Perfil, donde cambias tu foto y tu biografía. Pulsa <b>Guardar cambios</b> al terminar.</p></div>
+          <img src=".auth/jpg/05-04-editar-perfil.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Para vender, pulsa <b>Conviértete en vendedor</b> y completa los datos de tu tienda y cómo quieres recibir los pagos (cuenta bancaria o PayPal). Pulsa <b>Enviar solicitud</b>; el equipo de Mynted la revisará y te avisará.</p></div>
+          <img src=".auth/jpg/05-05-solicitud-vendedor.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>20 / 81</span></footer></section>
+<section class="page"><p class="running">5. Tu perfil <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>La <b>tienda</b> de un vendedor muestra sus ventas, productos activos, tiempo de respuesta y su catálogo, con filtros y orden por precio.</p></div>
+          <img src=".auth/jpg/05-06-tienda-vendedor.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>Desde la tienda, <b>Ver perfil del vendedor</b> abre su perfil público: biografía, insignias y publicaciones.</p></div>
+          <img src=".auth/jpg/05-07-perfil-publico.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>21 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s6">
+          <p class="eyebrow">Sección 6</p>
+          <h2>Comunidades</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">Las comunidades reúnen a coleccionistas con un mismo interés. Cada una tiene su foro y su tienda.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>En <b>Comunidades</b> ves «Mis comunidades» (a las que perteneces) y, más abajo, comunidades para explorar.</p></div>
+          <img src=".auth/jpg/06-01-comunidades.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>22 / 81</span></footer></section>
+<section class="page"><p class="running">6. Comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Pulsa <b>Ver todas</b> para ver la lista completa de comunidades disponibles.</p></div>
+          <img src=".auth/jpg/06-02-explorar-comunidades.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Al abrir una comunidad ves su portada, sus publicaciones y, a la derecha, su descripción y reglas. En una comunidad pública, pulsa <b>Unirse</b>.</p></div>
+          <img src=".auth/jpg/06-03-detalle-comunidad.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>23 / 81</span></footer></section>
+<section class="page"><p class="running">6. Comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>El botón cambia a <b>Miembro</b>: ya perteneces a la comunidad y puedes publicar.</p></div>
+          <img src=".auth/jpg/06-04-ya-eres-miembro.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Si quieres salir, pulsa <b>Miembro</b> y confirma con <b>Salir de la comunidad</b>. Puedes volver a unirte cuando quieras.</p></div>
+          <img src=".auth/jpg/06-05-salir-comunidad.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>24 / 81</span></footer></section>
+<section class="page"><p class="running">6. Comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>La pestaña <b>Tienda</b> muestra los productos publicados en esa comunidad.</p></div>
+          <img src=".auth/jpg/06-06-tienda-comunidad.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>En una comunidad <b>privada</b> no ves las publicaciones hasta ser miembro. Pulsa <b>Solicitar unirme</b>: un moderador debe aprobar tu solicitud.</p></div>
+          <img src=".auth/jpg/06-07-comunidad-privada.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>25 / 81</span></footer></section>
+<section class="page"><p class="running">6. Comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p>Para crear tu propia comunidad, pulsa <b>Crear comunidad</b>. Sube una portada e imagen, escribe el nombre, el identificador único y la descripción.</p></div>
+          <img src=".auth/jpg/06-08-crear-comunidad.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">9</span><p>Elige la categoría, de 1 a 3 etiquetas, si será <b>Pública</b> o <b>Privada</b>, y escribe sus reglas. La vista previa se actualiza mientras completas. Pulsa <b>Crear comunidad</b> para terminar.</p></div>
+          <img src=".auth/jpg/06-09-crear-comunidad-reglas.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>26 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s7">
+          <p class="eyebrow">Sección 7</p>
+          <h2>El foro (Talk)</h2>
+          <p class="who"><b>Quién:</b> Miembros de una comunidad</p>
+          <p class="sec-intro">En el foro compartes publicaciones, respondes a otras personas, votas y guardas lo que te interesa.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>En <b>Explorar → Foro</b> ves publicaciones de todas las comunidades. A la izquierda puedes buscar y filtrar por etiquetas.</p></div>
+          <img src=".auth/jpg/07-01-talk.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>27 / 81</span></footer></section>
+<section class="page"><p class="running">7. El foro (Talk) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Para publicar, entra a una comunidad de la que seas miembro y pulsa <b>Crear publicación</b>.</p></div>
+          <img src=".auth/jpg/07-02-foro-comunidad.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Escribe un título y el contenido, elige entre 1 y 3 etiquetas y, si quieres, agrega imágenes. Pulsa <b>Publicar</b>.</p></div>
+          <img src=".auth/jpg/07-03-nueva-publicacion.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>28 / 81</span></footer></section>
+<section class="page"><p class="running">7. El foro (Talk) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Tu publicación aparece de inmediato en el foro de la comunidad.</p></div>
+          <img src=".auth/jpg/07-04-publicacion-creada.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Pulsa el título de una publicación para verla completa con todas sus respuestas.</p></div>
+          <img src=".auth/jpg/07-05-detalle-publicacion.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>29 / 81</span></footer></section>
+<section class="page"><p class="running">7. El foro (Talk) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Escribe tu respuesta en el cuadro «Escribe una respuesta…».</p></div>
+          <img src=".auth/jpg/07-06-escribir-respuesta.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>Pulsa <b>Enviar</b>. Tu respuesta aparece debajo; también puedes responder a una respuesta concreta con <b>Responder</b>.</p></div>
+          <img src=".auth/jpg/07-07-respuesta-publicada.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>30 / 81</span></footer></section>
+<section class="page"><p class="running">7. El foro (Talk) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p>Usa las flechas para <b>votar a favor</b> o en contra, y el marcador para <b>guardar</b> la publicación en tus favoritos.</p></div>
+          <img src=".auth/jpg/07-08-votar-y-guardar.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>31 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s8">
+          <p class="eyebrow">Sección 8</p>
+          <h2>Buscar productos (Marketplace)</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">En la tienda encuentras objetos de colección para comprar o intercambiar.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Entra a <b>Explorar</b> (pestaña Tienda). A la izquierda tienes los filtros: categoría, tipo, condición y precio.</p></div>
+          <img src=".auth/jpg/08-01-explorar-tienda.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>32 / 81</span></footer></section>
+<section class="page"><p class="running">8. Buscar productos (Marketplace) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Toca las opciones para filtrar; por ejemplo, Tipo «Venta» y Condición «Como nuevo». La lista se actualiza sola. «Limpiar» quita los filtros.</p></div>
+          <img src=".auth/jpg/08-02-filtros-aplicados.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Desde el Inicio, «Ver todo» abre todos los productos de una etiqueta.</p></div>
+          <img src=".auth/jpg/08-03-ver-todo-etiqueta.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>33 / 81</span></footer></section>
+<section class="page"><p class="running">8. Buscar productos (Marketplace) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Al abrir un producto ves sus fotos, precio, condición, vendedor y descripción. Desde aquí puedes <b>Comprar</b> o <b>Contactar vendedor</b>.</p></div>
+          <img src=".auth/jpg/08-04-detalle-producto.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>El <b>corazón</b> guarda el producto en tus favoritos. La campana de al lado activa avisos si cambia el precio o la disponibilidad.</p></div>
+          <img src=".auth/jpg/08-05-agregar-favorito.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>34 / 81</span></footer></section>
+<section class="page"><p class="running">8. Buscar productos (Marketplace) <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Más abajo están las reseñas, otros productos del mismo vendedor y sugerencias relacionadas.</p></div>
+          <img src=".auth/jpg/08-06-detalle-mas-abajo.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>En <b>Favoritos</b> ves todo lo que guardaste: productos de la tienda y publicaciones del foro.</p></div>
+          <img src=".auth/jpg/08-07-mis-favoritos.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>35 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s9">
+          <p class="eyebrow">Sección 9</p>
+          <h2>Vender: publicar un producto</h2>
+          <p class="who"><b>Quién:</b> Vendedores aprobados</p>
+          <p class="sec-intro">Cuando tu solicitud de vendedor es aprobada, puedes publicar productos y administrarlos desde «Mis productos».</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>En el menú de tu cuenta, entra a <b>Mis productos</b>. Ves el total de productos por estado y el botón <b>Publicar producto</b>.</p></div>
+          <img src=".auth/jpg/09-01-mis-productos.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>36 / 81</span></footer></section>
+<section class="page"><p class="running">9. Vender: publicar un producto <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>En la misma pantalla ves <b>Tu comisión</b>: Mynted cobra un 5 % por venta, y el porcentaje baja según cuántas ventas tengas y el precio del artículo.</p></div>
+          <img src=".auth/jpg/09-02-comision.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Pulsa <b>Publicar producto</b> para abrir el formulario. A la izquierda subes imágenes; a la derecha completas los detalles.</p></div>
+          <img src=".auth/jpg/09-03-formulario-vacio.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>37 / 81</span></footer></section>
+<section class="page"><p class="running">9. Vender: publicar un producto <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Sube la imagen principal (hasta 5 MB), elige la comunidad, escribe el título, el tipo (Venta o Intercambio), el precio, las unidades y el estado del artículo.</p></div>
+          <img src=".auth/jpg/09-04-datos-basicos.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Elige <b>exactamente 3 etiquetas</b>, escribe la descripción y agrega los países a los que envías. La vista previa muestra cómo se verá tu tarjeta.</p></div>
+          <img src=".auth/jpg/09-05-etiquetas-y-envio.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>38 / 81</span></footer></section>
+<section class="page"><p class="running">9. Vender: publicar un producto <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Pulsa <b>Publicar</b>. Verás el mensaje «¡Tu producto ya está publicado!». También puedes «Guardar borrador» para publicarlo después.</p></div>
+          <img src=".auth/jpg/09-06-producto-publicado.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>El producto aparece en <b>Mis productos</b> con botones para Destacar (Pro), Editar, Pausar, Marcar vendido o Eliminar.</p></div>
+          <img src=".auth/jpg/09-07-producto-en-panel.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>39 / 81</span></footer></section>
+<section class="page"><p class="running">9. Vender: publicar un producto <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p><b>Editar</b> abre el mismo formulario con los datos cargados. Cambia lo que necesites y guarda los cambios.</p></div>
+          <img src=".auth/jpg/09-08-editar-producto.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>40 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s10">
+          <p class="eyebrow">Sección 10</p>
+          <h2>Chat con el vendedor</h2>
+          <p class="who"><b>Quién:</b> Compradores y vendedores</p>
+          <p class="sec-intro">Cada conversación está ligada a un producto, para que siempre sepas de qué se está hablando.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>En el detalle del producto, pulsa <b>Contactar vendedor</b>. Se abre el chat a la derecha, con la tarjeta del producto y preguntas rápidas.</p></div>
+          <img src=".auth/jpg/10-01-chat-abierto.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>41 / 81</span></footer></section>
+<section class="page"><p class="running">10. Chat con el vendedor <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Escribe tu mensaje (o toca una pregunta rápida). <b>Enter</b> envía; Mayús + Enter hace un salto de línea. El clip permite adjuntar una imagen.</p></div>
+          <img src=".auth/jpg/10-02-escribir-mensaje.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Tu mensaje queda en la conversación con la hora y su estado (Enviado o Visto).</p></div>
+          <img src=".auth/jpg/10-03-mensaje-enviado.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>42 / 81</span></footer></section>
+<section class="page"><p class="running">10. Chat con el vendedor <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Quien vende recibe el mensaje en <b>Mensajes</b>, con un contador de no leídos.</p></div>
+          <img src=".auth/jpg/10-04-bandeja-vendedor.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>El vendedor abre la conversación y responde desde el mismo cuadro de texto.</p></div>
+          <img src=".auth/jpg/10-05-respuesta-vendedor.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>43 / 81</span></footer></section>
+<section class="page"><p class="running">10. Chat con el vendedor <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Cuando el vendedor responde, al comprador le aparece la barra <b>«¿Ya se pusieron de acuerdo? Puedes comprarlo desde aquí»</b> con el botón <b>Comprar</b>.</p></div>
+          <img src=".auth/jpg/10-06-vendedor-respondio.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>44 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s11">
+          <p class="eyebrow">Sección 11</p>
+          <h2>Comprar con la pasarela de pago simulada</h2>
+          <p class="who"><b>Quién:</b> Compradores</p>
+          <p class="sec-intro">El pago es una simulación: no se cobra dinero real. Sirve para probar el proceso completo de compra.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Al pulsar <b>Comprar</b> se abre «Finalizar compra», con un resumen del producto, la cantidad y el total. El aviso amarillo recuerda que el pago es <b>simulado</b>: no se realizan cargos reales.</p></div>
+          <img src=".auth/jpg/11-01-checkout.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>45 / 81</span></footer></section>
+<section class="page"><p class="running">11. Comprar con la pasarela de pago simulada <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Completa la <b>dirección de envío</b>: quién recibe, teléfono, país, provincia, ciudad, dirección y código postal. Solo puedes elegir países a los que el vendedor envía.</p></div>
+          <img src=".auth/jpg/11-02-direccion-envio.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Pulsa <b>Ver tarjetas de prueba</b>. La tarjeta 4242 4242 4242 4242 aprueba el pago; las demás simulan rechazos (tarjeta rechazada, sin fondos o vencida).</p></div>
+          <img src=".auth/jpg/11-03-tarjetas-prueba.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>46 / 81</span></footer></section>
+<section class="page"><p class="running">11. Comprar con la pasarela de pago simulada <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Escribe el número de tarjeta, el vencimiento (MM/AA), el CVV y el nombre del titular. Pulsa <b>Pagar</b>.</p></div>
+          <img src=".auth/jpg/11-04-datos-tarjeta.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Verás <b>¡Compra realizada!</b> con el recibo: monto, fecha, tarjeta (solo los últimos 4 dígitos), referencia y el estado del pedido.</p></div>
+          <img src=".auth/jpg/11-05-compra-realizada.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>47 / 81</span></footer></section>
+<section class="page"><p class="running">11. Comprar con la pasarela de pago simulada <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Todas tus compras quedan en <b>Mis compras</b> (también en la pestaña Compras de tu perfil). Pulsa una para ver su recibo.</p></div>
+          <img src=".auth/jpg/11-06-mis-compras.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>48 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s12">
+          <p class="eyebrow">Sección 12</p>
+          <h2>Seguimiento del pedido</h2>
+          <p class="who"><b>Quién:</b> Vendedores y compradores</p>
+          <p class="sec-intro">Después del pago, el pedido pasa por tres estados: Pagado, Enviado y Entregado.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Quien vende entra a <b>Mis ventas</b> (desde Mis productos → Ver mis ventas). Ve cada venta con su comisión y el resumen bruto, comisiones y neto.</p></div>
+          <img src=".auth/jpg/12-01-mis-ventas.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>49 / 81</span></footer></section>
+<section class="page"><p class="running">12. Seguimiento del pedido <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Al abrir la venta aparece «¡Venta realizada!» con la dirección de envío y el detalle de la comisión. Pulsa <b>Marcar como enviado</b> (o «Cancelar pedido» si no puede enviarlo).</p></div>
+          <img src=".auth/jpg/12-02-venta-recibo.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Escribe la empresa de envío (opcional) y el <b>número de guía</b>, y confirma. Quien compró recibe un aviso.</p></div>
+          <img src=".auth/jpg/12-03-marcar-enviado.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>50 / 81</span></footer></section>
+<section class="page"><p class="running">12. Seguimiento del pedido <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>El pedido pasa a <b>Enviado</b> y muestra la empresa y el número de guía.</p></div>
+          <img src=".auth/jpg/12-04-pedido-enviado.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Quien compró ve el mismo estado en su recibo. Cuando le llegue el paquete, pulsa <b>Lo recibí</b>.</p></div>
+          <img src=".auth/jpg/12-05-comprador-ve-envio.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>51 / 81</span></footer></section>
+<section class="page"><p class="running">12. Seguimiento del pedido <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Confirma con <b>Lo recibí</b>.</p></div>
+          <img src=".auth/jpg/12-06-confirmar-recibido.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>El pedido queda <b>Entregado</b>. Si algo no está bien, puedes pulsar <b>Abrir un reclamo</b>.</p></div>
+          <img src=".auth/jpg/12-07-pedido-entregado.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>52 / 81</span></footer></section>
+<section class="page"><p class="running">12. Seguimiento del pedido <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p>Cuenta qué pasó y pulsa <b>Enviar reclamo</b>. Lo revisa el equipo de Mynted, que puede reembolsarte. Hay un solo reclamo por compra.</p></div>
+          <img src=".auth/jpg/12-08-abrir-reclamo.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>53 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s13">
+          <p class="eyebrow">Sección 13</p>
+          <h2>Reseñas de productos</h2>
+          <p class="who"><b>Quién:</b> Personas que compraron el producto</p>
+          <p class="sec-intro">Solo puedes reseñar un producto que compraste (no los de intercambio ni los tuyos), y una sola vez.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Entra al producto que compraste. En la sección <b>Reseñas</b> aparece el cuadro «Deja tu reseña».</p></div>
+          <img src=".auth/jpg/13-01-formulario-resena.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>54 / 81</span></footer></section>
+<section class="page"><p class="running">13. Reseñas de productos <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Elige de 1 a 5 estrellas, escribe un comentario (opcional) y pulsa <b>Publicar reseña</b>.</p></div>
+          <img src=".auth/jpg/13-02-resena-completa.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Tu reseña aparece en la lista con la marca «Tú». Puedes editarla o eliminarla cuando quieras.</p></div>
+          <img src=".auth/jpg/13-03-resena-publicada.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>55 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s14">
+          <p class="eyebrow">Sección 14</p>
+          <h2>Reportes y moderación de comunidades</h2>
+          <p class="who"><b>Quién:</b> Cualquier persona (reportar) · Moderadores y dueños de la comunidad (panel)</p>
+          <p class="sec-intro">Si ves contenido inapropiado puedes reportarlo. Los moderadores de la comunidad lo revisan desde su panel.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>En una publicación, pulsa los <b>tres puntos</b> (Más opciones) y elige <b>Reportar</b>.</p></div>
+          <img src=".auth/jpg/14-01-menu-reportar.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>56 / 81</span></footer></section>
+<section class="page"><p class="running">14. Reportes y moderación de comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Elige el motivo (spam, producto falso, lenguaje ofensivo, acoso, contenido inapropiado u otro), agrega detalles si quieres y pulsa <b>Enviar reporte</b>.</p></div>
+          <img src=".auth/jpg/14-02-dialogo-reporte.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Verás «Reporte enviado». El equipo de moderación lo revisará.</p></div>
+          <img src=".auth/jpg/14-03-reporte-enviado.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>57 / 81</span></footer></section>
+<section class="page"><p class="running">14. Reportes y moderación de comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Si eres moderador o dueño, en la comunidad aparece el botón <b>Gestionar</b>, que abre el panel de la comunidad.</p></div>
+          <img src=".auth/jpg/14-04-boton-gestionar.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>La sección <b>Reportes</b> muestra los reportes por estado (Pendiente, Resuelto, Descartado). Cada uno tiene los botones <b>Resolver</b> y <b>Descartar</b>.</p></div>
+          <img src=".auth/jpg/14-05-panel-reportes.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>58 / 81</span></footer></section>
+<section class="page"><p class="running">14. Reportes y moderación de comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Al resolver, eliges si ocultar el contenido, avisar a quien lo publicó, y puedes dejar una nota interna. Pulsa <b>Resolver</b>.</p></div>
+          <img src=".auth/jpg/14-06-resolver-reporte.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>En <b>Solicitudes</b> aceptas o rechazas a quienes pidieron entrar (solo en comunidades privadas).</p></div>
+          <img src=".auth/jpg/14-07-solicitudes.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>59 / 81</span></footer></section>
+<section class="page"><p class="running">14. Reportes y moderación de comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p>En <b>Miembros</b> ves quién está en la comunidad y su actividad. Según tu rol puedes nombrar moderadores, expulsar o bloquear miembros.</p></div>
+          <img src=".auth/jpg/14-08-miembros.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">9</span><p>En <b>Reglas</b> agregas, editas o eliminas las reglas. Los cambios se ven de inmediato en la comunidad.</p></div>
+          <img src=".auth/jpg/14-09-reglas.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>60 / 81</span></footer></section>
+<section class="page"><p class="running">14. Reportes y moderación de comunidades <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">10</span><p>En <b>Configuración</b> cambias la portada, el nombre, la descripción y la privacidad. Al final está la opción de desactivar la comunidad.</p></div>
+          <img src=".auth/jpg/14-10-configuracion.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>61 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s15">
+          <p class="eyebrow">Sección 15</p>
+          <h2>Panel de administración</h2>
+          <p class="who"><b>Quién:</b> Superadministradores</p>
+          <p class="sec-intro">El panel de administración permite gestionar toda la plataforma. Cada sección tiene dos vistas: Resumen y Gestionar.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Con una cuenta de superadministrador, abre el menú de tu cuenta y elige <b>Panel de administración</b>.</p></div>
+          <img src=".auth/jpg/15-01-entrar-panel.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>62 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>El menú de la izquierda lleva a cada sección. <b>Reportes</b> muestra las denuncias de toda la plataforma.</p></div>
+          <img src=".auth/jpg/15-02-reportes.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>La pestaña <b>Gestionar</b> muestra la tabla completa, con filtros por estado, tipo y comunidad, y un buscador.</p></div>
+          <img src=".auth/jpg/15-03-reportes-gestionar.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>63 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p><b>Usuarios → Resumen</b>: cuentas registradas, activas, desactivadas, nuevas y por rol.</p></div>
+          <img src=".auth/jpg/15-04-usuarios.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p><b>Usuarios → Gestionar</b>: la lista de cuentas con su rol, estado y fecha de registro.</p></div>
+          <img src=".auth/jpg/15-05-usuarios-gestionar.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>64 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Al revisar un usuario ves su perfil público y sus datos de cuenta, y puedes <b>desactivar</b> o <b>eliminar</b> la cuenta indicando un motivo.</p></div>
+          <img src=".auth/jpg/15-06-revision-usuario.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p><b>Vendedores</b>: los vendedores aprobados con sus productos, ventas y reportes. Se les puede quitar o devolver el rol.</p></div>
+          <img src=".auth/jpg/15-07-vendedores.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>65 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p><b>Solicitudes de vendedor</b>: las personas que pidieron vender, con su estado.</p></div>
+          <img src=".auth/jpg/15-08-solicitudes-vendedor.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">9</span><p><b>Ver solicitud</b> muestra los datos de la tienda y de pago para <b>aprobar</b> o <b>rechazar</b> la solicitud.</p></div>
+          <img src=".auth/jpg/15-09-detalle-solicitud.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>66 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">10</span><p><b>Comunidades</b>: cuántas hay, las más populares y por categoría. En Gestionar se pueden desactivar, reactivar o eliminar.</p></div>
+          <img src=".auth/jpg/15-10-comunidades.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">11</span><p><b>Categorías</b>: las franquicias o categorías en que se organizan las comunidades.</p></div>
+          <img src=".auth/jpg/15-11-categorias.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>67 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">12</span><p><b>Nueva categoría</b> abre un formulario para crearla; aparece enseguida al crear comunidades.</p></div>
+          <img src=".auth/jpg/15-12-nueva-categoria.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">13</span><p><b>Comisiones</b>: los rangos de comisión por número de ventas y por precio, con una vista previa de la tabla resultante.</p></div>
+          <img src=".auth/jpg/15-13-comisiones.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>68 / 81</span></footer></section>
+<section class="page"><p class="running">15. Panel de administración <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">14</span><p><b>Reclamos</b>: los reclamos de compras. En cada uno se decide <b>reembolsar</b> al comprador o <b>cerrar sin reembolso</b>, con una explicación.</p></div>
+          <img src=".auth/jpg/15-14-reclamos.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">15</span><p><b>Registro</b>: el historial de todo lo que hizo el equipo de moderación.</p></div>
+          <img src=".auth/jpg/15-15-registro.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>69 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s16">
+          <p class="eyebrow">Sección 16</p>
+          <h2>Mynted Pro</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">Mynted Pro es una suscripción opcional que agrega distintivo, cosméticos para el perfil y productos destacados. No se renueva sola.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p>Entra a <b>Mynted Pro</b> desde el menú de tu cuenta.</p></div>
+          <img src=".auth/jpg/16-01-pro-inicio.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>70 / 81</span></footer></section>
+<section class="page"><p class="running">16. Mynted Pro <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>Elige un plan: <b>Mensual</b>, <b>Semestral</b> o <b>Anual</b> (el más largo sale más barato). Pulsa <b>Hazte Pro</b>.</p></div>
+          <img src=".auth/jpg/16-02-planes.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>Se abre la pantalla de pago. A la derecha puedes cambiar el periodo y ver el total, que se cobra en dólares (USD).</p></div>
+          <img src=".auth/jpg/16-03-pago-pro.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>71 / 81</span></footer></section>
+<section class="page"><p class="running">16. Mynted Pro <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Completa los datos de la tarjeta (en el pago simulado, usa la tarjeta de prueba 4242 4242 4242 4242) y pulsa <b>Pagar</b>.</p></div>
+          <img src=".auth/jpg/16-04-pago-pro-completo.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Verás <b>¡Ya eres Pro!</b> con las fechas que cubre tu plan.</p></div>
+          <img src=".auth/jpg/16-05-ya-eres-pro.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>72 / 81</span></footer></section>
+<section class="page"><p class="running">16. Mynted Pro <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>En Configuración → <b>Apariencia</b> eliges banner, skin del ganso y marco de foto. Los marcados como Pro son exclusivos. Pulsa <b>Guardar cambios</b>.</p></div>
+          <img src=".auth/jpg/16-06-personalizar-perfil.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>En Configuración → <b>Suscripción</b> ves hasta cuándo eres Pro, tu historial de pagos y las opciones para extender o cancelar.</p></div>
+          <img src=".auth/jpg/16-07-suscripcion.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>73 / 81</span></footer></section>
+<section class="page"><p class="running">16. Mynted Pro <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p>Tu perfil muestra el distintivo <b>PRO</b> junto a tu nombre.</p></div>
+          <img src=".auth/jpg/16-08-perfil-pro.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>74 / 81</span></footer></section>
+<section class="page"><header class="sec-head" id="s17">
+          <p class="eyebrow">Sección 17</p>
+          <h2>Configuración, idioma y moneda</h2>
+          <p class="who"><b>Quién:</b> Personas con cuenta</p>
+          <p class="sec-intro">En Configuración (menú de tu cuenta) ajustas tu cuenta, tu perfil, la moneda de los precios, tu privacidad y tus notificaciones. El idioma se cambia desde la barra superior.</p>
+        </header><article class="step">
+          <div class="step-text"><span class="badge">1</span><p><b>Cuenta</b>: tu correo (con la opción «Cambiar correo») y tus datos personales: nombre de usuario y ubicación.</p></div>
+          <img src=".auth/jpg/17-01-cuenta.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>75 / 81</span></footer></section>
+<section class="page"><p class="running">17. Configuración, idioma y moneda <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">2</span><p>En la misma pestaña, <b>País de envío</b> indica a qué país recibes tus compras, para mostrarte qué productos te pueden enviar.</p></div>
+          <img src=".auth/jpg/17-02-pais-envio.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">3</span><p>En <b>Perfil → Moneda de los precios</b>, abre la lista «Ver precios en» y busca la moneda que prefieras.</p></div>
+          <img src=".auth/jpg/17-03-moneda-opciones.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>76 / 81</span></footer></section>
+<section class="page"><p class="running">17. Configuración, idioma y moneda <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">4</span><p>Elige la moneda y pulsa <b>Guardar cambios</b>. Es solo una referencia: cada compra se cobra en la moneda en que se publicó el producto.</p></div>
+          <img src=".auth/jpg/17-04-moneda-cambiada.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">5</span><p>Los precios de la tienda se muestran ahora en la moneda elegida.</p></div>
+          <img src=".auth/jpg/17-05-precios-en-nueva-moneda.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>77 / 81</span></footer></section>
+<section class="page"><p class="running">17. Configuración, idioma y moneda <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">6</span><p>Para cambiar el idioma, pulsa el botón del globo (ES) en la barra superior y elige entre Español, English, Deutsch, Français, Português o 한국어.</p></div>
+          <img src=".auth/jpg/17-06-idiomas.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">7</span><p>Toda la aplicación cambia al idioma elegido al instante. Si tienes sesión, Mynted lo recuerda en tu cuenta.</p></div>
+          <img src=".auth/jpg/17-07-app-en-ingles.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>78 / 81</span></footer></section>
+<section class="page"><p class="running">17. Configuración, idioma y moneda <span>(continuación)</span></p><article class="step">
+          <div class="step-text"><span class="badge">8</span><p><b>Privacidad</b>: cambiar la contraseña, elegir qué cookies aceptas y consultar las políticas que aceptaste.</p></div>
+          <img src=".auth/jpg/17-08-privacidad.jpg" alt="">
+        </article><article class="step">
+          <div class="step-text"><span class="badge">9</span><p><b>Notificaciones</b>: activa o desactiva los avisos por correo y las notificaciones push. Se guardan al instante.</p></div>
+          <img src=".auth/jpg/17-09-notificaciones.jpg" alt="">
+        </article><footer><span>Mynted · Manual de usuario</span><span>79 / 81</span></footer></section>
+<section class="page">
+      <h2 class="page-title" id="faq">Preguntas frecuentes</h2>
+      <dl class="faq"><dt>¿Mynted cobra dinero real?</dt><dd>No. Los pagos de productos y de Mynted Pro son simulados. Para probarlos se usa la tarjeta 4242 4242 4242 4242 (pago aprobado). Otros números de prueba simulan una tarjeta rechazada, sin fondos o vencida.</dd><dt>¿Puedo comprar cualquier producto?</dt><dd>Solo los de tipo <b>Venta</b> que estén disponibles. Los de <b>Intercambio</b> no se compran con tarjeta: se acuerdan por el chat. Tampoco puedes comprar tus propios productos, y el vendedor tiene que enviar al país que elijas.</dd><dt>¿Por qué no veo el botón Comprar en el chat?</dt><dd>El botón aparece cuando el vendedor ya respondió en la conversación. Si la pantalla de pago te pide «Primero habla con el vendedor», escríbele por el chat y espera su respuesta.</dd><dt>¿Cómo me convierto en vendedor?</dt><dd>En tu perfil pulsa <b>Conviértete en vendedor</b>, completa los datos de tu tienda y de pago, y envía la solicitud. El equipo de Mynted la revisa y te avisa por notificación.</dd><dt>¿Cuánto cobra Mynted por cada venta?</dt><dd>La comisión base es del 5 % y baja según tu nivel de ventas y el precio del artículo, con un mínimo de 2 %. Puedes ver tu nivel y la tabla completa en <b>Mis productos</b>.</dd><dt>¿Cuántas etiquetas necesita un producto?</dt><dd>Exactamente 3. Las imágenes pueden pesar hasta 5 MB cada una.</dd><dt>¿Qué pasa si el vendedor no puede enviar mi pedido?</dt><dd>Antes de enviarlo, el vendedor puede cancelar el pedido: se te reembolsa el pago y las unidades vuelven a su inventario.</dd><dt>¿Qué hago si el producto llegó mal?</dt><dd>Entra a tu compra y pulsa <b>Abrir un reclamo</b>. El equipo de Mynted lo revisa y decide si te reembolsa. Hay un solo reclamo por compra.</dd></dl>
+      <footer><span>Mynted · Manual de usuario</span><span>80 / 81</span></footer>
+    </section>
+<section class="page">
+      <p class="running">Preguntas frecuentes <span>(continuación)</span></p>
+      <dl class="faq"><dt>¿Quién puede dejar una reseña?</dt><dd>Solo quien compró el producto. No se pueden reseñar productos de intercambio ni los propios, y solo se deja una reseña por producto (se puede editar o eliminar después).</dd><dt>¿Cómo entro a una comunidad privada?</dt><dd>Pulsa <b>Solicitar unirme</b>. Un moderador de la comunidad tiene que aprobar tu solicitud; te llega una notificación con la respuesta.</dd><dt>¿Qué pasa cuando reporto algo?</dt><dd>El reporte llega a los moderadores (o al equipo de Mynted). Pueden ocultar el contenido o advertir a quien lo publicó. No recibirás una respuesta directa, pero el reporte se revisa.</dd><dt>¿Mynted Pro se renueva automáticamente?</dt><dd>No. Nunca se cobra de forma automática. Si pagas otro periodo antes de que venza, el tiempo se suma. Puedes cancelar desde Configuración → Suscripción y sigues siendo Pro hasta la fecha de vencimiento.</dd><dt>Cambié la moneda, ¿cambia lo que pago?</dt><dd>No. La moneda de los precios es solo una referencia para ver los montos; cada compra se cobra en la moneda en que el vendedor publicó el producto.</dd><dt>¿En qué idiomas está Mynted?</dt><dd>Español, inglés, alemán, francés, portugués y coreano. Se cambia con el botón del globo en la barra superior.</dd><dt>Olvidé mi contraseña, ¿qué hago?</dt><dd>En la pantalla de inicio de sesión pulsa <b>¿Olvidaste tu contraseña?</b>. Recibirás un enlace por correo que vence en 1 hora.</dd></dl>
+      <footer><span>Mynted · Manual de usuario</span><span>81 / 81</span></footer>
+    </section>
+</body></html>

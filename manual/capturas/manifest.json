@@ -1,0 +1,764 @@
+{
+  "primeros-pasos/aviso-cookies": {
+    "file": "01-01-aviso-cookies.png",
+    "flow": "primeros-pasos",
+    "step": 1,
+    "url": "/"
+  },
+  "primeros-pasos/gestionar-cookies": {
+    "file": "01-02-gestionar-cookies.png",
+    "flow": "primeros-pasos",
+    "step": 2,
+    "url": "/"
+  },
+  "primeros-pasos/inicio-sin-sesion": {
+    "file": "01-03-inicio-sin-sesion.png",
+    "flow": "primeros-pasos",
+    "step": 3,
+    "url": "/"
+  },
+  "primeros-pasos/inicio-destacados": {
+    "file": "01-04-inicio-destacados.png",
+    "flow": "primeros-pasos",
+    "step": 4,
+    "url": "/"
+  },
+  "primeros-pasos/landing": {
+    "file": "01-05-landing.png",
+    "flow": "primeros-pasos",
+    "step": 5,
+    "url": "/mynted"
+  },
+  "registro/pantalla-login": {
+    "file": "02-01-pantalla-login.png",
+    "flow": "registro",
+    "step": 1,
+    "url": "/login"
+  },
+  "registro/formulario-registro": {
+    "file": "02-02-formulario-registro.png",
+    "flow": "registro",
+    "step": 2,
+    "url": "/login"
+  },
+  "registro/paso-intereses": {
+    "file": "02-03-paso-intereses.png",
+    "flow": "registro",
+    "step": 3,
+    "url": "/login"
+  },
+  "registro/intereses-elegidos": {
+    "file": "02-04-intereses-elegidos.png",
+    "flow": "registro",
+    "step": 4,
+    "url": "/login"
+  },
+  "registro/paso-comunidades": {
+    "file": "02-05-paso-comunidades.png",
+    "flow": "registro",
+    "step": 5,
+    "url": "/login"
+  },
+  "registro/comunidades-elegidas": {
+    "file": "02-06-comunidades-elegidas.png",
+    "flow": "registro",
+    "step": 6,
+    "url": "/login"
+  },
+  "registro/inicio-con-sesion": {
+    "file": "02-07-inicio-con-sesion.png",
+    "flow": "registro",
+    "step": 7,
+    "url": "/"
+  },
+  "sesion/login-completo": {
+    "file": "03-01-login-completo.png",
+    "flow": "sesion",
+    "step": 1,
+    "url": "/login"
+  },
+  "sesion/login-error": {
+    "file": "03-02-login-error.png",
+    "flow": "sesion",
+    "step": 2,
+    "url": "/login"
+  },
+  "sesion/olvide-contrasena": {
+    "file": "03-03-olvide-contrasena.png",
+    "flow": "sesion",
+    "step": 3,
+    "url": "/forgot-password"
+  },
+  "sesion/revisa-tu-correo": {
+    "file": "03-04-revisa-tu-correo.png",
+    "flow": "sesion",
+    "step": 4,
+    "url": "/forgot-password"
+  },
+  "sesion/menu-cuenta": {
+    "file": "03-05-menu-cuenta.png",
+    "flow": "sesion",
+    "step": 5,
+    "url": "/"
+  },
+  "navegacion/barra-superior": {
+    "file": "04-01-barra-superior.png",
+    "flow": "navegacion",
+    "step": 1,
+    "url": "/"
+  },
+  "navegacion/notificaciones": {
+    "file": "04-02-notificaciones.png",
+    "flow": "navegacion",
+    "step": 2,
+    "url": "/"
+  },
+  "navegacion/menu-cuenta": {
+    "file": "04-03-menu-cuenta.png",
+    "flow": "navegacion",
+    "step": 3,
+    "url": "/"
+  },
+  "navegacion/busqueda-sugerencias": {
+    "file": "04-04-busqueda-sugerencias.png",
+    "flow": "navegacion",
+    "step": 4,
+    "url": "/"
+  },
+  "navegacion/busqueda-resultados": {
+    "file": "04-05-busqueda-resultados.png",
+    "flow": "navegacion",
+    "step": 5,
+    "url": "/search?q=pikachu"
+  },
+  "navegacion/boton-mensajes": {
+    "file": "04-06-boton-mensajes.png",
+    "flow": "navegacion",
+    "step": 6,
+    "url": "/search?q=pikachu"
+  },
+  "perfil/mi-perfil": {
+    "file": "05-01-mi-perfil.png",
+    "flow": "perfil",
+    "step": 1,
+    "url": "/profile"
+  },
+  "perfil/insignias": {
+    "file": "05-02-insignias.png",
+    "flow": "perfil",
+    "step": 2,
+    "url": "/profile"
+  },
+  "perfil/pestana-compras": {
+    "file": "05-03-pestana-compras.png",
+    "flow": "perfil",
+    "step": 3,
+    "url": "/profile"
+  },
+  "perfil/editar-perfil": {
+    "file": "05-04-editar-perfil.png",
+    "flow": "perfil",
+    "step": 4,
+    "url": "/settings?tab=profile"
+  },
+  "perfil/solicitud-vendedor": {
+    "file": "05-05-solicitud-vendedor.png",
+    "flow": "perfil",
+    "step": 5,
+    "url": "/profile"
+  },
+  "perfil/tienda-vendedor": {
+    "file": "05-06-tienda-vendedor.png",
+    "flow": "perfil",
+    "step": 6,
+    "url": "/sellers/4"
+  },
+  "perfil/perfil-publico": {
+    "file": "05-07-perfil-publico.png",
+    "flow": "perfil",
+    "step": 7,
+    "url": "/users/f9d8ee25-1806-4447-aabf-4c464e91f0ea"
+  },
+  "comunidades/comunidades": {
+    "file": "06-01-comunidades.png",
+    "flow": "comunidades",
+    "step": 1,
+    "url": "/communities"
+  },
+  "comunidades/explorar-comunidades": {
+    "file": "06-02-explorar-comunidades.png",
+    "flow": "comunidades",
+    "step": 2,
+    "url": "/discover-communities"
+  },
+  "comunidades/detalle-comunidad": {
+    "file": "06-03-detalle-comunidad.png",
+    "flow": "comunidades",
+    "step": 3,
+    "url": "/communities/hunter-x-hunter"
+  },
+  "comunidades/ya-eres-miembro": {
+    "file": "06-04-ya-eres-miembro.png",
+    "flow": "comunidades",
+    "step": 4,
+    "url": "/communities/hunter-x-hunter"
+  },
+  "comunidades/salir-comunidad": {
+    "file": "06-05-salir-comunidad.png",
+    "flow": "comunidades",
+    "step": 5,
+    "url": "/communities/hunter-x-hunter"
+  },
+  "comunidades/tienda-comunidad": {
+    "file": "06-06-tienda-comunidad.png",
+    "flow": "comunidades",
+    "step": 6,
+    "url": "/communities/hunter-x-hunter"
+  },
+  "comunidades/comunidad-privada": {
+    "file": "06-07-comunidad-privada.png",
+    "flow": "comunidades",
+    "step": 7,
+    "url": "/communities/seed-vault-privada"
+  },
+  "comunidades/crear-comunidad": {
+    "file": "06-08-crear-comunidad.png",
+    "flow": "comunidades",
+    "step": 8,
+    "url": "/communities"
+  },
+  "comunidades/crear-comunidad-reglas": {
+    "file": "06-09-crear-comunidad-reglas.png",
+    "flow": "comunidades",
+    "step": 9,
+    "url": "/communities"
+  },
+  "foro/talk": {
+    "file": "07-01-talk.png",
+    "flow": "foro",
+    "step": 1,
+    "url": "/explore?tab=talk"
+  },
+  "foro/foro-comunidad": {
+    "file": "07-02-foro-comunidad.png",
+    "flow": "foro",
+    "step": 2,
+    "url": "/communities/seed-pokemon-tcg-latam"
+  },
+  "foro/nueva-publicacion": {
+    "file": "07-03-nueva-publicacion.png",
+    "flow": "foro",
+    "step": 3,
+    "url": "/communities/seed-pokemon-tcg-latam"
+  },
+  "foro/publicacion-creada": {
+    "file": "07-04-publicacion-creada.png",
+    "flow": "foro",
+    "step": 4,
+    "url": "/communities/seed-pokemon-tcg-latam"
+  },
+  "foro/detalle-publicacion": {
+    "file": "07-05-detalle-publicacion.png",
+    "flow": "foro",
+    "step": 5,
+    "url": "/communities/seed-pokemon-tcg-latam/posts/87"
+  },
+  "foro/escribir-respuesta": {
+    "file": "07-06-escribir-respuesta.png",
+    "flow": "foro",
+    "step": 6,
+    "url": "/communities/seed-pokemon-tcg-latam/posts/87"
+  },
+  "foro/respuesta-publicada": {
+    "file": "07-07-respuesta-publicada.png",
+    "flow": "foro",
+    "step": 7,
+    "url": "/communities/seed-pokemon-tcg-latam/posts/87"
+  },
+  "foro/votar-y-guardar": {
+    "file": "07-08-votar-y-guardar.png",
+    "flow": "foro",
+    "step": 8,
+    "url": "/communities/seed-pokemon-tcg-latam/posts/87"
+  },
+  "marketplace/explorar-tienda": {
+    "file": "08-01-explorar-tienda.png",
+    "flow": "marketplace",
+    "step": 1,
+    "url": "/explore"
+  },
+  "marketplace/filtros-aplicados": {
+    "file": "08-02-filtros-aplicados.png",
+    "flow": "marketplace",
+    "step": 2,
+    "url": "/explore"
+  },
+  "marketplace/ver-todo-etiqueta": {
+    "file": "08-03-ver-todo-etiqueta.png",
+    "flow": "marketplace",
+    "step": 3,
+    "url": "/shop/tag/1"
+  },
+  "marketplace/detalle-producto": {
+    "file": "08-04-detalle-producto.png",
+    "flow": "marketplace",
+    "step": 4,
+    "url": "/products/29"
+  },
+  "marketplace/agregar-favorito": {
+    "file": "08-05-agregar-favorito.png",
+    "flow": "marketplace",
+    "step": 5,
+    "url": "/products/29"
+  },
+  "marketplace/detalle-mas-abajo": {
+    "file": "08-06-detalle-mas-abajo.png",
+    "flow": "marketplace",
+    "step": 6,
+    "url": "/products/29"
+  },
+  "marketplace/mis-favoritos": {
+    "file": "08-07-mis-favoritos.png",
+    "flow": "marketplace",
+    "step": 7,
+    "url": "/favorites"
+  },
+  "vender/mis-productos": {
+    "file": "09-01-mis-productos.png",
+    "flow": "vender",
+    "step": 1,
+    "url": "/my-products"
+  },
+  "vender/comision": {
+    "file": "09-02-comision.png",
+    "flow": "vender",
+    "step": 2,
+    "url": "/my-products"
+  },
+  "vender/formulario-vacio": {
+    "file": "09-03-formulario-vacio.png",
+    "flow": "vender",
+    "step": 3,
+    "url": "/products/new"
+  },
+  "vender/datos-basicos": {
+    "file": "09-04-datos-basicos.png",
+    "flow": "vender",
+    "step": 4,
+    "url": "/products/new"
+  },
+  "vender/etiquetas-y-envio": {
+    "file": "09-05-etiquetas-y-envio.png",
+    "flow": "vender",
+    "step": 5,
+    "url": "/products/new"
+  },
+  "vender/producto-publicado": {
+    "file": "09-06-producto-publicado.png",
+    "flow": "vender",
+    "step": 6,
+    "url": "/products/new"
+  },
+  "vender/producto-en-panel": {
+    "file": "09-07-producto-en-panel.png",
+    "flow": "vender",
+    "step": 7,
+    "url": "/my-products"
+  },
+  "vender/editar-producto": {
+    "file": "09-08-editar-producto.png",
+    "flow": "vender",
+    "step": 8,
+    "url": "/products/52/edit"
+  },
+  "chat/chat-abierto": {
+    "file": "10-01-chat-abierto.png",
+    "flow": "chat",
+    "step": 1,
+    "url": "/products/52?chat=6"
+  },
+  "chat/escribir-mensaje": {
+    "file": "10-02-escribir-mensaje.png",
+    "flow": "chat",
+    "step": 2,
+    "url": "/products/52?chat=6"
+  },
+  "chat/mensaje-enviado": {
+    "file": "10-03-mensaje-enviado.png",
+    "flow": "chat",
+    "step": 3,
+    "url": "/products/52?chat=6"
+  },
+  "chat/bandeja-vendedor": {
+    "file": "10-04-bandeja-vendedor.png",
+    "flow": "chat",
+    "step": 4,
+    "url": "/messages"
+  },
+  "chat/respuesta-vendedor": {
+    "file": "10-05-respuesta-vendedor.png",
+    "flow": "chat",
+    "step": 5,
+    "url": "/messages/6"
+  },
+  "chat/vendedor-respondio": {
+    "file": "10-06-vendedor-respondio.png",
+    "flow": "chat",
+    "step": 6,
+    "url": "/messages/6"
+  },
+  "compra/checkout": {
+    "file": "11-01-checkout.png",
+    "flow": "compra",
+    "step": 1,
+    "url": "/checkout/52"
+  },
+  "compra/direccion-envio": {
+    "file": "11-02-direccion-envio.png",
+    "flow": "compra",
+    "step": 2,
+    "url": "/checkout/52"
+  },
+  "compra/tarjetas-prueba": {
+    "file": "11-03-tarjetas-prueba.png",
+    "flow": "compra",
+    "step": 3,
+    "url": "/checkout/52"
+  },
+  "compra/datos-tarjeta": {
+    "file": "11-04-datos-tarjeta.png",
+    "flow": "compra",
+    "step": 4,
+    "url": "/checkout/52"
+  },
+  "compra/compra-realizada": {
+    "file": "11-05-compra-realizada.png",
+    "flow": "compra",
+    "step": 5,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "compra/mis-compras": {
+    "file": "11-06-mis-compras.png",
+    "flow": "compra",
+    "step": 6,
+    "url": "/compras"
+  },
+  "pedido/mis-ventas": {
+    "file": "12-01-mis-ventas.png",
+    "flow": "pedido",
+    "step": 1,
+    "url": "/ventas"
+  },
+  "pedido/venta-recibo": {
+    "file": "12-02-venta-recibo.png",
+    "flow": "pedido",
+    "step": 2,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "pedido/marcar-enviado": {
+    "file": "12-03-marcar-enviado.png",
+    "flow": "pedido",
+    "step": 3,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "pedido/pedido-enviado": {
+    "file": "12-04-pedido-enviado.png",
+    "flow": "pedido",
+    "step": 4,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "pedido/comprador-ve-envio": {
+    "file": "12-05-comprador-ve-envio.png",
+    "flow": "pedido",
+    "step": 5,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "pedido/confirmar-recibido": {
+    "file": "12-06-confirmar-recibido.png",
+    "flow": "pedido",
+    "step": 6,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "pedido/pedido-entregado": {
+    "file": "12-07-pedido-entregado.png",
+    "flow": "pedido",
+    "step": 7,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "pedido/abrir-reclamo": {
+    "file": "12-08-abrir-reclamo.png",
+    "flow": "pedido",
+    "step": 8,
+    "url": "/compras/4e0c59d4-18bf-4b3c-b677-884490aca71b"
+  },
+  "resenas/formulario-resena": {
+    "file": "13-01-formulario-resena.png",
+    "flow": "resenas",
+    "step": 1,
+    "url": "/products/52"
+  },
+  "resenas/resena-completa": {
+    "file": "13-02-resena-completa.png",
+    "flow": "resenas",
+    "step": 2,
+    "url": "/products/52"
+  },
+  "resenas/resena-publicada": {
+    "file": "13-03-resena-publicada.png",
+    "flow": "resenas",
+    "step": 3,
+    "url": "/products/52"
+  },
+  "moderacion/menu-reportar": {
+    "file": "14-01-menu-reportar.png",
+    "flow": "moderacion",
+    "step": 1,
+    "url": "/communities/my-little-pony-collectors-mx"
+  },
+  "moderacion/dialogo-reporte": {
+    "file": "14-02-dialogo-reporte.png",
+    "flow": "moderacion",
+    "step": 2,
+    "url": "/communities/my-little-pony-collectors-mx"
+  },
+  "moderacion/reporte-enviado": {
+    "file": "14-03-reporte-enviado.png",
+    "flow": "moderacion",
+    "step": 3,
+    "url": "/communities/my-little-pony-collectors-mx"
+  },
+  "moderacion/boton-gestionar": {
+    "file": "14-04-boton-gestionar.png",
+    "flow": "moderacion",
+    "step": 4,
+    "url": "/communities/my-little-pony-collectors-mx"
+  },
+  "moderacion/panel-reportes": {
+    "file": "14-05-panel-reportes.png",
+    "flow": "moderacion",
+    "step": 5,
+    "url": "/communities/my-little-pony-collectors-mx/moderacion"
+  },
+  "moderacion/resolver-reporte": {
+    "file": "14-06-resolver-reporte.png",
+    "flow": "moderacion",
+    "step": 6,
+    "url": "/communities/my-little-pony-collectors-mx/moderacion"
+  },
+  "moderacion/solicitudes": {
+    "file": "14-07-solicitudes.png",
+    "flow": "moderacion",
+    "step": 7,
+    "url": "/communities/my-little-pony-collectors-mx/moderacion"
+  },
+  "moderacion/miembros": {
+    "file": "14-08-miembros.png",
+    "flow": "moderacion",
+    "step": 8,
+    "url": "/communities/my-little-pony-collectors-mx/moderacion"
+  },
+  "moderacion/reglas": {
+    "file": "14-09-reglas.png",
+    "flow": "moderacion",
+    "step": 9,
+    "url": "/communities/my-little-pony-collectors-mx/moderacion"
+  },
+  "moderacion/configuracion": {
+    "file": "14-10-configuracion.png",
+    "flow": "moderacion",
+    "step": 10,
+    "url": "/communities/my-little-pony-collectors-mx/moderacion"
+  },
+  "admin/entrar-panel": {
+    "file": "15-01-entrar-panel.png",
+    "flow": "admin",
+    "step": 1,
+    "url": "/"
+  },
+  "admin/reportes": {
+    "file": "15-02-reportes.png",
+    "flow": "admin",
+    "step": 2,
+    "url": "/admin?section=reports&tab=overview"
+  },
+  "admin/reportes-gestionar": {
+    "file": "15-03-reportes-gestionar.png",
+    "flow": "admin",
+    "step": 3,
+    "url": "/admin?section=reports&tab=manage"
+  },
+  "admin/usuarios": {
+    "file": "15-04-usuarios.png",
+    "flow": "admin",
+    "step": 4,
+    "url": "/admin?section=users&tab=overview"
+  },
+  "admin/usuarios-gestionar": {
+    "file": "15-05-usuarios-gestionar.png",
+    "flow": "admin",
+    "step": 5,
+    "url": "/admin?section=users&tab=manage"
+  },
+  "admin/revision-usuario": {
+    "file": "15-06-revision-usuario.png",
+    "flow": "admin",
+    "step": 6,
+    "url": "/admin?section=users&tab=manage"
+  },
+  "admin/vendedores": {
+    "file": "15-07-vendedores.png",
+    "flow": "admin",
+    "step": 7,
+    "url": "/admin?section=sellers&tab=manage"
+  },
+  "admin/solicitudes-vendedor": {
+    "file": "15-08-solicitudes-vendedor.png",
+    "flow": "admin",
+    "step": 8,
+    "url": "/admin?section=sellerRequests&tab=manage"
+  },
+  "admin/detalle-solicitud": {
+    "file": "15-09-detalle-solicitud.png",
+    "flow": "admin",
+    "step": 9,
+    "url": "/admin?section=sellerRequests&tab=manage"
+  },
+  "admin/comunidades": {
+    "file": "15-10-comunidades.png",
+    "flow": "admin",
+    "step": 10,
+    "url": "/admin?section=communities&tab=overview"
+  },
+  "admin/categorias": {
+    "file": "15-11-categorias.png",
+    "flow": "admin",
+    "step": 11,
+    "url": "/admin?section=categories&tab=manage"
+  },
+  "admin/nueva-categoria": {
+    "file": "15-12-nueva-categoria.png",
+    "flow": "admin",
+    "step": 12,
+    "url": "/admin?section=categories&tab=manage"
+  },
+  "admin/comisiones": {
+    "file": "15-13-comisiones.png",
+    "flow": "admin",
+    "step": 13,
+    "url": "/admin?section=commissions&tab=manage"
+  },
+  "admin/reclamos": {
+    "file": "15-14-reclamos.png",
+    "flow": "admin",
+    "step": 14,
+    "url": "/admin?section=disputes&tab=overview"
+  },
+  "admin/registro": {
+    "file": "15-15-registro.png",
+    "flow": "admin",
+    "step": 15,
+    "url": "/admin?section=moderationLog&tab=overview"
+  },
+  "pro/pro-inicio": {
+    "file": "16-01-pro-inicio.png",
+    "flow": "pro",
+    "step": 1,
+    "url": "/pro"
+  },
+  "pro/planes": {
+    "file": "16-02-planes.png",
+    "flow": "pro",
+    "step": 2,
+    "url": "/pro"
+  },
+  "pro/pago-pro": {
+    "file": "16-03-pago-pro.png",
+    "flow": "pro",
+    "step": 3,
+    "url": "/pro/checkout?period=monthly"
+  },
+  "pro/pago-pro-completo": {
+    "file": "16-04-pago-pro-completo.png",
+    "flow": "pro",
+    "step": 4,
+    "url": "/pro/checkout?period=monthly"
+  },
+  "pro/ya-eres-pro": {
+    "file": "16-05-ya-eres-pro.png",
+    "flow": "pro",
+    "step": 5,
+    "url": "/pro/checkout?period=monthly"
+  },
+  "pro/personalizar-perfil": {
+    "file": "16-06-personalizar-perfil.png",
+    "flow": "pro",
+    "step": 6,
+    "url": "/settings?tab=appearance"
+  },
+  "pro/suscripcion": {
+    "file": "16-07-suscripcion.png",
+    "flow": "pro",
+    "step": 7,
+    "url": "/settings?tab=subscription"
+  },
+  "pro/perfil-pro": {
+    "file": "16-08-perfil-pro.png",
+    "flow": "pro",
+    "step": 8,
+    "url": "/profile"
+  },
+  "configuracion/cuenta": {
+    "file": "17-01-cuenta.png",
+    "flow": "configuracion",
+    "step": 1,
+    "url": "/settings?tab=account"
+  },
+  "configuracion/pais-envio": {
+    "file": "17-02-pais-envio.png",
+    "flow": "configuracion",
+    "step": 2,
+    "url": "/settings?tab=account"
+  },
+  "configuracion/moneda-opciones": {
+    "file": "17-03-moneda-opciones.png",
+    "flow": "configuracion",
+    "step": 3,
+    "url": "/settings?tab=profile"
+  },
+  "configuracion/moneda-cambiada": {
+    "file": "17-04-moneda-cambiada.png",
+    "flow": "configuracion",
+    "step": 4,
+    "url": "/settings?tab=profile"
+  },
+  "configuracion/precios-en-nueva-moneda": {
+    "file": "17-05-precios-en-nueva-moneda.png",
+    "flow": "configuracion",
+    "step": 5,
+    "url": "/explore"
+  },
+  "configuracion/idiomas": {
+    "file": "17-06-idiomas.png",
+    "flow": "configuracion",
+    "step": 6,
+    "url": "/explore"
+  },
+  "configuracion/app-en-ingles": {
+    "file": "17-07-app-en-ingles.png",
+    "flow": "configuracion",
+    "step": 7,
+    "url": "/explore"
+  },
+  "configuracion/privacidad": {
+    "file": "17-08-privacidad.png",
+    "flow": "configuracion",
+    "step": 8,
+    "url": "/settings?tab=privacy"
+  },
+  "configuracion/notificaciones": {
+    "file": "17-09-notificaciones.png",
+    "flow": "configuracion",
+    "step": 9,
+    "url": "/settings?tab=notifications"
+  }
+}
