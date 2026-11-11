@@ -2295,5 +2295,5 @@ export const de: Record<TranslationKey, string> = {
 
   // Ajustes: sonido de notificaciones
   'settings.notifications.soundLabel': 'Ton',
-  'settings.notifications.soundDescription': 'Bei einer neuen Benachrichtigung erklingt ein kurzer Ton. Gilt nur auf diesem Gerät.',
+  'settings.notifications.soundDescription': 'Bei einer neuen Benachrichtigung oder Nachricht erklingt ein kurzer Ton. Gilt nur auf diesem Gerät.',
 }

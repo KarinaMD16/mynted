@@ -2314,5 +2314,5 @@ export const pt: Record<TranslationKey, string> = {
 
   // Ajustes: sonido de notificaciones
   'settings.notifications.soundLabel': 'Som',
-  'settings.notifications.soundDescription': 'Toca um aviso curto quando chega uma notificação. Salvo só neste dispositivo.',
+  'settings.notifications.soundDescription': 'Toca um aviso curto quando chega uma notificação ou mensagem. Salvo só neste dispositivo.',
 }

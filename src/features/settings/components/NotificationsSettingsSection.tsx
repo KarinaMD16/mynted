@@ -8,7 +8,7 @@ import {
   isNotificationSoundOn,
   playNotificationSound,
   setNotificationSoundOn,
-} from '@/features/notifications/utils/notificationSound'
+} from '@/utils/notificationSound'
 import { toProfileFormData } from '../hooks/useSavedFlash'
 import { SettingsCard } from './SettingsCard'
 

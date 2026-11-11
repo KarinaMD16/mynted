@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import type { ChatMessage, MessageReadPayload, PresencePayload } from '../models/chat'
 import { CHAT_EVENTS, chatSocket, joinConversationRoom, leaveConversationRoom } from '../socket/chatSocket'
 import { addMessageToHistory, bumpConversationInInbox, setMessagesReadAt } from '../utils/chatCache'
+import { playNotificationSound } from '@/utils/notificationSound'
 import { chatKeys } from './chatKeys'
 import { useMarkConversationRead } from './useChatMutations'
 
@@ -81,7 +82,12 @@ export function useConversationRoom(conversationId: number | undefined) {
       if (message.conversationId !== conversationId) return
       addMessageToHistory(queryClient, message)
       bumpConversationInInbox(queryClient, message)
-      if (message.senderId !== userId && isPageFocused()) markRead(conversationId)
+      if (message.senderId !== userId) {
+        // Con el chat abierto y la pestana al frente ya se esta leyendo: el
+        // sonido sobraria. Solo suena cuando la persona no lo tiene a la vista.
+        if (isPageFocused()) markRead(conversationId)
+        else playNotificationSound()
+      }
     }
     const onRead = (payload: MessageReadPayload) => {
       if (payload.conversationId !== conversationId || payload.readerId === userId) return

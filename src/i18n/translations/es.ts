@@ -2298,7 +2298,7 @@ export const es = {
 
   // Ajustes: sonido de notificaciones
   'settings.notifications.soundLabel': 'Sonido',
-  'settings.notifications.soundDescription': 'Suena un aviso corto cuando llega una notificación. Se guarda solo en este dispositivo.',
+  'settings.notifications.soundDescription': 'Suena un aviso corto cuando llega una notificación o un mensaje. Se guarda solo en este dispositivo.',
 } as const
 
 export type TranslationKey = keyof typeof es

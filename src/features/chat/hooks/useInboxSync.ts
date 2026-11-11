@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { InboxMessagePayload, InboxReadPayload } from '../models/chat'
 import { CHAT_EVENTS, chatSocket } from '../socket/chatSocket'
 import { addMessageToHistory, bumpConversationInInbox, setInboxUnread, setTotalUnread } from '../utils/chatCache'
+import { playNotificationSound } from '@/utils/notificationSound'
 import { chatKeys } from './chatKeys'
 
 /**
@@ -24,6 +25,8 @@ export function useInboxSync(userId: string | null) {
 
     const onInboxMessage = ({ totalUnread, ...message }: InboxMessagePayload) => {
       setTotalUnread(queryClient, totalUnread)
+      // Es de la otra persona y el chat no esta abierto aca: avisa con sonido.
+      if (message.senderId !== userId) playNotificationSound()
       bumpConversationInInbox(queryClient, message, message.senderId !== userId ? 'increment' : undefined)
       // Si ese historial estaba cacheado de antes, que no quede viejo.
       if (queryClient.getQueryData(chatKeys.messages(message.conversationId))) addMessageToHistory(queryClient, message)
