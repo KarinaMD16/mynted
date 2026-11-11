@@ -2308,5 +2308,5 @@ export const en: Record<TranslationKey, string> = {
 
   // Ajustes: sonido de notificaciones
   'settings.notifications.soundLabel': 'Sound',
-  'settings.notifications.soundDescription': 'A short chime plays when a notification arrives. Saved on this device only.',
+  'settings.notifications.soundDescription': 'A short chime plays when a notification or a message arrives. Saved on this device only.',
 }

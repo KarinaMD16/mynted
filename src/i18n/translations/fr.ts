@@ -2321,5 +2321,5 @@ export const fr: Record<TranslationKey, string> = {
 
   // Ajustes: sonido de notificaciones
   'settings.notifications.soundLabel': 'Son',
-  'settings.notifications.soundDescription': 'Un petit son retentit à l’arrivée d’une notification. Enregistré sur cet appareil uniquement.',
+  'settings.notifications.soundDescription': 'Un petit son retentit à l’arrivée d’une notification ou d’un message. Enregistré sur cet appareil uniquement.',
 }

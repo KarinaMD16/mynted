@@ -2296,5 +2296,5 @@ export const ko: Record<TranslationKey, string> = {
 
   // Ajustes: sonido de notificaciones
   'settings.notifications.soundLabel': '소리',
-  'settings.notifications.soundDescription': '알림이 오면 짧은 소리가 나요. 이 기기에만 저장돼요.',
+  'settings.notifications.soundDescription': '알림이나 메시지가 오면 짧은 소리가 나요. 이 기기에만 저장돼요.',
 }

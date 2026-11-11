@@ -7,7 +7,7 @@ import { useNotificationActions } from '../hooks/useNotificationMutations'
 import { useNotificationsSync } from '../hooks/useNotificationsSync'
 import { useGoToNotificationTarget } from '../hooks/useOpenNotification'
 import { getNotificationContent } from '../utils/notificationContent'
-import { playNotificationSound } from '../utils/notificationSound'
+import { playNotificationSound } from '@/utils/notificationSound'
 
 /**
  * Escucha las notificaciones en vivo (ver useNotificationsSync) y, si la
