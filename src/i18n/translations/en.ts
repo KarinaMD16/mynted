@@ -2305,4 +2305,8 @@ export const en: Record<TranslationKey, string> = {
   'reputation.salesOne': "1 completed sale",
   'reputation.distribution': "Reviews by stars",
   'reputation.levelLabel': "{{stars}} stars: {{count}} reviews ({{percent}})",
+
+  // Ajustes: sonido de notificaciones
+  'settings.notifications.soundLabel': 'Sound',
+  'settings.notifications.soundDescription': 'A short chime plays when a notification arrives. Saved on this device only.',
 }

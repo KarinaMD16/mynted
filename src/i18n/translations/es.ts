@@ -2295,6 +2295,10 @@ export const es = {
   'reputation.salesOne': "1 venta completada",
   'reputation.distribution': "Reseñas por estrellas",
   'reputation.levelLabel': "{{stars}} estrellas: {{count}} reseñas ({{percent}})",
+
+  // Ajustes: sonido de notificaciones
+  'settings.notifications.soundLabel': 'Sonido',
+  'settings.notifications.soundDescription': 'Suena un aviso corto cuando llega una notificación. Se guarda solo en este dispositivo.',
 } as const
 
 export type TranslationKey = keyof typeof es

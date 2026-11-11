@@ -2318,4 +2318,8 @@ export const fr: Record<TranslationKey, string> = {
   'reputation.salesOne': "1 vente réalisée",
   'reputation.distribution': "Avis par étoiles",
   'reputation.levelLabel': "{{stars}} étoiles : {{count}} avis ({{percent}})",
+
+  // Ajustes: sonido de notificaciones
+  'settings.notifications.soundLabel': 'Son',
+  'settings.notifications.soundDescription': 'Un petit son retentit à l’arrivée d’une notification. Enregistré sur cet appareil uniquement.',
 }

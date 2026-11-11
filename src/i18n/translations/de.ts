@@ -2292,4 +2292,8 @@ export const de: Record<TranslationKey, string> = {
   'reputation.salesOne': "1 abgeschlossener Verkauf",
   'reputation.distribution': "Bewertungen nach Sternen",
   'reputation.levelLabel': "{{stars}} Sterne: {{count}} Bewertungen ({{percent}})",
+
+  // Ajustes: sonido de notificaciones
+  'settings.notifications.soundLabel': 'Ton',
+  'settings.notifications.soundDescription': 'Bei einer neuen Benachrichtigung erklingt ein kurzer Ton. Gilt nur auf diesem Gerät.',
 }

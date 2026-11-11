@@ -2293,4 +2293,8 @@ export const ko: Record<TranslationKey, string> = {
   'reputation.salesOne': "완료된 판매 1건",
   'reputation.distribution': "별점별 리뷰",
   'reputation.levelLabel': "{{stars}}점: 리뷰 {{count}}개 ({{percent}})",
+
+  // Ajustes: sonido de notificaciones
+  'settings.notifications.soundLabel': '소리',
+  'settings.notifications.soundDescription': '알림이 오면 짧은 소리가 나요. 이 기기에만 저장돼요.',
 }

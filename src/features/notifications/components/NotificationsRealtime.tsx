@@ -7,6 +7,7 @@ import { useNotificationActions } from '../hooks/useNotificationMutations'
 import { useNotificationsSync } from '../hooks/useNotificationsSync'
 import { useGoToNotificationTarget } from '../hooks/useOpenNotification'
 import { getNotificationContent } from '../utils/notificationContent'
+import { playNotificationSound } from '../utils/notificationSound'
 
 /**
  * Escucha las notificaciones en vivo (ver useNotificationsSync) y, si la
@@ -26,6 +27,9 @@ export function NotificationsRealtime() {
   const handleNew = useCallback(
     (notification: AppNotification) => {
       if (!showToasts) return
+      // El sonido acompaña al aviso: si los avisos están apagados, tampoco
+      // suena. Tiene su propio interruptor, por dispositivo (ver notificationSound).
+      playNotificationSound()
       const { text, target } = getNotificationContent(notification, t, language)
       // Mismo id para una notificación unificada: reemplaza el aviso anterior en vez de apilar otro.
       toast(text, {
