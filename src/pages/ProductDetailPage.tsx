@@ -534,7 +534,10 @@ function Related({
       <ul
         className={
           horizontal
-            ? '-mx-1 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-3 [scrollbar-width:thin]'
+            ? // `contain:paint`: sin esto Chrome en Android cuenta las tarjetas que quedan fuera del
+              // scroll al calcular el ancho de la página, la ensancha (~467px en un celular de 375px)
+              // y le baja el zoom; eso también dejaba cortos el menú lateral y el chat (h-dvh).
+              '-mx-1 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-3 [contain:paint] [scrollbar-width:thin]'
             : 'grid grid-cols-2 gap-5 lg:grid-cols-4'
         }
       >
