@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { BadgeCheck, CalendarDays, Clock, MapPin, Package, Settings2, ShoppingBag, UserRound } from 'lucide-react'
-import { Rating } from '@/components/ui/Rating'
+import { RatingSummary } from '@/components/ui/RatingSummary'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
 import { ProBadge } from '@/features/pro/components/ProBadge'
 import type { CosmeticAsset } from '@/features/pro/models/cosmetics'
@@ -27,32 +27,11 @@ export function StoreHeader({ store, isOwnStore }: { store: SellerStore; isOwnSt
       <CoverBanner banner={store.cosmetics?.banner} fallbackUrl={store.bannerUrl} />
 
       <div className="relative -mt-10 rounded-2xl border border-mynted-border bg-mynted-white pt-16 pb-6 shadow-[0_16px_40px_-8px_rgba(13,13,20,0.08)] sm:pb-8">
-        <div className="absolute -top-5 right-4 z-10 flex items-center gap-2 sm:right-6">
-          {isOwnStore ? (
-            <Link
-              to="/my-products"
-              className="flex h-10 items-center gap-2 rounded-xl bg-mynted-orange px-4 text-sm font-semibold text-white shadow-xs outline-none hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
-            >
-              <Settings2 className="size-4" aria-hidden="true" />
-              {t('store.manage')}
-            </Link>
-          ) : (
-            <Link
-              to="/users/$userId"
-              params={{ userId: store.userId }}
-              className="flex h-10 items-center gap-2 rounded-xl border border-mynted-border bg-white px-4 text-sm font-semibold text-mynted-ink outline-none hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
-            >
-              <UserRound className="size-4" aria-hidden="true" />
-              {t('store.viewSellerProfile')}
-            </Link>
-          )}
-        </div>
-
         <StoreAvatar name={store.displayName} photoUrl={store.photoUrl} frame={store.frame ?? store.cosmetics?.frame} />
 
         <div className="flex flex-col items-center px-6 text-center">
           <p className="text-xs font-semibold tracking-wide text-mynted-gray uppercase">{t('store.eyebrow')}</p>
-          <h1 className="mt-1 flex items-center gap-2 font-heading text-2xl font-semibold text-mynted-ink">
+          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 font-heading text-2xl font-semibold text-mynted-ink">
             {store.displayName}
             {store.isPro && <ProBadge size="md" />}
           </h1>
@@ -64,14 +43,7 @@ export function StoreHeader({ store, isOwnStore }: { store: SellerStore; isOwnSt
                 {t('itemDetail.verifiedSeller')}
               </span>
             )}
-            {store.ratingAverage !== null ? (
-              <span className="flex items-center gap-2 text-sm text-mynted-gray">
-                <Rating value={store.ratingAverage} size={14} />
-                {store.ratingAverage.toFixed(1)} · {t('reviews.count', { count: store.reviewsCount })}
-              </span>
-            ) : (
-              <span className="text-sm text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
-            )}
+            <RatingSummary average={store.ratingAverage} count={store.reviewsCount} emptyLabel={t('itemDetail.sellerNoReviews')} />
             {store.location?.trim() && (
               <span className="flex items-center gap-1.5 text-sm text-mynted-gray">
                 <MapPin className="size-4" aria-hidden="true" />
@@ -83,6 +55,28 @@ export function StoreHeader({ store, isOwnStore }: { store: SellerStore; isOwnSt
           {store.description?.trim() && (
             <p className="mt-4 max-w-2xl text-sm whitespace-pre-line text-mynted-ink">{store.description}</p>
           )}
+
+          {/* En mobile va debajo de la descripción para no chocar con la foto; desde md flota arriba a la derecha. */}
+          <div className="mt-5 flex items-center justify-center gap-2 md:absolute md:-top-5 md:right-6 md:z-10 md:mt-0">
+            {isOwnStore ? (
+              <Link
+                to="/my-products"
+                className="flex h-10 items-center gap-2 rounded-xl bg-mynted-orange px-4 text-sm font-semibold text-white shadow-xs outline-none hover:bg-mynted-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+              >
+                <Settings2 className="size-4" aria-hidden="true" />
+                {t('store.manage')}
+              </Link>
+            ) : (
+              <Link
+                to="/users/$userId"
+                params={{ userId: store.userId }}
+                className="flex h-10 items-center gap-2 rounded-xl border border-mynted-border bg-white px-4 text-sm font-semibold text-mynted-ink outline-none hover:bg-mynted-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mynted-blue-mid"
+              >
+                <UserRound className="size-4" aria-hidden="true" />
+                {t('store.viewSellerProfile')}
+              </Link>
+            )}
+          </div>
         </div>
 
         <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden border-t border-mynted-border bg-mynted-border sm:grid-cols-4">

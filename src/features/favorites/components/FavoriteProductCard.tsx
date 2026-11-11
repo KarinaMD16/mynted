@@ -1,19 +1,17 @@
 import { Link } from '@tanstack/react-router'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { TranslationKey } from '@/i18n/translations/es'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
+import { getProductBadgeKey } from '@/features/products/utils/stock'
 import type { MyContentProduct } from '@/features/community/models/communityDTOs'
 import { FavoriteAlertsButton } from './FavoriteAlertsButton'
 import { FavoriteButton } from './FavoriteButton'
 
-const STATUS_LABEL: Record<Exclude<MyContentProduct['status'], 'active'>, TranslationKey> = {
-  sold: 'products.status.sold',
-  inactive: 'products.status.inactive',
-}
 
 /** Producto guardado (wireframe "Bento Product Card"): foto grande, título, tags, precio y verificado. */
 export function FavoriteProductCard({ product }: { product: MyContentProduct }) {
   const { t } = useLanguage()
+  // Agotado (isAvailable false, status sold), pausado o no disponible: los favoritos sí los muestran.
+  const badgeKey = getProductBadgeKey(product)
 
   return (
     <article className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-mynted-border bg-white transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(13,13,20,0.15)]">
@@ -29,11 +27,13 @@ export function FavoriteProductCard({ product }: { product: MyContentProduct }) 
           src={product.imageUrl}
           alt=""
           loading="lazy"
-          className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className={`absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+            badgeKey ? 'opacity-60 grayscale' : ''
+          }`}
         />
-        {product.status !== 'active' && (
+        {badgeKey && (
           <span className="absolute top-3 left-3 rounded-full bg-mynted-ink/85 px-2.5 py-1 text-xs font-semibold text-white">
-            {t(STATUS_LABEL[product.status])}
+            {t(badgeKey)}
           </span>
         )}
       </div>

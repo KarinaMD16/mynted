@@ -284,6 +284,8 @@ function StoreCatalog({ sellerId }: { sellerId: number }) {
                         status: product.status,
                         // Destacados del vendedor (Pro): GET /sellers/:id/products ya los manda primero.
                         isFeatured: product.isFeatured,
+                        quantity: product.quantity,
+                        isAvailable: product.isAvailable,
                       }}
                     />
                   </StaggerItem>

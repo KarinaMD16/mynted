@@ -12,6 +12,7 @@ import { CheckoutSummary } from '@/features/payments/components/CheckoutSummary'
 import { PaymentNotice } from '@/features/payments/components/PaymentNotice'
 import {
   readCheckoutFailure,
+  readStockConflict,
   useCheckoutMutation,
   type CheckoutFailure,
 } from '@/features/payments/hooks/usePaymentMutations'
@@ -40,7 +41,7 @@ const FAILURE_MESSAGE: Record<PaymentFailureReason, TranslationKey> = {
 type Blocker = 'sold' | 'unavailable' | 'exchange' | 'ownProduct' | 'noShipping'
 
 const BLOCKER_MESSAGE: Record<Blocker, TranslationKey> = {
-  sold: 'checkout.blocked.sold',
+  sold: 'checkout.blocked.soldOut',
   unavailable: 'checkout.blocked.unavailable',
   exchange: 'checkout.blocked.exchange',
   ownProduct: 'checkout.blocked.ownProduct',
@@ -49,7 +50,8 @@ const BLOCKER_MESSAGE: Record<Blocker, TranslationKey> = {
 
 function findBlocker(product: ProductDetail, isOwnProduct: boolean): Blocker | null {
   if (isOwnProduct) return 'ownProduct'
-  if (product.status === 'sold') return 'sold'
+  // Agotado: vendido a mano o sin unidades (quantity 0).
+  if (product.status === 'sold' || product.quantity === 0) return 'sold'
   if (product.status !== 'active') return 'unavailable'
   if (product.type !== 'sale') return 'exchange'
   // Sin países de envío el backend no acepta ninguna dirección.
@@ -119,8 +121,16 @@ export default function CheckoutPage() {
           }),
         onError: (error) => {
           const next = readCheckoutFailure(error)
-          if (next.kind === 'unauthenticated') void navigate({ to: '/login' })
-          else setFailure(next)
+          if (next.kind === 'unauthenticated') {
+            void navigate({ to: '/login' })
+            return
+          }
+          // Quedan menos unidades de las pedidas: se baja la cantidad a lo que
+          // hay (la cotización se recalcula sola) y el aviso explica por qué.
+          if (next.kind === 'notEnoughStock' && next.available !== null && next.available > 0) {
+            setQuantity(Math.min(quantity, next.available))
+          }
+          setFailure(next)
         },
       },
     )
@@ -131,6 +141,21 @@ export default function CheckoutPage() {
   const isClosed = blocker !== null || failure?.kind === 'soldOut' || failure?.kind === 'notFound'
   // El stock vigente lo dice la cotización; nunca menos de 1 para el selector.
   const maxQuantity = Math.max(1, quote.data?.availableQuantity ?? 1)
+
+  // La cotización también responde 409 si el stock bajó mientras se elegía la
+  // cantidad (alguien más compró): se ajusta a lo que queda en vez de mostrar
+  // un error, o se avisa que se agotó.
+  const quoteStock = readStockConflict(quote.error)
+  const quoteAvailable = quoteStock?.kind === 'notEnoughStock' ? quoteStock.available : null
+  const [stockAdjustedTo, setStockAdjustedTo] = useState<number | null>(null)
+  // Mientras se baja la cantidad y llega la cotización nueva, se ve la carga (no un error).
+  const isAdjustingStock = quoteAvailable !== null && quoteAvailable > 0 && !quote.data
+  // Se ajusta durante el render (patrón de React para derivar estado de otro dato),
+  // así no hay un render intermedio con la cantidad que ya no alcanza.
+  if (quoteAvailable !== null && quoteAvailable > 0 && quantity > quoteAvailable) {
+    setQuantity(quoteAvailable)
+    setStockAdjustedTo(quoteAvailable)
+  }
 
   return (
     <div className="min-h-svh bg-mynted-bg">
@@ -150,10 +175,19 @@ export default function CheckoutPage() {
               {t('explore.title')}
             </Link>
           </ErrorState>
+        ) : quoteStock?.kind === 'soldOut' ? (
+          <ErrorState kind="empty" title={t('checkout.blocked.soldOut')} description={t('checkout.soldOutBody')}>
+            <Link
+              to="/explore"
+              className="rounded-lg bg-mynted-orange px-4 py-2 text-sm font-semibold text-white hover:bg-mynted-orange/80"
+            >
+              {t('explore.title')}
+            </Link>
+          </ErrorState>
         ) : getHttpStatus(quote.error) === 403 ? (
           // Se compra después de hablar: la cotización pide que el vendedor ya haya respondido.
           <ChatRequiredState productId={productId} />
-        ) : product.isError || quote.isError ? (
+        ) : product.isError || (quote.isError && !isAdjustingStock) ? (
           <QueryErrorState
             error={product.error ?? quote.error}
             onRetry={() => {
@@ -162,7 +196,7 @@ export default function CheckoutPage() {
             }}
             texts={{ error: { description: t('checkout.loadError') } }}
           />
-        ) : product.isLoading || (quote.isLoading && !quote.data) || isLoadingUser ? (
+        ) : product.isLoading || (quote.isLoading && !quote.data) || isLoadingUser || isAdjustingStock ? (
           <div className="grid gap-6 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_400px] lg:gap-8" aria-busy="true">
             <div className="h-[460px] animate-pulse rounded-2xl bg-white" />
             <div className="h-60 animate-pulse rounded-2xl bg-white" />
@@ -179,6 +213,7 @@ export default function CheckoutPage() {
               maxQuantity={maxQuantity}
               onQuantityChange={(next) => {
                 setQuantity(next)
+                setStockAdjustedTo(null)
                 // Un "no alcanza el stock" ya no vale con otra cantidad.
                 if (failure?.kind === 'notEnoughStock') setFailure(null)
               }}
@@ -204,6 +239,9 @@ export default function CheckoutPage() {
                 />
               )}
               {blocker && <PaymentNotice tone="warning" message={t(BLOCKER_MESSAGE[blocker])} backToShop />}
+              {!blocker && !failure && stockAdjustedTo !== null && (
+                <PaymentNotice tone="warning" message={t('checkout.stockAdjusted', { count: stockAdjustedTo })} />
+              )}
               {!blocker && failure && <FailureNotice failure={failure} />}
             </CheckoutForm>
           </div>
@@ -240,7 +278,11 @@ function FailureNotice({ failure }: { failure: CheckoutFailure }) {
       return (
         <PaymentNotice
           tone="error"
-          message={t('checkout.failure.notEnoughStock')}
+          message={
+            failure.available !== null && failure.available > 0
+              ? t('checkout.failure.notEnoughStockCount', { count: failure.available })
+              : t('checkout.failure.notEnoughStock')
+          }
           hint={t('checkout.failure.notCharged')}
         />
       )

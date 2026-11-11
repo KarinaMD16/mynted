@@ -34,7 +34,8 @@ export type CheckoutFailure =
   /** 409: el vendedor no envía al país de la dirección. Se puede cambiar el país. */
   | { kind: 'shippingNotAllowed' }
   /** 409: quedan menos unidades que las pedidas. Se puede bajar la cantidad. */
-  | { kind: 'notEnoughStock' }
+  /** 409 "Stock insuficiente: solo quedan N unidades": se ajusta la cantidad a `available`. */
+  | { kind: 'notEnoughStock'; available: number | null }
   /** 400: el backend no aceptó los datos de la tarjeta o de la dirección. */
   | { kind: 'invalidCard' }
   /** 404: el producto ya no existe. */
@@ -53,12 +54,33 @@ export type CheckoutFailure =
  * mensaje (en español, a veces con las tildes rotas: por eso se compara sin
  * ellas). Lo que no se reconoce se trata como "ya se vendió".
  */
-function readConflict(error: unknown): CheckoutFailure {
+function conflictMessage(error: unknown): string {
   const raw = axios.isAxiosError<{ message?: unknown }>(error) ? error.response?.data?.message : undefined
-  const message = (Array.isArray(raw) ? raw.join(' ') : String(raw ?? '')).toLowerCase()
+  return (Array.isArray(raw) ? raw.join(' ') : String(raw ?? '')).toLowerCase()
+}
+
+/**
+ * 409 de stock (sección 14 de la guía), del checkout o de la cotización:
+ * - "Stock insuficiente: solo quedan N unidades" → `notEnoughStock` con N.
+ * - "Stock insuficiente para completar la compra" (otro se adelantó) → sin N.
+ * - "El producto está agotado" → `soldOut`.
+ * null si el error no es un 409 de stock.
+ */
+export function readStockConflict(
+  error: unknown,
+): { kind: 'soldOut' } | { kind: 'notEnoughStock'; available: number | null } | null {
+  if (getHttpStatus(error) !== 409) return null
+  const message = conflictMessage(error)
+  if (message.includes('agotado')) return { kind: 'soldOut' }
+  if (!message.includes('stock')) return null
+  const match = message.match(/(\d+)/)
+  return { kind: 'notEnoughStock', available: match ? Number(match[1]) : null }
+}
+
+function readConflict(error: unknown): CheckoutFailure {
+  const message = conflictMessage(error)
   if (message.includes('env')) return { kind: 'shippingNotAllowed' }
-  if (message.includes('stock')) return { kind: 'notEnoughStock' }
-  return { kind: 'soldOut' }
+  return readStockConflict(error) ?? { kind: 'soldOut' }
 }
 
 function readDeclinedBody(error: unknown): PaymentDeclinedBody | null {

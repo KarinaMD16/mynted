@@ -320,6 +320,8 @@ export default function ExplorePage() {
                             type: product.type,
                             // Destacados de vendedores Pro: GET /products ya los manda primero.
                             isFeatured: product.isFeatured,
+                            quantity: product.quantity,
+                            isAvailable: product.isAvailable,
                           }}
                         />
                       </StaggerItem>

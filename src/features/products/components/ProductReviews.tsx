@@ -6,6 +6,7 @@ import { Star } from 'lucide-react'
 import { getApiErrorMessage } from '@/api/apiError'
 import { Button } from '@/components/ui/Button'
 import { Rating } from '@/components/ui/Rating'
+import { RatingSummary } from '@/components/ui/RatingSummary'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
 import { ProBadge } from '@/features/pro/components/ProBadge'
@@ -48,15 +49,26 @@ function StarInput({ value, onChange, label }: { value: number; onChange: (value
   )
 }
 
-/** Alta de reseña o edición de la propia. Los errores del backend (403 propio producto, 409 ya reseñaste) se muestran tal cual. */
-function ReviewForm({
+/** Id del formulario de "Deja tu reseña" del detalle: el botón "Reseñar" lleva hasta acá. */
+export const REVIEW_FORM_ID = 'review-form'
+
+/**
+ * Alta de reseña o edición de la propia. Los errores del backend (403 propio
+ * producto, 409 ya reseñaste) se muestran tal cual. Se usa en el detalle del
+ * producto (tarjeta) y en el diálogo de "Mis compras" (`plain`, sin tarjeta ni título).
+ */
+export function ReviewForm({
   productId,
   existing,
   onDone,
+  variant = 'card',
+  id,
 }: {
   productId: number
   existing?: ProductReview
   onDone?: () => void
+  variant?: 'card' | 'plain'
+  id?: string
 }) {
   const { t } = useLanguage()
   const create = useCreateReviewMutation(productId)
@@ -89,16 +101,22 @@ function ReviewForm({
 
   return (
     <form
+      id={id}
       noValidate
-      className="flex flex-col gap-3 rounded-2xl border border-mynted-border bg-white p-5"
+      className={cx(
+        'flex flex-col gap-3',
+        variant === 'card' && 'scroll-mt-28 rounded-2xl border border-mynted-border bg-white p-5',
+      )}
       onSubmit={(event) => {
         event.preventDefault()
         submit()
       }}
     >
-      <h3 className="font-heading text-base font-semibold text-mynted-ink">
-        {existing ? t('reviews.editTitle') : t('reviews.writeTitle')}
-      </h3>
+      {variant === 'card' && (
+        <h3 className="font-heading text-base font-semibold text-mynted-ink">
+          {existing ? t('reviews.editTitle') : t('reviews.writeTitle')}
+        </h3>
+      )}
 
       <div className="flex flex-col gap-1">
         <StarInput value={rating} onChange={setRating} label={t('reviews.yourRating')} />
@@ -276,19 +294,13 @@ export function ProductReviews({
         <h2 id="reviews-title" className="font-heading text-[22px] font-semibold text-mynted-ink">
           {t('reviews.title')}
         </h2>
-        {first && first.reviewsCount > 0 && first.ratingAverage !== null && (
-          <span className="flex items-center gap-2 text-sm text-mynted-gray">
-            <Rating value={first.ratingAverage} size={16} />
-            <span className="font-semibold text-mynted-ink">{first.ratingAverage.toFixed(1)}</span>
-            <span>· {t('reviews.count', { count: first.reviewsCount })}</span>
-          </span>
-        )}
+        {first && <RatingSummary average={first.ratingAverage} count={first.reviewsCount} emptyLabel={false} />}
       </div>
 
       {isLoggedIn ? (
         // `hasMine` cubre el hueco entre reseñar y volver a pedir el detalle:
         // hasta ese momento `canComment` sigue diciendo true.
-        canComment && !hasMine && !isOwnProduct && <ReviewForm productId={productId} />
+        canComment && !hasMine && !isOwnProduct && <ReviewForm productId={productId} id={REVIEW_FORM_ID} />
       ) : (
         <p className="rounded-2xl border border-mynted-border bg-white px-5 py-4 text-sm text-mynted-gray">
           <Link to="/login" className="font-semibold text-mynted-orange hover:underline">

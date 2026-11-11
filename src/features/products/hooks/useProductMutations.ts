@@ -124,6 +124,8 @@ function useInvalidateReviews(productId: number) {
     void queryClient.invalidateQueries({ queryKey: productKeys.detail(productId) })
     // El promedio del vendedor sale en el perfil público.
     void queryClient.invalidateQueries({ queryKey: ['users'] })
+    // Y en su reputación (GET /profiles/:id/reputation).
+    void queryClient.invalidateQueries({ queryKey: ['reputation'] })
   }
 }
 

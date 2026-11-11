@@ -4,6 +4,7 @@ import type { PublicUser } from '@/features/auth/models/auth'
 import type { FeedPost } from '@/features/community/models/communityDTOs'
 import { AvatarFrame } from '@/features/pro/components/AvatarFrame'
 import { ProBadge } from '@/features/pro/components/ProBadge'
+import { RatingSummary } from '@/components/ui/RatingSummary'
 import type { CosmeticAsset } from '@/features/pro/models/cosmetics'
 import { ProductPrice } from '@/features/products/components/ProductPrice'
 import type { ProductListItem } from '@/features/products/models/product'
@@ -72,7 +73,6 @@ export function ProductResultRow({ product, onNavigate }: RowProps & { product: 
 export function StoreResultRow({ store, onNavigate }: RowProps & { store: StoreSearchItem }) {
   const { t } = useLanguage()
   const details = [
-    store.ratingAverage !== null ? `★ ${store.ratingAverage.toFixed(1)}` : null,
     t(store.activeProductsCount === 1 ? 'store.catalog.countOne' : 'store.catalog.count', { count: store.activeProductsCount }),
     store.location?.trim() || null,
   ].filter(Boolean)
@@ -88,7 +88,10 @@ export function StoreResultRow({ store, onNavigate }: RowProps & { store: StoreS
           )}
           {store.isPro && <ProBadge size="xs" />}
         </span>
-        <span className="truncate text-xs text-mynted-gray">{details.join(' · ')}</span>
+        <span className="flex min-w-0 items-center gap-1.5 text-xs text-mynted-gray">
+          <RatingSummary average={store.ratingAverage} count={store.reviewsCount} size="sm" variant="compact" emptyLabel={false} />
+          <span className="truncate">{details.join(' · ')}</span>
+        </span>
       </span>
     </Link>
   )

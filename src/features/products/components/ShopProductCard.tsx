@@ -3,13 +3,14 @@ import { useContactSeller } from '@/features/chat/hooks/useContactSeller'
 import { ProductFavoriteButton } from '@/features/favorites/components/FavoriteButton'
 import { ProBadge } from '@/features/pro/components/ProBadge'
 import { useLanguage } from '@/i18n/LanguageContext'
-import type { ProductStatus, ProductType } from '@/features/products/models/product'
+import type { ProductStatus, ProductType, StockFields } from '@/features/products/models/product'
 import { cx } from '@/utils/cx'
 import type { DisplayPriceFields } from '@/utils/price'
+import { getStockState, LOW_STOCK_THRESHOLD, STOCK_LABEL } from '../utils/stock'
 import { FeaturedTag } from './FeaturedControls'
 import { ProductPrice } from './ProductPrice'
 
-export interface ShopProductCardData extends DisplayPriceFields {
+export interface ShopProductCardData extends DisplayPriceFields, StockFields {
   id: number
   title: string
   imageUrl: string
@@ -46,8 +47,11 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
   const { t } = useLanguage()
   const { contact, isOpening } = useContactSeller()
   // Si el listado trae el estado y no está activo, no se puede abrir una conversación nueva (el backend da 400).
-  const canContact = product.status === undefined || product.status === 'active'
-  const isFeatured = product.isFeatured === true && product.status !== 'sold'
+  // Agotado (status sold / quantity 0) o no disponible (isAvailable false): no se contacta ni se destaca.
+  const stock = getStockState(product)
+  const canContact = stock === 'available' && (product.status === undefined || product.status === 'active')
+  const isFeatured = product.isFeatured === true && stock === 'available'
+  const isLowStock = stock === 'available' && product.quantity !== undefined && product.quantity <= LOW_STOCK_THRESHOLD
 
   return (
     <article
@@ -66,23 +70,33 @@ export function ShopProductCard({ product }: { product: ShopProductCardData }) {
             src={product.imageUrl}
             alt={product.title}
             loading="lazy"
-            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={cx(
+              'size-full object-cover transition-transform duration-300 group-hover:scale-105',
+              // Agotado / no disponible: la foto se apaga para que se lea de un vistazo.
+              stock !== 'available' && 'opacity-60 grayscale',
+            )}
           />
           {isFeatured && <FeaturedTag className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2" />}
+          {/* Pocas unidades: "Solo quedan 2" (ayuda a decidir sin abrir el detalle). */}
+          {isLowStock && !isFeatured && (
+            <span className="absolute bottom-1.5 left-1.5 rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-semibold text-[#b54708] shadow-xs sm:bottom-2 sm:left-2 sm:px-2 sm:py-1 sm:text-[11px]">
+              {product.quantity === 1 ? t('products.stock.lastUnit') : t('products.stock.few', { count: product.quantity ?? 0 })}
+            </span>
+          )}
         </div>
         <h3 className="line-clamp-2 font-heading text-[13px] leading-snug font-semibold text-mynted-ink sm:text-sm">{product.title}</h3>
       </Link>
 
       <ProductFavoriteButton
         productId={product.id}
-        isSold={product.status === 'sold'}
+        isSold={stock === 'soldOut'}
         className="absolute top-3.5 right-3.5 size-8 sm:top-[18px] sm:right-[18px] sm:size-9"
       />
 
-      {/* Vendido: reemplaza la etiqueta de venta/intercambio, que ya no significa nada. */}
-      {product.status === 'sold' ? (
+      {/* Agotado / no disponible: reemplaza la etiqueta de venta/intercambio, que ya no significa nada. */}
+      {stock !== 'available' ? (
         <span className="absolute top-3.5 left-3.5 rounded-md bg-mynted-ink/85 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-xs sm:top-[18px] sm:left-[18px] sm:px-2 sm:py-1 sm:text-[11px]">
-          {t('products.status.sold')}
+          {t(STOCK_LABEL[stock])}
         </span>
       ) : (
         /* Venta / Intercambio sobre la foto: el intercambio es lo que diferencia a Mynted de una tienda común. */

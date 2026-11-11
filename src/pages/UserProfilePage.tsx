@@ -4,7 +4,8 @@ import { Link, Navigate, useParams } from '@tanstack/react-router'
 import { Calendar } from '@untitledui/icons'
 import { BadgeCheck, Heart as HeartOutline, LayoutGrid, MapPin, MessageCircle, ShoppingBag, Store } from 'lucide-react'
 import { AnimatedTabs } from '@/components/ui/AnimatedTabs'
-import { Rating } from '@/components/ui/Rating'
+import { RatingSummary } from '@/components/ui/RatingSummary'
+import { ReputationCard } from '@/features/reputation/components/ReputationCard'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useUserInterestsQuery } from '@/features/auth/hooks/useInterestsMutations'
 import { useUserByIdQuery, useUserByUsernameQuery } from '@/features/auth/hooks/useAuthMutations'
@@ -123,6 +124,7 @@ function PublicProfile({ user, language }: { user: PublicUser; language: AppLang
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
         <div className="flex flex-col gap-6">
           <AboutCard user={user} language={language} isOwn={false} />
+          {isSeller && <ReputationCard userId={user.id} />}
           <BadgesCard query={badges} emptyKey="userProfile.badges.empty" />
           <div className="rounded-2xl border border-mynted-border bg-mynted-white p-6">
             <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-mynted-ink">
@@ -258,14 +260,11 @@ function PublicProfileHeader({ user, language }: { user: PublicUser; language: A
               )}
               {/* A un superadmin GET /users/:id le devuelve el usuario completo,
                   cuyo `seller` no trae reseñas: puede faltar, no solo ser null. */}
-              {typeof seller.ratingAverage === 'number' ? (
-                <span className="flex items-center gap-2 text-sm text-mynted-gray">
-                  <Rating value={seller.ratingAverage} size={14} />
-                  {seller.ratingAverage.toFixed(1)} · {t('reviews.count', { count: seller.reviewsCount })}
-                </span>
-              ) : (
-                <span className="text-sm text-mynted-gray">{t('itemDetail.sellerNoReviews')}</span>
-              )}
+              <RatingSummary
+                average={typeof seller.ratingAverage === 'number' ? seller.ratingAverage : null}
+                count={seller.reviewsCount ?? 0}
+                emptyLabel={t('itemDetail.sellerNoReviews')}
+              />
               <Link
                 to="/sellers/$sellerId"
                 params={{ sellerId: String(seller.sellerId) }}

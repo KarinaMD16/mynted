@@ -181,6 +181,15 @@ export interface PurchaseItem {
   /** null en compras anteriores a que el backend guardara este dato. */
   cardHolderName: string | null
   gatewayReference: string | null
+  /** El vendedor borró el producto: el detalle da 404, así que no se enlaza (la compra y la reseña siguen). */
+  productDeleted?: boolean
+  /**
+   * Reseñas (sección 15 de la guía): `canReview` = puede reseñarlo ahora (misma
+   * regla que POST /products/:id/reviews); `hasReviewed`/`reviewId` = ya tiene la suya.
+   */
+  canReview?: boolean
+  hasReviewed?: boolean
+  reviewId?: number | null
 }
 
 export interface PurchasePage {

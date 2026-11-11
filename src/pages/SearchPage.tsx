@@ -215,6 +215,8 @@ function ProductCard({ product }: { product: ProductListItem }) {
         ...displayFieldsOf(product),
         tags: product.productTags?.map((item) => item.tag) ?? [],
         type: product.type,
+        quantity: product.quantity,
+        isAvailable: product.isAvailable,
       }}
     />
   )

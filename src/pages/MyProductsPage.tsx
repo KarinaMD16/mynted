@@ -402,6 +402,12 @@ function ProductRow({
     product.type ? t(product.type === 'sale' ? 'products.type.sale' : 'products.type.exchange') : null,
     product.condition ? t(CONDITION_LABEL[product.condition]) : null,
     product.community?.name ?? t('products.create.noCommunity'),
+    // Stock: cuántas unidades quedan (se edita desde "Editar"); 0 = agotado.
+    product.quantity === undefined
+      ? null
+      : product.quantity === 0
+        ? t('products.stock.soldOut')
+        : t(product.quantity === 1 ? 'myProducts.unitsOne' : 'myProducts.units', { count: product.quantity }),
   ]
     .filter(Boolean)
     .join(' · ')

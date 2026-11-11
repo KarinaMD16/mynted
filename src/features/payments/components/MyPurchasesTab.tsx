@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ChevronRight } from 'lucide-react'
+import { CircleCheck, ChevronRight, Star } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { ProfileFeedFrame } from '@/features/community/components/profile/ProfileFeedFrame'
+import { useLastDefined } from '@/hooks/useLastDefined'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { formatPrice } from '@/utils/price'
 import { useMyPurchases } from '../hooks/usePaymentQueries'
 import type { PurchaseItem } from '../models/payment'
 import { OrderStatusPill } from './OrderTracking'
+import { PurchaseReviewDialog } from './PurchaseReviewDialog'
 import { formatPaymentDateShort, maskedCard } from '../utils/paymentFormat'
 
 /**
@@ -15,6 +19,9 @@ import { formatPaymentDateShort, maskedCard } from '../utils/paymentFormat'
 export function MyPurchasesTab() {
   const query = useMyPurchases()
   const purchases = query.data?.pages.flatMap((page) => page.data) ?? []
+  // Compra que se está reseñando (diálogo). Se conserva durante la animación de cierre.
+  const [reviewing, setReviewing] = useState<PurchaseItem | null>(null)
+  const shownReview = useLastDefined(reviewing)
 
   return (
     <ProfileFeedFrame
@@ -26,16 +33,61 @@ export function MyPurchasesTab() {
       <ul className="flex flex-col gap-3">
         {purchases.map((purchase) => (
           <li key={purchase.id}>
-            <PurchaseRow purchase={purchase} />
+            <PurchaseRow purchase={purchase} onReview={() => setReviewing(purchase)} />
           </li>
         ))}
       </ul>
+      <PurchaseReviewDialog purchase={shownReview} open={reviewing !== null} onClose={() => setReviewing(null)} />
     </ProfileFeedFrame>
   )
 }
 
+/**
+ * Acción de reseña de una compra, según lo que diga el backend:
+ * - `canReview` → botón "Reseñar" (abre el diálogo).
+ * - `hasReviewed` → "Ver tu reseña" en el detalle, donde se edita; si el
+ *   producto se borró (el detalle da 404) solo se indica que ya se reseñó.
+ * - Ninguno (reembolsada, intercambio…) → nada.
+ * Va por encima del enlace estirado de la fila (relative z-10).
+ */
+function ReviewAction({ purchase, onReview }: { purchase: PurchaseItem; onReview: () => void }) {
+  const { t } = useLanguage()
+
+  if (purchase.canReview) {
+    return (
+      <Button type="button" variant="secondary" size="sm" className="relative z-10" onClick={onReview}>
+        <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+        {t('purchases.review.cta')}
+      </Button>
+    )
+  }
+
+  if (!purchase.hasReviewed) return null
+
+  if (purchase.productDeleted) {
+    return (
+      <span className="relative z-10 flex items-center gap-1 text-xs font-medium text-[#0d8c66]">
+        <CircleCheck className="size-3.5" aria-hidden="true" />
+        {t('purchases.review.done')}
+      </span>
+    )
+  }
+
+  return (
+    <Link
+      to="/products/$productId"
+      params={{ productId: String(purchase.product.id) }}
+      hash="reviews"
+      className="relative z-10 flex items-center gap-1 rounded-md text-xs font-semibold text-mynted-blue outline-none hover:underline focus-visible:outline-2 focus-visible:outline-mynted-blue-mid"
+    >
+      <CircleCheck className="size-3.5 text-[#0d8c66]" aria-hidden="true" />
+      {t('purchases.review.view')}
+    </Link>
+  )
+}
+
 /** Una compra: foto, producto, vendedor, fecha, tarjeta y monto. Toda la fila abre el recibo. */
-function PurchaseRow({ purchase }: { purchase: PurchaseItem }) {
+function PurchaseRow({ purchase, onReview }: { purchase: PurchaseItem; onReview: () => void }) {
   const { t, language } = useLanguage()
 
   return (
@@ -68,11 +120,14 @@ function PurchaseRow({ purchase }: { purchase: PurchaseItem }) {
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1.5">
-        <span className="font-heading text-sm font-semibold text-mynted-ink">
-          {formatPrice(purchase.amount, purchase.currency, language)}
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        <span className="flex items-center gap-1.5">
+          <span className="font-heading text-sm font-semibold text-mynted-ink">
+            {formatPrice(purchase.amount, purchase.currency, language)}
+          </span>
+          <ChevronRight className="size-4 text-mynted-gray" aria-hidden="true" />
         </span>
-        <ChevronRight className="size-4 text-mynted-gray" aria-hidden="true" />
+        <ReviewAction purchase={purchase} onReview={onReview} />
       </div>
     </article>
   )

@@ -124,10 +124,7 @@ function MobileMenuTrigger({
           >
             <AriaDialog className="flex h-full w-full flex-col overflow-y-auto bg-mynted-white outline-none">
               <div className="flex items-center justify-between border-b border-mynted-border px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <GooseIcon className="size-7 shrink-0 text-mynted-orange" />
-                  <span className="font-heading text-lg font-semibold text-mynted-blue-mid">mynted</span>
-                </div>
+                <Logo ver="small" className="h-auto w-[120px]" />
                 <AriaButton
                   aria-label={t('header.closeMenu')}
                   onPress={() => state.close()}
