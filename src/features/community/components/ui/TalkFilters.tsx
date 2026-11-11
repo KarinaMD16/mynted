@@ -56,7 +56,10 @@ export function TalkFilters({
   return (
     <aside
       aria-label={t('explore.filters.title')}
-      className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5"
+      /* El panel va sticky (ver TalkFeed), asi que si crece mas que la pantalla
+         su parte de abajo queda fuera de alcance: con muchas etiquetas no se
+         llegaba a las ultimas. Scrollea por dentro, igual que Shop y Tienda. */
+      className="flex flex-col gap-5 rounded-2xl border border-mynted-border bg-white p-5 lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto"
     >
       <div className="flex items-center justify-between">
         <h2 className="font-heading text-base font-semibold text-mynted-ink">{t('explore.filters.title')}</h2>
